@@ -1,0 +1,154 @@
+@import "tailwindcss";
+
+* {
+   padding: 0px;
+   margin: 0px;
+   border: none;
+}
+*,
+*::before,
+*::after {
+   box-sizing: border-box;
+}
+a,
+a:link,
+a:visited {
+   text-decoration: none;
+}
+a:hover {
+   text-decoration: none;
+}
+aside,
+nav,
+footer,
+header,
+section,
+main {
+   display: block;
+}
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+p {
+   font-size: inherit;
+   font-weight: inherit;
+}
+ul,
+ul li {
+   list-style: none;
+}
+img {
+   vertical-align: top;
+}
+img,
+svg {
+   max-width: 100%;
+   height: auto;
+}
+address {
+   font-style: normal;
+}
+input,
+textarea,
+button,
+select {
+   font-family: inherit;
+   font-size: inherit;
+   color: inherit;
+   background-color: transparent;
+}
+input::-ms-clear {
+   display: none;
+}
+button,
+input[type="submit"] {
+   display: inline-block;
+   box-shadow: none;
+   background-color: transparent;
+   background: none;
+   cursor: pointer;
+}
+input:focus,
+input:active,
+button:focus,
+button:active {
+   outline: none;
+}
+button::-moz-focus-inner {
+   padding: 0;
+   border: 0;
+}
+label {
+   cursor: pointer;
+}
+legend {
+   display: block;
+}
+input[type='file'] {
+   max-width: 100%;
+}
+:root {
+  --background: #000000;
+  --foreground: #ffffff;
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: 'Jost', sans-serif;
+  overflow-x: hidden;
+}
+
+html {
+  overflow-x: hidden;
+}
+
+.container {
+   max-width: 1440px;
+   margin: 0 auto;
+   padding: 0 10px ;
+}
+
+.container-bg {
+   max-width: 1440px;
+   margin: 0 auto;
+   left: 0;
+   right: 0;
+}
+
+.header {
+   background-color: #121927;
+   box-shadow: 0 10px 40px 0px rgba(0, 0, 0, 0.534);
+}
+
+.blur-css {
+   backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+
+.start__bg {
+   z-index: -1;
+}
+
+.start__content {
+   position: relative;
+   overflow: hidden;
+}
+
+.join {
+   padding: 20px 10px;
+}
+
+@media (width >= 48rem /* 768px */) {
+   .join {
+      padding: 20px 60px;
+   }
+   .container {
+   max-width: 1440px;
+   margin: 0 auto;
+   padding: 0 30px ;
+}
+}
