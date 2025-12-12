@@ -152,3 +152,32 @@ html {
    padding: 0 30px ;
 }
 }
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes glassShimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+@keyframes buttonGlow {
+  0%, 100% {
+    box-shadow: 0 0 20px rgba(78, 99, 167, 0.3), 0 0 40px rgba(78, 99, 167, 0.15);
+  }
+  50% {
+    box-shadow: 0 0 25px rgba(78, 99, 167, 0.4), 0 0 50px rgba(78, 99, 167, 0.2);
+  }
+}

@@ -28,10 +28,13 @@ const sliderData = [
 
 export default function Slider() {
   const [isMobile, setIsMobile] = useState(false);
+  const [windowWidth, setWindowWidth] = useState(typeof window !== 'undefined' ? window.innerWidth : 0);
   
   useEffect(() => {
     const checkMobile = () => {
-      setIsMobile(window.innerWidth < 768);
+      const width = window.innerWidth;
+      setIsMobile(width < 768);
+      setWindowWidth(width);
     };
     
     checkMobile();
@@ -45,10 +48,11 @@ export default function Slider() {
   const [index, setIndex] = useState(0);
   const [isAnimating, setIsAnimating] = useState(false);
   const [direction, setDirection] = useState(0);
-  const [stage, setStage] = useState(0); // 0: начальное, 1: уменьшение, 2: скольжение, 3: увеличение
+  const [stage, setStage] = useState(0); // 0: idle, 1: shrink, 2: slide, 3: grow
   const containerRef = useRef<HTMLDivElement>(null);
   const animationRef = useRef<number | null>(null);
-  const [animationProgress, setAnimationProgress] = useState(0); // 0-1 прогресс анимации
+  const [animationProgress, setAnimationProgress] = useState(0);
+  const indexUpdatedRef = useRef(false);
 
   const next = () => {
     if (isAnimating) return;
@@ -56,6 +60,7 @@ export default function Slider() {
     setDirection(1);
     setStage(1);
     setAnimationProgress(0);
+    indexUpdatedRef.current = false;
   };
 
   const prev = () => {
@@ -64,6 +69,7 @@ export default function Slider() {
     setDirection(-1);
     setStage(1);
     setAnimationProgress(0);
+    indexUpdatedRef.current = false;
   };
 
   const getCard = (offset: number) => {
@@ -71,42 +77,54 @@ export default function Slider() {
     return sliderData[realIndex];
   };
 
-  // Плавная анимация с requestAnimationFrame
   useEffect(() => {
     if (!isAnimating) return;
 
     let startTime: number | null = null;
-    const totalDuration = 700; // Общее время анимации
-    const shrinkDuration = 100; // Уменьшение: 300ms
-    const slideDuration = 200;  // Скольжение: 400ms
-    const growDuration = 200;   // Увеличение: 400ms
+    const totalDuration = 900;
+    const shrinkDuration = 150;
+    const slideDuration = 400;
+    const growDuration = 200;
+    
+    // Easing function for smooth acceleration and deceleration
+    const easeInOutCubic = (t: number): number => {
+      return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+    };
 
     const animate = (currentTime: number) => {
       if (!startTime) startTime = currentTime;
       const elapsed = currentTime - startTime;
       
       if (elapsed < shrinkDuration) {
-        // Стадия 1: уменьшение
         setStage(1);
         const stageProgress = elapsed / shrinkDuration;
         setAnimationProgress(stageProgress);
       } else if (elapsed < shrinkDuration + slideDuration) {
-        // Стадия 2: скольжение
         setStage(2);
-        const stageProgress = (elapsed - shrinkDuration) / slideDuration;
-        setAnimationProgress(1 + stageProgress); // 1-2
+        const rawProgress = (elapsed - shrinkDuration) / slideDuration;
+        const easedProgress = easeInOutCubic(rawProgress);
+        setAnimationProgress(1 + easedProgress);
+        
+        // Update index near end of slide stage to apply new positioning in time
+        if (!indexUpdatedRef.current && rawProgress > 0.75) {
+          setIndex(prev => prev + direction);
+          indexUpdatedRef.current = true;
+        }
       } else if (elapsed < totalDuration) {
-        // Стадия 3: увеличение
         setStage(3);
         const stageProgress = (elapsed - shrinkDuration - slideDuration) / growDuration;
-        setAnimationProgress(2 + stageProgress); // 2-3
+        setAnimationProgress(2 + stageProgress);
+        
+        if (!indexUpdatedRef.current) {
+          setIndex(prev => prev + direction);
+          indexUpdatedRef.current = true;
+        }
       } else {
-        // Завершение анимации
-        setIndex(prev => prev + direction);
         setIsAnimating(false);
         setDirection(0);
         setStage(0);
         setAnimationProgress(0);
+        indexUpdatedRef.current = false;
         return;
       }
 
@@ -122,21 +140,26 @@ export default function Slider() {
     };
   }, [isAnimating, direction]);
 
-  // Получаем смещение для контейнера с учетом анимации
   const getContainerTransform = () => {
-    const baseOffset = -(CARD_WIDTH * 2.5);
+    const cardGap = isMobile ? 15 : 30;
+    const card0Position = (CARD_WIDTH + cardGap) * 2;
+    const baseOffset = -card0Position - (CARD_WIDTH / 2);
     
-    if (stage >= 2 && animationProgress > 1) {
-      // Плавное скольжение на основе прогресса анимации
+    if (stage === 2 && isAnimating && animationProgress >= 1) {
       const slideProgress = Math.min(1, animationProgress - 1);
-      const slideOffset = -direction * CARD_WIDTH * slideProgress;
+      const slideOffset = -direction * (CARD_WIDTH + cardGap) * slideProgress;
+
+      if (indexUpdatedRef.current) {
+        const compensationOffset = direction * (CARD_WIDTH + cardGap);
+        return `translateX(calc(50% + ${baseOffset}px + ${compensationOffset}px + ${slideOffset}px))`;
+      }
+      
       return `translateX(calc(50% + ${baseOffset}px + ${slideOffset}px))`;
     }
     
     return `translateX(calc(50% + ${baseOffset}px))`;
   };
 
-  // Определяем свойства для каждой карточки
   const getCardStyle = (offset: number) => {
     const isCurrentCenter = offset === 0;
     const willBeNewCenter = offset === direction;
@@ -150,40 +173,50 @@ export default function Slider() {
         scale = 1;
       }
     } else {
-      // Анимация уменьшения
       if (stage === 1) {
         if (isCurrentCenter) {
           const progress = animationProgress;
           opacity = 1 - (1 - 0.45) * progress;
           scale = 1 - (1 - 0.75) * progress;
         }
-      }
-      // Анимация скольжения
-      else if (stage === 2) {
+      } else if (stage === 2) {
         if (isCurrentCenter || willBeNewCenter) {
           opacity = 0.45;
           scale = 0.75;
         }
-      }
-      // Анимация увеличения
-      else if (stage === 3) {
-        if (isCurrentCenter) {
-          opacity = 0.45;
-          scale = 0.75;
-        } else if (willBeNewCenter) {
+      } else if (stage === 3) {
+        // After index update, new center card is at offset === 0
+        const isNewCenter = indexUpdatedRef.current ? isCurrentCenter : willBeNewCenter;
+        
+        if (isNewCenter) {
           const progress = Math.max(0, Math.min(1, animationProgress - 2));
           opacity = 0.45 + (1 - 0.45) * progress;
           scale = 0.75 + (1 - 0.75) * progress;
-          
-          console.log(`New center card (offset ${offset}): progress=${progress.toFixed(2)}, opacity=${opacity.toFixed(2)}, scale=${scale.toFixed(2)}`);
+        } else if (isCurrentCenter && !indexUpdatedRef.current) {
+          opacity = 0.45;
+          scale = 0.75;
         }
+      }
+    }
+    
+    let transitionDuration = 'none';
+    let transitionTiming = 'linear';
+    if (isAnimating) {
+      if (stage === 1) {
+        transitionDuration = '0.15s';
+        transitionTiming = 'cubic-bezier(0.4, 0, 0.2, 1)';
+      } else if (stage === 3) {
+        transitionDuration = '0.25s';
+        transitionTiming = 'cubic-bezier(0.4, 0, 0.2, 1)';
       }
     }
     
     return {
       opacity,
       transform: `scale(${scale})`,
-      transition: isAnimating ? `all ${stage === 3 ? 0.4 : stage === 1 ? 0.3 : 0.4}s cubic-bezier(0.34, 1.56, 0.64, 1)` : 'none',
+      transition: transitionDuration !== 'none' 
+        ? `opacity ${transitionDuration} ${transitionTiming}, transform ${transitionDuration} ${transitionTiming}`
+        : 'none',
     };
   };
 
@@ -196,50 +229,50 @@ export default function Slider() {
   const cardFontSize = isMobile ? 14 : 24;
   const cardGap = isMobile ? 15 : 30;
   const arrowFontSize = isMobile ? 40 : 68;
-  const arrowOffset = isMobile ? 30 : 80;
+  const arrowOffset = isMobile ? 30 : 64;
+  const edgeOffset = 20;
 
   return (
-    <div style={{ position: "relative", padding: isMobile ? "40px 0" : "80px 0", overflow: "hidden" }}>
-      <div
-        style={{
-          display: "flex",
-          alignItems: "center",
-          position: "relative",
-          width: "100%",
-          justifyContent: "center",
-          overflow: "hidden",
-        }}
-      >
-        {/* Левая стрелка */}
-        <button
-          onClick={prev}
-          disabled={isAnimating}
+    <div style={{ position: "relative", padding: isMobile ? "40px 0" : "80px 0" }}>
+      <div className={isMobile ? "" : "container"} style={{ position: "relative" }}>
+        <div
           style={{
-            position: "absolute",
-            left: `calc(50% - ${cardWidthPx / 2 + arrowOffset}px)`,
-            fontSize: `${arrowFontSize}px`,
-            color: "white",
-            background: "transparent",
-            border: "none",
-            cursor: isAnimating ? "default" : "pointer",
-            zIndex: 10,
-            transition: "opacity 0.3s ease",
-            opacity: isAnimating ? 0.6 : 1,
+            display: "flex",
+            alignItems: "center",
+            position: "relative",
+            width: "100%",
+            justifyContent: "center",
+            overflow: "hidden",
           }}
         >
-          ‹
-        </button>
+          <button
+            onClick={prev}
+            disabled={isAnimating}
+            style={{
+              position: "absolute",
+              left: isMobile ? `${edgeOffset}px` : `calc(50% - ${cardWidthPx / 2 + arrowOffset}px)`,
+              fontSize: `${arrowFontSize}px`,
+              color: "white",
+              background: "transparent",
+              border: "none",
+              cursor: isAnimating ? "default" : "pointer",
+              zIndex: 10,
+              transition: "opacity 0.3s ease",
+              opacity: isAnimating ? 0.6 : 1,
+            }}
+          >
+            ‹
+          </button>
 
-        {/* Контейнер карточек */}
         <div
           ref={containerRef}
           style={{
             display: "flex",
             gap: `${cardGap}px`,
             transform: getContainerTransform(),
-            transition: stage >= 2 && animationProgress > 1 
-              ? "transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1)"
-              : "none",
+            transition: "none",
+            willChange: isAnimating ? "transform" : "auto",
+            paddingTop: isMobile ? "10px" : "20px"
           }}
         >
           {visibleOffsets.map((offset) => {
@@ -280,25 +313,25 @@ export default function Slider() {
           })}
         </div>
 
-        {/* Правая стрелка */}
-        <button
-          onClick={next}
-          disabled={isAnimating}
-          style={{
-            position: "absolute",
-            right: `calc(50% - ${cardWidthPx / 2 + (isMobile ? 20 : 50)}px)`,
-            fontSize: `${arrowFontSize}px`,
-            color: "white",
-            background: "transparent",
-            border: "none",
-            cursor: isAnimating ? "default" : "pointer",
-            zIndex: 10,
-            transition: "opacity 0.3s ease",
-            opacity: isAnimating ? 0.6 : 1,
-          }}
-        >
-          ›
-        </button>
+          <button
+            onClick={next}
+            disabled={isAnimating}
+            style={{
+              position: "absolute",
+              right: isMobile ? `${edgeOffset}px` : `calc(50% - ${cardWidthPx / 2 + arrowOffset}px)`,
+              fontSize: `${arrowFontSize}px`,
+              color: "white",
+              background: "transparent",
+              border: "none",
+              cursor: isAnimating ? "default" : "pointer",
+              zIndex: 10,
+              transition: "opacity 0.3s ease",
+              opacity: isAnimating ? 0.6 : 1,
+            }}
+          >
+            ›
+          </button>
+        </div>
       </div>
     </div>
   );
