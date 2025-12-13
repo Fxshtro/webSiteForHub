@@ -1,79 +1,178 @@
-# IUBIP Hub - Student Digital Hub
+# Студенческий Цифровой Хаб - Бэкенд
 
-Website for project management and connecting participants of the student hub.
+Django-проект для управления данными Студенческого Цифрового Хаба.
 
-## Technologies
-
-- **Next.js 15.5.6** - React framework
-- **React 19.1.0** - UI library
-- **TypeScript** - type safety
-- **Tailwind CSS 4** - styling
-
-## Requirements
-
-- Node.js 18+
-- npm, yarn, pnpm or bun
-
-## Installation
-
-1. Clone the repository:
-```bash
-git clone https://github.com/your-username/iubip-hub.git
-cd iubip-hub
-```
-
-2. Install dependencies:
-```bash
-npm install
-# or
-yarn install
-# or
-pnpm install
-```
-
-## Running the Project
-
-### Development Mode
+### 1. Установка зависимостей
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+pip install -r requirements.txt
 ```
 
-Open [http://localhost:3000](http://localhost:3000) in your browser.
-
-### Production Build
+### 2. Применение миграций
 
 ```bash
-npm run build
-npm start
+python manage.py makemigrations
+python manage.py migrate
 ```
 
-## Project Structure
+### 3. Инициализация данных
 
-```
-iubip-hub/
-├── app/
-│   ├── components/     # React components
-│   ├── globals.css     # Global styles
-│   ├── layout.tsx      # Root layout
-│   └── page.tsx        # Main page
-├── public/
-│   └── image/          # Images
-└── ...
+```bash
+python manage.py init_hub
 ```
 
-## Deployment
+Эта команда создаст настройки Хаба и примерные направления деятельности.
 
-The easiest way to deploy the project is to use the [Vercel Platform](https://vercel.com/new).
+### 4. Создание администратора
 
-Learn more about Next.js deployment: [Next.js Deployment Documentation](https://nextjs.org/docs/app/building-your-application/deploying)
+```bash
+python manage.py createsuperuser
+```
 
-## License
+Введите логин и пароль (email можно оставить пустым, нажмите Enter). После создания войдите в админ-панель и установите роль `admin` для этого пользователя.
 
-Private project
+### 5. Запуск сервера
+
+```bash
+python manage.py runserver
+```
+
+Откройте в браузере: http://127.0.0.1:8000/admin/
+
+### Следующие шаги
+
+1. Создайте направления деятельности (если нужно больше, чем создано автоматически)
+2. Создайте лаборатории
+3. Назначьте лидеров лабораторий (создайте пользователей с ролью `lab_lead` и укажите `managed_lab`)
+4. Создайте проекты в лабораториях
+5. Добавьте участников проектов (для менеджеров проекта укажите роль `manager`)
+
+##Структура проекта
+
+- `hub/` - основное приложение
+  - `models.py` - модели данных (User, Lab, Project, ProjectParticipant, Achievement, EventLog, HubSettings)
+  - `admin.py` - настройка админ-панели с ограничениями по ролям
+  - `utils.py` - вспомогательные функции для логирования
+  - `signals.py` - сигналы Django для автоматического логирования
+
+##Роли пользователей
+
+### Admin (Администратор)
+- Полный доступ ко всем данным
+- Может управлять всеми лабораториями, проектами, участниками
+- Доступ к журналу событий
+
+### Lab Lead (Лидер лаборатории)
+- Может редактировать только свою лабораторию
+- Видит и управляет проектами своей лаборатории
+- Может управлять участниками проектов своей лаборатории
+
+### Project Manager (Менеджер проекта)
+- Может редактировать только свой проект (где является менеджером)
+- Может отправлять отчёты по своему проекту
+- Видит участников своего проекта
+
+### Student (Студент)
+- Нет доступа к админ-панели
+
+##Функционал админ-панели
+
+### CRUD операции
+- Создание, редактирование, удаление всех сущностей
+- Ограничение доступа по ролям (каждый видит только свои данные)
+
+### Управление участниками проектов
+- При "удалении" участника он не удаляется, а помечается как покинувший (устанавливается `left_at`)
+- Можно пометить несколько участников как покинувших через действие в админке
+
+### Выгрузка отчётов
+- Экспорт в Excel для:
+  - Проектов
+  - Лабораторий
+  - Участников проектов
+  - Достижений
+  - Журнала событий
+- Доступно через действия (actions) в админ-панели
+
+### Журнал событий
+- Автоматическое логирование:
+  - Создание/обновление проектов
+  - Экспорт отчётов
+  - Перевод участника в "бывшие"
+- Все события доступны в админ-панели в разделе "Журнал событий"
+- Стандартные действия Django логируются в `django_admin_log`
+
+##Модели данных
+
+### User (Пользователь)
+- Кастомная модель пользователя с ролями
+- Поля: `username`, `email`, `role`, `metaverse_link`, `managed_lab`
+
+### Lab (Лаборатория)
+- Поля: `name`, `description`, `direction`, `active`
+
+### Project (Проект)
+- Поля: `title`, `description`, `concept_file`, `lab`, `active`
+
+### ProjectParticipant (Участник проекта)
+- Поля: `user`, `project`, `role`, `joined_at`, `left_at`
+- При "удалении" устанавливается `left_at` вместо физического удаления
+
+### Achievement (Достижение)
+- Поля: `title`, `description`, `image`, `lab` или `project` (одно из двух)
+
+### EventLog (Журнал событий)
+- Логирование ключевых действий пользователей
+- Поля: `user`, `action`, `entity_type`, `entity_id`, `timestamp`, `details`
+
+### HubSettings (Настройки Хаба)
+- Единственная запись с описанием и настройками Хаба
+- Доступна только администраторам
+
+##Настройка
+
+### Изменение базы данных
+
+В `hub_backend/settings.py` можно изменить настройки базы данных:
+
+```python
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': 'hub_db',
+        'USER': 'your_user',
+        'PASSWORD': 'your_password',
+        'HOST': 'localhost',
+        'PORT': '5432',
+    }
+}
+```
+
+### Медиа-файлы
+
+Загруженные файлы сохраняются в папке `media/`:
+- `media/concepts/` - файлы концепций проектов
+- `media/achievements/` - изображения достижений
+
+## Примечания
+
+- При первом запуске создайте суперпользователя и установите ему роль `admin`
+- Для лидера лаборатории необходимо указать `managed_lab` в профиле пользователя
+- Для менеджера проекта необходимо добавить его как участника проекта с ролью `manager`
+- Журнал событий автоматически создаётся при ключевых действиях
+
+##Тестирование прав доступа
+
+1. Создайте пользователя с ролью `lab_lead`
+2. Назначьте ему лабораторию через поле `managed_lab`
+3. Войдите под этим пользователем - он должен видеть только свою лабораторию и её проекты
+
+Аналогично для `project_manager` - создайте участника проекта с ролью `manager`.
+
+## Зависимости
+
+- Django >= 4.2.0
+- djangorestframework >= 3.14.0 (для будущего API)
+- openpyxl >= 3.1.0 (для экспорта в Excel)
+- Pillow >= 10.0.0 (для работы с изображениями)
+
