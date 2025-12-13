@@ -22,7 +22,7 @@ export default function Home() {
       <div className="start__bg absolute left-0 right-0 container-bg">
         <div className="relative -top-30">
           <img src="/image/background-image.svg" alt="" style={{width: '100%', height: 'auto', display: 'block',}}/>
-          <div className="absolute opacity-96 inset-0 bg-gradient-to-b from-[#1A2136] to-black"></div>
+          <div className="absolute opacity-96 inset-0 bg-gradient-to-b from-[#2b3655] to-[#040508]"></div>
         </div>
       </div>
 
@@ -30,8 +30,8 @@ export default function Home() {
         <div className="start__content container flex relative md:h-200 h-[94vh] ">
           <div style={{marginLeft: '15px', paddingRight: '25px', maxWidth: '700px', width: '100%'}} className="container flex flex-col md:block h-full">
             <div className="md:block flex-grow md:flex-grow-0">
-              <div className="!pt-38 md:!pt-52 title-ad text-3xl md:text-7xl font-semibold !-mt-15 md:!-mt-10 ">
-                СТУДЕНЧЕСКИЙ <br></br><a className="text-xl md:text-5xl">ЦИФРОВОЙ ХАБ</a>
+              <div className="!pt-38 md:!pt-60 title-ad text-3xl md:text-7xl font-semibold !-mt-15 md:!-mt-10 leading-none">
+                СТУДЕНЧЕСКИЙ <br className="!mb-0 md:!mb-[-1em]"></br><a className="text-xl md:text-5xl block -mt-2 md:-mt-4">ЦИФРОВОЙ ХАБ</a>
               </div>
               <div style={{marginTop: '60px'}} className="font-extralight text-lg md:text-2xl">
                 Цифровая экосистема для управления проектами и объединения участников студенческого хаба
@@ -41,16 +41,17 @@ export default function Home() {
               marginTop: '60px', 
               marginBottom: '20px',
               border: '4px solid #4e4e4e',
-              animation: 'buttonGlow 3s ease-in-out infinite',
+              boxShadow: '0 0 10px rgba(78, 99, 167, 0.2), 0 0 20px rgba(78, 99, 167, 0.1)',
               transition: 'transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease',
               contain: 'layout style paint',
             }} 
-            className="join text-sm text-center md:p-0 md:text-2xl flex- font-normal hover:cursor-pointer bg-[#0a0c14] inline-block rounded-2xl"
+            className="join text-sm text-center md:p-0 md:text-2xl flex- font-normal hover:cursor-pointer bg-[#101725] inline-block rounded-3xl"
             onMouseEnter={(e) => {
               e.currentTarget.style.borderColor = '#6c97f55e';
+              e.currentTarget.style.boxShadow = '0 0 20px rgba(78, 99, 167, 0.507), 0 0 40px rgba(78, 99, 167, 0.356)';
             }}
             onMouseLeave={(e) => {
-              e.currentTarget.style.boxShadow = '0 0 20px rgba(78, 99, 167, 0.507), 0 0 40px rgba(78, 99, 167, 0.356)';
+              e.currentTarget.style.boxShadow = '0 0 10px rgba(78, 99, 167, 0.2), 0 0 20px rgba(78, 99, 167, 0.1)';
               e.currentTarget.style.borderColor = '#4e4e4e';
             }}>
               ПРИСОЕДИНИТЬСЯ К ХАБУ
@@ -66,27 +67,25 @@ export default function Home() {
       <div className="transfer">
         <div className="container">
           <div className="!mt-10 md:!mt-0 !ml-7 md:!ml-23">
-            <div 
-              style={{ background: 'linear-gradient(to bottom, #4E63A7 20%, #0000006c 65%)',
-              WebkitBackgroundClip: 'text', backgroundClip: 'text', color: 'transparent'}} 
-              className=" font-['Abril_Fatface'] relative top-12 text-[6rem] md:text-[17rem]">01
-            </div>
+            <div className="section-number relative top-12 text-[6rem] md:text-[17rem]">01</div>
             <div className="text-xl md:text-4xl max-w-150 relative -top-1 !mr-7 md:-top-20 font-semibold">
               Единая цифровая экосистема для студенческих проектов
               </div>
           </div>
 
-          <div className="transfer__row flex !mt-13">
-            <div className=" md:w-[40%] absolute md:relative -left-30">
-              <img style={{transform: 'scale(1.5)', width: '100%', objectFit: 'cover', objectPosition: 'center', }} 
-              className="relative opacity-65 md:opacity-100 md:scale-150 -top-10 md:top-20 -left-10 md:-left-20 !max-h-100 md:!max-h-250" 
-              src="/image/figure2.svg" alt=""/>
+          <div className="transfer__row flex !mt-13 md:items-stretch">
+            <div className="md:w-[49%] flex-shrink-0 absolute md:relative md:min-h-200 -left-30 md:left-0 md:self-stretch">
+              <div className="h-full w-full md:flex md:items-center md:justify-center overflow-hidden">
+                <img style={{transform: 'scale(1.5)', width: '100%', objectFit: 'cover', objectPosition: 'center', }} 
+                className="relative opacity-65 md:opacity-100 md:scale-150 -top-100 md:top-10 -left-10 md:-left-80 !max-h-100 md:!max-h-none w-full md:h-full" 
+                src="/image/figure2.svg" alt=""/>
+              </div>
             </div>
-            <div className=" md:w-[60%]">
+            <div className="md:w-[50%] flex-shrink-0 w-full">
               <div className="flex justify-start">
                 <div className="relative -left-1 top-3.5 md:top-0 !w-15 !h-15 md:!w-25 md:!h-25 rounded-2xl md:rounded-3xl bg-white/50"></div>
               </div>
-              <div style={{ position: "relative" }}>
+              <div style={{ position: "relative", width: "100%" }}>
                 {!isMobile && isExpanded && (
                   <div 
                     style={{ 
@@ -115,7 +114,7 @@ export default function Home() {
                     overflow: isExpanded ? "hidden" : "visible",
                     zIndex: isExpanded && !isMobile ? 20 : 1
                   }} 
-                  className="text-lg md:text-4xl relative -top-10 md:-top-24 !py-0 !px-7 md:!px-11 !pt-10 !pb-10 rounded-2xl md:rounded-3xl text-white"
+                  className="text-lg md:text-4xl relative -top-10 md:-top-24 !py-0 !px-7 md:!px-11 !pt-10 !pb-10 rounded-2xl md:rounded-3xl text-white break-words overflow-wrap-anywhere"
                   onMouseEnter={() => !isMobile && setIsExpanded(true)}
                   onMouseLeave={() => !isMobile && setIsExpanded(false)}
                   onClick={() => isMobile && setIsExpanded(!isExpanded)}
@@ -145,7 +144,7 @@ export default function Home() {
                       }}
                     />
                   )}
-                  <div style={{ position: "relative", zIndex: 1 }}>
+                  <div style={{ position: "relative", zIndex: 1, wordWrap: "break-word", overflowWrap: "break-word", wordBreak: "break-word" }}>
                     <div
                       style={{
                         opacity: isExpanded ? 0 : 1,
@@ -153,7 +152,10 @@ export default function Home() {
                         position: isExpanded ? "absolute" : "relative",
                         pointerEvents: "none",
                         width: "100%",
-                        visibility: isExpanded ? "hidden" : "visible"
+                        visibility: isExpanded ? "hidden" : "visible",
+                        wordWrap: "break-word",
+                        overflowWrap: "break-word",
+                        wordBreak: "break-word"
                       }}
                     >
                       Lorem, ipsum dolor sit amet consectetur adipisicing elit. 
@@ -171,7 +173,10 @@ export default function Home() {
                         right: 0,
                         pointerEvents: "none",
                         width: "100%",
-                        visibility: isExpanded ? "visible" : "hidden"
+                        visibility: isExpanded ? "visible" : "hidden",
+                        wordWrap: "break-word",
+                        overflowWrap: "break-word",
+                        wordBreak: "break-word"
                       }}
                     >
                       Lorem, ipsum dolor sit amet consectetur adipisicing elit. 
@@ -200,11 +205,7 @@ export default function Home() {
           </div>
 
           <div className="!ml-7 md:!ml-23">
-            <div 
-              style={{ background: 'linear-gradient(to bottom, #4E63A7 20%, #0000006c 65%)',
-              WebkitBackgroundClip: 'text', backgroundClip: 'text', color: 'transparent'}} 
-              className="md:!mt-25 font-['Abril_Fatface'] relative top-12 text-[6rem] md:text-[17rem]">02
-            </div>
+            <div className="section-number relative top-12 text-[6rem] md:text-[17rem]">02</div>
             <div className="text-xl md:text-4xl max-w-150 relative -top-1 !mr-7 md:-top-20 font-semibold">ИТ - Лаборатория</div>
           </div>
           <div className="absolute -z-1000 left-0 right-0">
@@ -223,15 +224,23 @@ export default function Home() {
               </div>
             </div>
           </div>
-          <div className="!ml-7 md:!ml-23">
-            <div 
-              style={{ background: 'linear-gradient(to bottom, #4E63A7 20%, #0000006c 65%)',
-              WebkitBackgroundClip: 'text', backgroundClip: 'text', color: 'transparent'}} 
-              className="md:!mt-25 font-['Abril_Fatface'] relative top-12 text-[6rem] md:text-[17rem]">03
+          <div className="relative overflow-hidden">
+            <div className="absolute top-0 left-0 right-0 bottom-0 pointer-events-none z-0 md:!ml-7 md:!mr-7" style={{overflow: 'hidden'}}>
+              <div className="absolute -left-20 md:-left-120 top-[-290px] md:top-[50px] scale-120 md:scale-180 opacity-15">
+                <img src="/image/figure.svg" alt="" className="!w-200 !h-200 md:!w-300 md:!h-300" style={{maxWidth: '100vw', height: 'auto', transform: 'rotate(-60deg) translateX(-200px)'}}/>
+              </div>
+              <div className="absolute  right-10 md:-right-80 top-[-100px] md:top-[350px] scale-120 md:scale-150 opacity-15">
+                <img src="/image/figure.svg" alt="" className="!w-200 !h-200 md:!w-300 md:!h-300" style={{maxWidth: '100vw', height: 'auto', transform: 'rotate(10deg) translateX(200px)'}}/>
+              </div>
             </div>
-            <div className="text-xl md:text-4xl max-w-150 w-30 md:w-85 text-center relative -top-1 !mr-7 md:-top-20 font-semibold">Проекты</div>
+            <div className="relative z-10 !pb-[200px]">
+              <div className="!ml-7 md:!ml-23">
+                <div className="section-number md:!mt-25 relative top-12 text-[6rem] md:text-[17rem]">03</div>
+                <div className="text-xl md:text-4xl max-w-150 w-30 md:w-85 text-center relative -top-1 !mr-7 md:-top-20 font-semibold">Проекты</div>
+              </div>
+              <Slider/>
+            </div>
           </div>
-            <Slider/>
         </div>
       </div>
     </main>

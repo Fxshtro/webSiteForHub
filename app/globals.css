@@ -96,7 +96,7 @@ input[type='file'] {
 }
 
 body {
-  background: var(--background);
+  background: #040508;
   color: var(--foreground);
   font-family: 'Jost', sans-serif;
   overflow-x: hidden;
@@ -142,26 +142,13 @@ html {
    padding: 20px 10px;
 }
 
-@media (width >= 48rem /* 768px */) {
+@media (width >= 48rem) {
    .join {
       padding: 20px 60px;
    }
    .container {
-   max-width: 1440px;
-   margin: 0 auto;
-   padding: 0 30px ;
-}
-}
-
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(-10px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+      padding: 0 30px;
+   }
 }
 
 @keyframes glassShimmer {
@@ -180,4 +167,73 @@ html {
   50% {
     box-shadow: 0 0 25px rgba(78, 99, 167, 0.4), 0 0 50px rgba(78, 99, 167, 0.2);
   }
+}
+
+@keyframes dropdownPop {
+  0% {
+    opacity: 0;
+    transform: translateX(-50%) translateY(-15px) scale(0.95);
+    transform-origin: top center;
+  }
+  100% {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0) scale(1);
+    transform-origin: top center;
+  }
+}
+
+.dropdown-slide-up {
+  animation: dropdownPop 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes slideBall {
+  0% {
+    left: 0;
+    opacity: 1;
+  }
+  50% {
+    left: calc(100% - 8px);
+    opacity: 1;
+  }
+  100% {
+    left: 0;
+    opacity: 1;
+  }
+}
+
+@keyframes fadeInTrack {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.slider-track {
+  background: rgba(255, 255, 255, 0.1);
+  animation: fadeInTrack 0.3s ease-out forwards;
+}
+
+.slider-ball {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 8px;
+  height: 8px;
+  background: #6797ff;
+  border-radius: 50%;
+  box-shadow: 
+    0 0 8px rgba(108, 151, 245, 0.479),
+    0 0 16px rgba(108, 151, 245, 0.384),
+    0 2px 4px rgba(0, 0, 0, 0.3);
+  animation: slideBall 2.5s ease-in-out infinite;
+}
+
+.section-number {
+  background: linear-gradient(to bottom, #4E63A7 20%, #040508 65%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  font-family: 'Abril Fatface', serif;
 }

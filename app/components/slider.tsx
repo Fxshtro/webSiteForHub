@@ -166,11 +166,15 @@ export default function Slider() {
     
     let opacity = 0.45;
     let scale = 0.75;
+    let blurAmount = 80;
+    let backgroundOpacity = 0.5;
     
     if (!isAnimating) {
       if (isCurrentCenter) {
         opacity = 1;
         scale = 1;
+        blurAmount = 60;
+        backgroundOpacity = 0.33;
       }
     } else {
       if (stage === 1) {
@@ -178,11 +182,15 @@ export default function Slider() {
           const progress = animationProgress;
           opacity = 1 - (1 - 0.45) * progress;
           scale = 1 - (1 - 0.75) * progress;
+          blurAmount = 60 + (80 - 60) * progress;
+          backgroundOpacity = 0.33 + (0.5 - 0.33) * progress;
         }
       } else if (stage === 2) {
         if (isCurrentCenter || willBeNewCenter) {
           opacity = 0.45;
           scale = 0.75;
+          blurAmount = 80;
+          backgroundOpacity = 0.5;
         }
       } else if (stage === 3) {
         // After index update, new center card is at offset === 0
@@ -192,9 +200,13 @@ export default function Slider() {
           const progress = Math.max(0, Math.min(1, animationProgress - 2));
           opacity = 0.45 + (1 - 0.45) * progress;
           scale = 0.75 + (1 - 0.75) * progress;
+          blurAmount = 80 - (80 - 60) * progress;
+          backgroundOpacity = 0.5 - (0.5 - 0.33) * progress;
         } else if (isCurrentCenter && !indexUpdatedRef.current) {
           opacity = 0.45;
           scale = 0.75;
+          blurAmount = 80;
+          backgroundOpacity = 0.5;
         }
       }
     }
@@ -214,8 +226,11 @@ export default function Slider() {
     return {
       opacity,
       transform: `scale(${scale})`,
+      background: `rgba(42, 51, 90, ${backgroundOpacity})`,
+      backdropFilter: `blur(${blurAmount}px) saturate(180%)`,
+      WebkitBackdropFilter: `blur(${blurAmount}px) saturate(180%)`,
       transition: transitionDuration !== 'none' 
-        ? `opacity ${transitionDuration} ${transitionTiming}, transform ${transitionDuration} ${transitionTiming}`
+        ? `opacity ${transitionDuration} ${transitionTiming}, transform ${transitionDuration} ${transitionTiming}, backdrop-filter ${transitionDuration} ${transitionTiming}, -webkit-backdrop-filter ${transitionDuration} ${transitionTiming}, background ${transitionDuration} ${transitionTiming}`
         : 'none',
     };
   };
@@ -286,9 +301,6 @@ export default function Slider() {
                   width: `${cardWidthPx}px`,
                   height: `${cardHeightPx}px`,
                   padding: `${cardPadding}px`,
-                  background: "rgba(42, 51, 90, 0.33)",
-                  backdropFilter: "blur(60px) saturate(180%)",
-                  WebkitBackdropFilter: "blur(60px) saturate(180%)",
                   borderRadius: `${cardBorderRadius}px`,
                   border: "1px solid rgba(255,255,255,0.12)",
                   boxShadow: `
