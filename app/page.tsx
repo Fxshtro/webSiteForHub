@@ -233,12 +233,19 @@ export default function Home() {
                 <img src="/image/figure.svg" alt="" className="!w-200 !h-200 md:!w-300 md:!h-300" style={{maxWidth: '100vw', height: 'auto', transform: 'rotate(10deg) translateX(200px)'}}/>
               </div>
             </div>
-            <div className="relative z-10 !pb-[200px]">
+            <div className="relative z-10" style={{ paddingBottom: isMobile ? '50px' : '200px' }}>
               <div className="!ml-7 md:!ml-23">
                 <div className="section-number md:!mt-25 relative top-12 text-[6rem] md:text-[17rem]">03</div>
                 <div className="text-xl md:text-4xl max-w-150 w-30 md:w-85 text-center relative -top-1 !mr-7 md:-top-20 font-semibold">Проекты</div>
               </div>
               <Slider/>
+            </div>
+          </div>
+          <div className="relative overflow-hidden" style={{ height: isMobile ? '300px' : '900px' }}>
+            <div className="absolute top-0 left-0 right-0 bottom-0 pointer-events-none z-0" style={{overflow: 'hidden'}}>
+            <div className="absolute left-1/2" style={{ transform: 'translateX(-50%) rotate(30deg) scaleX(-1) scale(2.6)', bottom: isMobile ? '-270px' : '-650px'}}>
+            <img src="/image/figure.svg" alt="" className="!w-150 !h-150 md:!w-300 md:!h-300 opacity-15" style={{maxWidth: '100vw', height: 'auto', display: 'block'}}/>
+              </div>
             </div>
           </div>
         </div>
