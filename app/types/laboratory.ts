@@ -51,3 +51,14 @@ export const roleLabels: Record<Participant['role'], string> = {
   admin: 'Администратор',
 };
 
+
+
+
+
+
+
+
+
+
+
+
