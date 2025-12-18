@@ -15,15 +15,11 @@ from .models import (
 from .utils import log_event
 
 
-# ==================== Вспомогательные функции ====================
-
 def export_to_excel(modeladmin, request, queryset):
-    """Экспорт данных в Excel"""
     wb = Workbook()
     ws = wb.active
     ws.title = modeladmin.model._meta.verbose_name_plural
     
-    # Заголовки
     headers = []
     if modeladmin.model == Project:
         headers = ['ID', 'Название', 'Лаборатория', 'Активен', 'Создан', 'Участников']
@@ -36,7 +32,6 @@ def export_to_excel(modeladmin, request, queryset):
     elif modeladmin.model == EventLog:
         headers = ['ID', 'Пользователь', 'Действие', 'Сущность', 'Время', 'Детали']
     
-    # Стили для заголовков
     header_fill = PatternFill(start_color="366092", end_color="366092", fill_type="solid")
     header_font = Font(bold=True, color="FFFFFF")
     
@@ -47,7 +42,6 @@ def export_to_excel(modeladmin, request, queryset):
         cell.fill = header_fill
         cell.alignment = Alignment(horizontal="center", vertical="center")
     
-    # Данные
     for row_num, obj in enumerate(queryset, 2):
         if modeladmin.model == Project:
             ws.cell(row=row_num, column=1, value=obj.id)
@@ -84,12 +78,10 @@ def export_to_excel(modeladmin, request, queryset):
             ws.cell(row=row_num, column=5, value=obj.timestamp.strftime('%d.%m.%Y %H:%M:%S'))
             ws.cell(row=row_num, column=6, value=str(obj.details))
     
-    # Автоматическая ширина колонок
     for col_num in range(1, len(headers) + 1):
         column_letter = get_column_letter(col_num)
         ws.column_dimensions[column_letter].width = 20
     
-    # Логирование
     log_event(
         user=request.user,
         action='report_export',
@@ -98,7 +90,6 @@ def export_to_excel(modeladmin, request, queryset):
         details={'count': queryset.count(), 'model': modeladmin.model.__name__}
     )
     
-    # Ответ
     response = HttpResponse(
         content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
     )
@@ -110,12 +101,10 @@ def export_to_excel(modeladmin, request, queryset):
 export_to_excel.short_description = "Экспортировать выбранные в Excel"
 
 
-# ==================== Админ-классы ====================
-
 @admin.register(User)
 class UserAdmin(ModelAdmin):
-    list_display = ['username', 'email', 'role', 'managed_lab', 'is_active']
-    list_filter = ['role', 'is_active']
+    list_display = ['username', 'email', 'role', 'managed_lab', 'is_active', 'is_staff']
+    list_filter = ['role', 'is_active', 'is_staff']
     search_fields = ['username', 'email']
     fieldsets = (
         (None, {'fields': ('username', 'password')}),
@@ -125,12 +114,16 @@ class UserAdmin(ModelAdmin):
         ('Важные даты', {'fields': ('last_login', 'date_joined')}),
     )
     
+    def save_model(self, request, obj, form, change):
+        if 'password' in form.changed_data:
+            obj.set_password(form.cleaned_data['password'])
+        super().save_model(request, obj, form, change)
+    
     def get_queryset(self, request):
         qs = super().get_queryset(request)
-        if request.user.is_admin():
+        if request.user.is_superuser or request.user.is_admin():
             return qs
         elif request.user.is_lab_lead():
-            # Лидер видит только пользователей своей лабы
             if request.user.managed_lab:
                 return qs.filter(
                     models.Q(managed_lab=request.user.managed_lab) |
@@ -158,10 +151,9 @@ class LabAdmin(ModelAdmin):
     
     def get_queryset(self, request):
         qs = super().get_queryset(request)
-        if request.user.is_admin():
+        if request.user.is_superuser or request.user.is_admin():
             return qs
         elif request.user.is_lab_lead():
-            # Лидер видит только свою лабу
             if request.user.managed_lab:
                 return qs.filter(id=request.user.managed_lab.id)
         return qs.none()
@@ -169,6 +161,18 @@ class LabAdmin(ModelAdmin):
     def projects_count(self, obj):
         return obj.projects.count()
     projects_count.short_description = 'Проектов'
+    
+    def save_model(self, request, obj, form, change):
+        """Переопределяем сохранение для логирования с пользователем"""
+        super().save_model(request, obj, form, change)
+        if change:
+            log_event(
+                user=request.user,
+                action='lab_updated',
+                entity_type='Lab',
+                entity_id=obj.id,
+                details={'name': obj.name}
+            )
 
 
 @admin.register(Project)
@@ -187,14 +191,12 @@ class ProjectAdmin(ModelAdmin):
     
     def get_queryset(self, request):
         qs = super().get_queryset(request)
-        if request.user.is_admin():
+        if request.user.is_superuser or request.user.is_admin():
             return qs
         elif request.user.is_lab_lead():
-            # Лидер видит проекты своей лабы
             if request.user.managed_lab:
                 return qs.filter(lab=request.user.managed_lab)
         elif request.user.is_project_manager():
-            # Менеджер видит только свой проект
             managed_projects = ProjectParticipant.objects.filter(
                 user=request.user,
                 role='manager',
@@ -206,6 +208,17 @@ class ProjectAdmin(ModelAdmin):
     def participants_count(self, obj):
         return obj.participants.filter(left_at__isnull=True).count()
     participants_count.short_description = 'Участников'
+    
+    def save_model(self, request, obj, form, change):
+        super().save_model(request, obj, form, change)
+        if change:
+            log_event(
+                user=request.user,
+                action='project_updated',
+                entity_type='Project',
+                entity_id=obj.id,
+                details={'title': obj.title, 'lab': str(obj.lab)}
+            )
 
 
 @admin.register(ProjectParticipant)
@@ -217,14 +230,12 @@ class ProjectParticipantAdmin(ModelAdmin):
     
     def get_queryset(self, request):
         qs = super().get_queryset(request)
-        if request.user.is_admin():
+        if request.user.is_superuser or request.user.is_admin():
             return qs
         elif request.user.is_lab_lead():
-            # Лидер видит участников проектов своей лабы
             if request.user.managed_lab:
                 return qs.filter(project__lab=request.user.managed_lab)
         elif request.user.is_project_manager():
-            # Менеджер видит участников своего проекта
             managed_projects = ProjectParticipant.objects.filter(
                 user=request.user,
                 role='manager',
@@ -240,13 +251,11 @@ class ProjectParticipantAdmin(ModelAdmin):
     is_active_display.short_description = 'Статус'
     
     def mark_as_left(self, request, queryset):
-        """Пометить участников как покинувших проект"""
         count = 0
         for participant in queryset.filter(left_at__isnull=True):
             participant.left_at = timezone.now()
             participant.save()
             count += 1
-            # Логирование
             log_event(
                 user=request.user,
                 action='participant_left',
@@ -261,7 +270,6 @@ class ProjectParticipantAdmin(ModelAdmin):
     mark_as_left.short_description = "Пометить как покинувших проект"
     
     def delete_model(self, request, obj):
-        """Переопределяем удаление - вместо удаления помечаем как покинувшего"""
         if obj.left_at is None:
             obj.left_at = timezone.now()
             obj.save()
@@ -277,7 +285,6 @@ class ProjectParticipantAdmin(ModelAdmin):
             )
     
     def delete_queryset(self, request, queryset):
-        """Переопределяем массовое удаление"""
         self.mark_as_left(request, queryset)
 
 
@@ -290,17 +297,15 @@ class AchievementAdmin(ModelAdmin):
     
     def get_queryset(self, request):
         qs = super().get_queryset(request)
-        if request.user.is_admin():
+        if request.user.is_superuser or request.user.is_admin():
             return qs
         elif request.user.is_lab_lead():
-            # Лидер видит достижения своей лабы
             if request.user.managed_lab:
                 return qs.filter(
                     models.Q(lab=request.user.managed_lab) |
                     models.Q(project__lab=request.user.managed_lab)
                 )
         elif request.user.is_project_manager():
-            # Менеджер видит достижения своего проекта
             managed_projects = ProjectParticipant.objects.filter(
                 user=request.user,
                 role='manager',
@@ -325,7 +330,7 @@ class EventLogAdmin(ModelAdmin):
         return False
     
     def has_delete_permission(self, request, obj=None):
-        return request.user.is_admin()
+        return request.user.is_superuser or request.user.is_admin()
 
 
 @admin.register(HubSettings)
@@ -334,9 +339,8 @@ class HubSettingsAdmin(ModelAdmin):
     fields = ['name', 'description', 'contact_email']
     
     def has_add_permission(self, request):
-        # Разрешаем только одну запись
         return not HubSettings.objects.exists()
     
     def has_delete_permission(self, request, obj=None):
-        return request.user.is_admin()
+        return request.user.is_superuser or request.user.is_admin()
 

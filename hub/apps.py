@@ -6,4 +6,8 @@ class HubConfig(AppConfig):
     name = 'hub'
     
     def ready(self):
+        """Импортируем сигналы при запуске приложения"""
+        import hub.signals  # noqa
+    
+    def ready(self):
         import hub.signals  # noqa

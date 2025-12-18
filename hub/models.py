@@ -6,7 +6,6 @@ import json
 
 
 class User(AbstractUser):
-    """Кастомная модель пользователя с ролями"""
     
     ROLE_CHOICES = [
         ('admin', 'Администратор'),
@@ -57,7 +56,6 @@ class User(AbstractUser):
 
 
 class Direction(models.Model):
-    """Направление деятельности"""
     
     name = models.CharField(max_length=200, verbose_name='Название')
     
@@ -71,7 +69,6 @@ class Direction(models.Model):
 
 
 class Lab(models.Model):
-    """Лаборатория"""
     
     name = models.CharField(max_length=200, verbose_name='Название')
     description = models.TextField(blank=True, verbose_name='Описание')
@@ -97,7 +94,6 @@ class Lab(models.Model):
 
 
 class Project(models.Model):
-    """Проект"""
     
     title = models.CharField(max_length=200, verbose_name='Название')
     description = models.TextField(blank=True, verbose_name='Описание')
@@ -127,7 +123,6 @@ class Project(models.Model):
 
 
 class ProjectParticipant(models.Model):
-    """Участник проекта"""
     
     ROLE_CHOICES = [
         ('manager', 'Менеджер'),
@@ -173,7 +168,6 @@ class ProjectParticipant(models.Model):
 
 
 class Achievement(models.Model):
-    """Достижение"""
     
     title = models.CharField(max_length=200, verbose_name='Название')
     description = models.TextField(blank=True, verbose_name='Описание')
@@ -218,10 +212,16 @@ class Achievement(models.Model):
     def save(self, *args, **kwargs):
         self.full_clean()
         super().save(*args, **kwargs)
+    
+    def get_absolute_url(self):
+        from django.urls import reverse
+        try:
+            return reverse('achievement-detail', args=[str(self.id)])
+        except:
+            return None
 
 
 class EventLog(models.Model):
-    """Журнал событий для логирования ключевых действий"""
     
     ACTION_CHOICES = [
         ('file_download', 'Скачивание файла'),
@@ -267,7 +267,6 @@ class EventLog(models.Model):
 
 
 class HubSettings(models.Model):
-    """Настройки Хаба (описание и другая информация)"""
     
     name = models.CharField(
         max_length=200,
@@ -286,7 +285,6 @@ class HubSettings(models.Model):
         return self.name
     
     def save(self, *args, **kwargs):
-        # Разрешаем только одну запись
         self.pk = 1
         super().save(*args, **kwargs)
     

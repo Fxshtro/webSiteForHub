@@ -1,21 +1,15 @@
-"""Views для приложения hub"""
 from django.http import FileResponse, Http404
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.http import require_http_methods
 from .models import Project
 from .utils import log_event
 
-# API views можно добавить позже при необходимости
-
 
 @login_required
 @require_http_methods(["GET"])
 def download_concept_file(request, project_id):
-    """Скачивание файла концепции проекта с логированием"""
     try:
         project = Project.objects.get(id=project_id)
-        
-        # Проверка прав доступа
         user = request.user
         if not user.is_admin():
             if user.is_lab_lead() and project.lab != user.managed_lab:
@@ -33,7 +27,6 @@ def download_concept_file(request, project_id):
         if not project.concept_file:
             raise Http404("Файл не найден")
         
-        # Логирование
         log_event(
             user=user,
             action='file_download',

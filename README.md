@@ -169,10 +169,78 @@ DATABASES = {
 
 Аналогично для `project_manager` - создайте участника проекта с ролью `manager`.
 
+## API Endpoints
+
+Проект включает полноценный REST API на базе Django REST Framework.
+
+### Базовый URL
+```
+http://127.0.0.1:8000/api/
+```
+
+### Доступные endpoints:
+
+- `GET /api/directions/` - Список направлений деятельности
+- `GET /api/labs/` - Список лабораторий
+- `GET /api/labs/{id}/projects/` - Проекты лаборатории
+- `GET /api/projects/` - Список проектов
+- `GET /api/projects/{id}/participants/` - Участники проекта
+- `GET /api/projects/{id}/active_participants/` - Активные участники проекта
+- `GET /api/users/` - Список пользователей
+- `GET /api/users/me/` - Информация о текущем пользователе
+- `GET /api/participants/` - Список участников проектов
+- `POST /api/participants/{id}/leave/` - Покинуть проект
+- `GET /api/achievements/` - Список достижений
+- `GET /api/events/` - Журнал событий (только чтение)
+- `GET /api/settings/` - Настройки Хаба
+
+### Аутентификация
+
+API требует аутентификации. Доступны два метода:
+- Session Authentication (для веб-интерфейса)
+- Basic Authentication (для API клиентов)
+
+### Права доступа
+
+- **Администратор**: Полный доступ ко всем данным
+- **Лидер лаборатории**: Доступ только к своей лаборатории и её проектам
+- **Менеджер проекта**: Доступ только к своему проекту
+- **Студент**: Только чтение доступных данных
+
+### Фильтрация и поиск
+
+Все endpoints поддерживают:
+- Фильтрацию по полям (через параметр `?field=value`)
+- Поиск (через параметр `?search=query`)
+- Сортировку (через параметр `?ordering=field`)
+- Пагинацию (20 записей на страницу)
+
+### Примеры запросов
+
+```bash
+# Получить все лаборатории
+GET /api/labs/
+
+# Получить активные проекты
+GET /api/projects/?active=true
+
+# Поиск проектов
+GET /api/projects/?search=веб
+
+# Получить информацию о текущем пользователе
+GET /api/users/me/
+
+# Покинуть проект
+POST /api/participants/1/leave/
+```
+
 ## Зависимости
 
 - Django >= 4.2.0
-- djangorestframework >= 3.14.0 (для будущего API)
+- djangorestframework >= 3.14.0
 - openpyxl >= 3.1.0 (для экспорта в Excel)
 - Pillow >= 10.0.0 (для работы с изображениями)
+- django-filter >= 23.0 (для фильтрации в API)
+- python-decouple >= 3.8 (для управления настройками)
+- django-cors-headers >= 4.3.0 (для CORS)
 
