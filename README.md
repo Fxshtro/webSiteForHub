@@ -1,246 +1,220 @@
-# Студенческий Цифровой Хаб - Бэкенд
+Student Digital Hub – Backend
 
-Django-проект для управления данными Студенческого Цифрового Хаба.
+Django project for managing Student Digital Hub data.
 
-### 1. Установка зависимостей
-
-```bash
+Install dependencies
 pip install -r requirements.txt
-```
 
-### 2. Применение миграций
-
-```bash
+Apply migrations
 python manage.py makemigrations
 python manage.py migrate
-```
 
-### 3. Инициализация данных
-
-```bash
+Initialize data
 python manage.py init_hub
-```
 
-Эта команда создаст настройки Хаба и примерные направления деятельности.
+This command creates Hub settings and sample activity directions.
 
-### 4. Создание администратора
-
-```bash
+Create an administrator
 python manage.py createsuperuser
-```
 
-Введите логин и пароль (email можно оставить пустым, нажмите Enter). После создания войдите в админ-панель и установите роль `admin` для этого пользователя.
+Enter a username and password (you may leave email blank by pressing Enter). After creation, log into the admin panel and assign the admin role to this user.
 
-### 5. Запуск сервера
-
-```bash
+Start the server
 python manage.py runserver
-```
 
-Откройте в браузере: http://127.0.0.1:8000/admin/
+Open in your browser: http://127.0.0.1:8000/admin/
 
-### Следующие шаги
+Next steps
 
-1. Создайте направления деятельности (если нужно больше, чем создано автоматически)
-2. Создайте лаборатории
-3. Назначьте лидеров лабораторий (создайте пользователей с ролью `lab_lead` и укажите `managed_lab`)
-4. Создайте проекты в лабораториях
-5. Добавьте участников проектов (для менеджеров проекта укажите роль `manager`)
+Create additional activity directions (if needed beyond those created automatically)
+Create laboratories
+Assign lab leaders (create users with the lab_lead role and specify their managed_lab)
+Create projects within labs
+Add project participants (assign the manager role to project managers)
+Project Structure
 
-##Структура проекта
+hub/ – main application directory
+models.py – data models (User, Lab, Project, ProjectParticipant, Achievement, EventLog, HubSettings)
+admin.py – admin panel configuration with role-based restrictions
+utils.py – utility functions for logging
+signals.py – Django signals for automatic event logging
 
-- `hub/` - основное приложение
-  - `models.py` - модели данных (User, Lab, Project, ProjectParticipant, Achievement, EventLog, HubSettings)
-  - `admin.py` - настройка админ-панели с ограничениями по ролям
-  - `utils.py` - вспомогательные функции для логирования
-  - `signals.py` - сигналы Django для автоматического логирования
+User Roles
 
-##Роли пользователей
+Admin (Administrator)
 
-### Admin (Администратор)
-- Полный доступ ко всем данным
-- Может управлять всеми лабораториями, проектами, участниками
-- Доступ к журналу событий
+Full access to all data
+Can manage all labs, projects, and participants
+Access to the event log
+Lab Lead (Laboratory Leader)
 
-### Lab Lead (Лидер лаборатории)
-- Может редактировать только свою лабораторию
-- Видит и управляет проектами своей лаборатории
-- Может управлять участниками проектов своей лаборатории
+Can edit only their own laboratory
+Can view and manage projects within their lab
+Can manage participants of projects in their lab
+Project Manager
 
-### Project Manager (Менеджер проекта)
-- Может редактировать только свой проект (где является менеджером)
-- Может отправлять отчёты по своему проекту
-- Видит участников своего проекта
+Can edit only their own project (where they are assigned as manager)
+Can submit reports for their project
+Can view participants of their project
+Student
 
-### Student (Студент)
-- Нет доступа к админ-панели
+No access to the admin panel
+Admin Panel Features
 
-##Функционал админ-панели
+CRUD Operations
 
-### CRUD операции
-- Создание, редактирование, удаление всех сущностей
-- Ограничение доступа по ролям (каждый видит только свои данные)
+Create, read, update, and delete all entities
+Role-based access control (users see only data they are authorized to access)
+Project Participant Management
 
-### Управление участниками проектов
-- При "удалении" участника он не удаляется, а помечается как покинувший (устанавливается `left_at`)
-- Можно пометить несколько участников как покинувших через действие в админке
+When a participant is "deleted", they are not physically removed, but marked as having left by setting left_at
+Multiple participants can be marked as having left via an admin action
+Report Export
 
-### Выгрузка отчётов
-- Экспорт в Excel для:
-  - Проектов
-  - Лабораторий
-  - Участников проектов
-  - Достижений
-  - Журнала событий
-- Доступно через действия (actions) в админ-панели
+Excel export for:
+Projects
+Laboratories
+Project participants
+Achievements
+Event logs
+Available via custom admin actions
+Event Log
 
-### Журнал событий
-- Автоматическое логирование:
-  - Создание/обновление проектов
-  - Экспорт отчётов
-  - Перевод участника в "бывшие"
-- Все события доступны в админ-панели в разделе "Журнал событий"
-- Стандартные действия Django логируются в `django_admin_log`
+Automatic logging of key actions:
+Project creation/update
+Report exports
+Participant status changes to "former"
+All events are viewable in the admin panel under "Event Log"
+Standard Django actions are logged in django_admin_log
+Data Models
 
-##Модели данных
+User
 
-### User (Пользователь)
-- Кастомная модель пользователя с ролями
-- Поля: `username`, `email`, `role`, `metaverse_link`, `managed_lab`
+Custom user model with roles
+Fields: username, email, role, metaverse_link, managed_lab
+Lab (Laboratory)
 
-### Lab (Лаборатория)
-- Поля: `name`, `description`, `direction`, `active`
+Fields: name, description, direction, active
+Project
 
-### Project (Проект)
-- Поля: `title`, `description`, `concept_file`, `lab`, `active`
+Fields: title, description, concept_file, lab, active
+ProjectParticipant
 
-### ProjectParticipant (Участник проекта)
-- Поля: `user`, `project`, `role`, `joined_at`, `left_at`
-- При "удалении" устанавливается `left_at` вместо физического удаления
+Fields: user, project, role, joined_at, left_at
+"Deletion" sets left_at instead of physically deleting the record
+Achievement
 
-### Achievement (Достижение)
-- Поля: `title`, `description`, `image`, `lab` или `project` (одно из двух)
+Fields: title, description, image, lab or project (exactly one of these must be set)
+EventLog
 
-### EventLog (Журнал событий)
-- Логирование ключевых действий пользователей
-- Поля: `user`, `action`, `entity_type`, `entity_id`, `timestamp`, `details`
+Logs key user actions
+Fields: user, action, entity_type, entity_id, timestamp, details
+HubSettings
 
-### HubSettings (Настройки Хаба)
-- Единственная запись с описанием и настройками Хаба
-- Доступна только администраторам
+Single record containing Hub description and settings
+Accessible only to administrators
+Configuration
 
-##Настройка
+Database settings
 
-### Изменение базы данных
+Database configuration can be modified in hub_backend/settings.py:
 
-В `hub_backend/settings.py` можно изменить настройки базы данных:
-
-```python
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'hub_db',
-        'USER': 'your_user',
-        'PASSWORD': 'your_password',
-        'HOST': 'localhost',
-        'PORT': '5432',
-    }
+'default': {
+'ENGINE': 'django.db.backends.postgresql',
+'NAME': 'hub_db',
+'USER': 'your_user',
+'PASSWORD': 'your_password',
+'HOST': 'localhost',
+'PORT': '5432',
 }
-```
+}
 
-### Медиа-файлы
+Media files
 
-Загруженные файлы сохраняются в папке `media/`:
-- `media/concepts/` - файлы концепций проектов
-- `media/achievements/` - изображения достижений
+Uploaded files are stored in the media/ folder:
 
-## Примечания
+media/concepts/ – project concept files
+media/achievements/ – achievement images
+Notes
 
-- При первом запуске создайте суперпользователя и установите ему роль `admin`
-- Для лидера лаборатории необходимо указать `managed_lab` в профиле пользователя
-- Для менеджера проекта необходимо добавить его как участника проекта с ролью `manager`
-- Журнал событий автоматически создаётся при ключевых действиях
+On first launch, create a superuser and assign them the admin role
+For a lab lead, the managed_lab field must be set in their user profile
+For a project manager, they must be added as a project participant with the manager role
+The event log is automatically populated when key actions occur
+Access Control Testing
 
-##Тестирование прав доступа
+Create a user with the lab_lead role
+Assign them a laboratory via the managed_lab field
+Log in as this user—they should see only their lab and its projects
+Similarly for project_manager: create a project participant with the manager role.
 
-1. Создайте пользователя с ролью `lab_lead`
-2. Назначьте ему лабораторию через поле `managed_lab`
-3. Войдите под этим пользователем - он должен видеть только свою лабораторию и её проекты
+API Endpoints
 
-Аналогично для `project_manager` - создайте участника проекта с ролью `manager`.
+The project includes a full REST API built with Django REST Framework.
 
-## API Endpoints
-
-Проект включает полноценный REST API на базе Django REST Framework.
-
-### Базовый URL
-```
+Base URL
 http://127.0.0.1:8000/api/
-```
 
-### Доступные endpoints:
+Available endpoints:
 
-- `GET /api/directions/` - Список направлений деятельности
-- `GET /api/labs/` - Список лабораторий
-- `GET /api/labs/{id}/projects/` - Проекты лаборатории
-- `GET /api/projects/` - Список проектов
-- `GET /api/projects/{id}/participants/` - Участники проекта
-- `GET /api/projects/{id}/active_participants/` - Активные участники проекта
-- `GET /api/users/` - Список пользователей
-- `GET /api/users/me/` - Информация о текущем пользователе
-- `GET /api/participants/` - Список участников проектов
-- `POST /api/participants/{id}/leave/` - Покинуть проект
-- `GET /api/achievements/` - Список достижений
-- `GET /api/events/` - Журнал событий (только чтение)
-- `GET /api/settings/` - Настройки Хаба
+GET /api/directions/ – List of activity directions
+GET /api/labs/ – List of laboratories
+GET /api/labs/{id}/projects/ – Projects within a specific lab
+GET /api/projects/ – List of projects
+GET /api/projects/{id}/participants/ – Project participants
+GET /api/projects/{id}/active_participants/ – Active project participants
+GET /api/users/ – List of users
+GET /api/users/me/ – Current user's information
+GET /api/participants/ – List of project participants
+POST /api/participants/{id}/leave/ – Leave a project
+GET /api/achievements/ – List of achievements
+GET /api/events/ – Event log (read-only)
+GET /api/settings/ – Hub settings
 
-### Аутентификация
+Authentication
 
-API требует аутентификации. Доступны два метода:
-- Session Authentication (для веб-интерфейса)
-- Basic Authentication (для API клиентов)
+The API requires authentication. Two methods are supported:
 
-### Права доступа
+Session Authentication (for the web interface)
+Basic Authentication (for API clients)
+Permissions
 
-- **Администратор**: Полный доступ ко всем данным
-- **Лидер лаборатории**: Доступ только к своей лаборатории и её проектам
-- **Менеджер проекта**: Доступ только к своему проекту
-- **Студент**: Только чтение доступных данных
+Administrator: Full access to all data
+Lab Lead: Access only to their own lab and its projects
+Project Manager: Access only to their own project
+Student: Read-only access to publicly available data
+Filtering and Search
 
-### Фильтрация и поиск
+All endpoints support:
 
-Все endpoints поддерживают:
-- Фильтрацию по полям (через параметр `?field=value`)
-- Поиск (через параметр `?search=query`)
-- Сортировку (через параметр `?ordering=field`)
-- Пагинацию (20 записей на страницу)
+Field filtering (via ?field=value)
+Full-text search (via ?search=query)
+Sorting (via ?ordering=field)
+Pagination (20 items per page)
+Example requests
 
-### Примеры запросов
-
-```bash
-# Получить все лаборатории
+Get all laboratories
 GET /api/labs/
 
-# Получить активные проекты
+Get active projects
 GET /api/projects/?active=true
 
-# Поиск проектов
-GET /api/projects/?search=веб
+Search projects
+GET /api/projects/?search=web
 
-# Получить информацию о текущем пользователе
+Get current user info
 GET /api/users/me/
 
-# Покинуть проект
+Leave a project
 POST /api/participants/1/leave/
-```
 
-## Зависимости
+Dependencies
 
-- Django >= 4.2.0
-- djangorestframework >= 3.14.0
-- openpyxl >= 3.1.0 (для экспорта в Excel)
-- Pillow >= 10.0.0 (для работы с изображениями)
-- django-filter >= 23.0 (для фильтрации в API)
-- python-decouple >= 3.8 (для управления настройками)
-- django-cors-headers >= 4.3.0 (для CORS)
-
+Django >= 4.2.0
+djangorestframework >= 3.14.0
+openpyxl >= 3.1.0 (for Excel export)
+Pillow >= 10.0.0 (for image handling)
+django-filter >= 23.0 (for API filtering)
+python-decouple >= 3.8 (for configuration management)
+django-cors-headers >= 4.3.0 (for CORS handling)
