@@ -1,220 +1,254 @@
-Student Digital Hub – Backend
+# Student Digital Hub - Backend
 
-Django project for managing Student Digital Hub data.
+A comprehensive Django REST API backend for managing student projects, laboratories, and participants in a digital hub platform.
 
-Install dependencies
+- **Role-based Access Control** - Admin, Lab Lead, Project Manager, and Student roles
+- **RESTful API** - Full CRUD operations with Django REST Framework
+- **Admin Panel** - Customized Django admin with role-based filtering
+- **Event Logging** - Automatic tracking of key actions
+- **Excel Export** - Export reports for projects, labs, participants, and achievements
+- **File Management** - Upload and manage project concept files and achievement images
+- **Advanced Filtering** - Search, filter, and pagination for all endpoints
+##Installation
+
+### Prerequisites
+
+- Python 3.8+
+- pip
+- PostgreSQL (optional, SQLite by default)
+
+### Step 1: Clone the Repository
+
+```bash
+git clone https://github.com/Fxshtro/webSiteForHub.git
+cd webSiteForHub
+git checkout Backend
+```
+
+### Step 2: Install Dependencies
+
+```bash
 pip install -r requirements.txt
+```
 
-Apply migrations
+### Step 3: Configure Environment
+
+Create a `.env` file in the project root (optional):
+
+```env
+SECRET_KEY=your-secret-key-here
+DEBUG=True
+ALLOWED_HOSTS=localhost,127.0.0.1
+DATABASE_ENGINE=django.db.backends.sqlite3
+```
+
+### Step 4: Run Migrations
+
+```bash
 python manage.py makemigrations
 python manage.py migrate
+```
 
-Initialize data
+### Step 5: Initialize Data
+
+```bash
 python manage.py init_hub
+```
 
-This command creates Hub settings and sample activity directions.
+This creates default Hub settings and sample activity directions.
 
-Create an administrator
+### Step 6: Create Superuser
+
+```bash
 python manage.py createsuperuser
+```
 
-Enter a username and password (you may leave email blank by pressing Enter). After creation, log into the admin panel and assign the admin role to this user.
+After creation, log in to the admin panel and set the `admin` role for this user.
 
-Start the server
+### Step 7: Run Development Server
+
+```bash
 python manage.py runserver
+```
 
-Open in your browser: http://127.0.0.1:8000/admin/
+Visit http://127.0.0.1:8000/admin/ for the admin panel or http://127.0.0.1:8000/api/ for the API root.
 
-Next steps
+## Project Structure
 
-Create additional activity directions (if needed beyond those created automatically)
-Create laboratories
-Assign lab leaders (create users with the lab_lead role and specify their managed_lab)
-Create projects within labs
-Add project participants (assign the manager role to project managers)
-Project Structure
+```
+hub_backend/
+├── hub/                    # Main application
+│   ├── models.py           # Data models
+│   ├── viewsets.py         # API viewsets
+│   ├── serializers.py      # API serializers
+│   ├── permissions.py      # Custom permissions
+│   ├── admin.py            # Admin panel configuration
+│   ├── urls.py             # API URL routing
+│   ├── views.py            # Additional views
+│   ├── signals.py          # Django signals
+│   └── utils.py            # Utility functions
+├── hub_backend/            # Project settings
+│   ├── settings.py         # Django settings
+│   └── urls.py             # Root URL configuration
+├── media/                  # Uploaded files
+├── manage.py               # Django management script
+└── requirements.txt        # Python dependencies
+```
 
-hub/ – main application directory
-models.py – data models (User, Lab, Project, ProjectParticipant, Achievement, EventLog, HubSettings)
-admin.py – admin panel configuration with role-based restrictions
-utils.py – utility functions for logging
-signals.py – Django signals for automatic event logging
+## User Roles
 
-User Roles
+### Administrator
+- Full access to all data and settings
+- Can manage all laboratories, projects, and participants
+- Access to event logs and system settings
+- Can export reports
 
-Admin (Administrator)
+### Laboratory Leader
+- Can edit only their assigned laboratory
+- Sees and manages projects within their laboratory
+- Can manage participants of their laboratory's projects
+- Limited access to other data
 
-Full access to all data
-Can manage all labs, projects, and participants
-Access to the event log
-Lab Lead (Laboratory Leader)
+### Project Manager
+- Can edit only projects where they are assigned as manager
+- Can submit reports for their projects
+- Sees participants of their managed projects
+- Read-only access to other data
 
-Can edit only their own laboratory
-Can view and manage projects within their lab
-Can manage participants of projects in their lab
-Project Manager
+### Student
+- Read-only access to available data
+- No admin panel access
+- Can view projects, labs, and achievements through API
 
-Can edit only their own project (where they are assigned as manager)
-Can submit reports for their project
-Can view participants of their project
-Student
+## API Documentation
 
-No access to the admin panel
-Admin Panel Features
-
-CRUD Operations
-
-Create, read, update, and delete all entities
-Role-based access control (users see only data they are authorized to access)
-Project Participant Management
-
-When a participant is "deleted", they are not physically removed, but marked as having left by setting left_at
-Multiple participants can be marked as having left via an admin action
-Report Export
-
-Excel export for:
-Projects
-Laboratories
-Project participants
-Achievements
-Event logs
-Available via custom admin actions
-Event Log
-
-Automatic logging of key actions:
-Project creation/update
-Report exports
-Participant status changes to "former"
-All events are viewable in the admin panel under "Event Log"
-Standard Django actions are logged in django_admin_log
-Data Models
-
-User
-
-Custom user model with roles
-Fields: username, email, role, metaverse_link, managed_lab
-Lab (Laboratory)
-
-Fields: name, description, direction, active
-Project
-
-Fields: title, description, concept_file, lab, active
-ProjectParticipant
-
-Fields: user, project, role, joined_at, left_at
-"Deletion" sets left_at instead of physically deleting the record
-Achievement
-
-Fields: title, description, image, lab or project (exactly one of these must be set)
-EventLog
-
-Logs key user actions
-Fields: user, action, entity_type, entity_id, timestamp, details
-HubSettings
-
-Single record containing Hub description and settings
-Accessible only to administrators
-Configuration
-
-Database settings
-
-Database configuration can be modified in hub_backend/settings.py:
-
-DATABASES = {
-'default': {
-'ENGINE': 'django.db.backends.postgresql',
-'NAME': 'hub_db',
-'USER': 'your_user',
-'PASSWORD': 'your_password',
-'HOST': 'localhost',
-'PORT': '5432',
-}
-}
-
-Media files
-
-Uploaded files are stored in the media/ folder:
-
-media/concepts/ – project concept files
-media/achievements/ – achievement images
-Notes
-
-On first launch, create a superuser and assign them the admin role
-For a lab lead, the managed_lab field must be set in their user profile
-For a project manager, they must be added as a project participant with the manager role
-The event log is automatically populated when key actions occur
-Access Control Testing
-
-Create a user with the lab_lead role
-Assign them a laboratory via the managed_lab field
-Log in as this user—they should see only their lab and its projects
-Similarly for project_manager: create a project participant with the manager role.
-
-API Endpoints
-
-The project includes a full REST API built with Django REST Framework.
-
-Base URL
+### Base URL
+```
 http://127.0.0.1:8000/api/
+```
 
-Available endpoints:
+### Authentication
 
-GET /api/directions/ – List of activity directions
-GET /api/labs/ – List of laboratories
-GET /api/labs/{id}/projects/ – Projects within a specific lab
-GET /api/projects/ – List of projects
-GET /api/projects/{id}/participants/ – Project participants
-GET /api/projects/{id}/active_participants/ – Active project participants
-GET /api/users/ – List of users
-GET /api/users/me/ – Current user's information
-GET /api/participants/ – List of project participants
-POST /api/participants/{id}/leave/ – Leave a project
-GET /api/achievements/ – List of achievements
-GET /api/events/ – Event log (read-only)
-GET /api/settings/ – Hub settings
+All API endpoints require authentication. Two methods are supported:
 
-Authentication
+- **Session Authentication** - For web interface
+- **Basic Authentication** - For API clients
 
-The API requires authentication. Two methods are supported:
+### Endpoints
 
-Session Authentication (for the web interface)
-Basic Authentication (for API clients)
-Permissions
+#### Directions
+- `GET /api/directions/` - List all activity directions
+- `POST /api/directions/` - Create direction (Admin only)
+- `GET /api/directions/{id}/` - Get direction details
+- `PUT /api/directions/{id}/` - Update direction (Admin only)
+- `DELETE /api/directions/{id}/` - Delete direction (Admin only)
 
-Administrator: Full access to all data
-Lab Lead: Access only to their own lab and its projects
-Project Manager: Access only to their own project
-Student: Read-only access to publicly available data
-Filtering and Search
+#### Laboratories
+- `GET /api/labs/` - List laboratories
+- `POST /api/labs/` - Create laboratory (Admin only)
+- `GET /api/labs/{id}/` - Get laboratory details
+- `GET /api/labs/{id}/projects/` - Get laboratory projects
+- `PUT /api/labs/{id}/` - Update laboratory
+- `DELETE /api/labs/{id}/` - Delete laboratory
 
-All endpoints support:
+#### Projects
+- `GET /api/projects/` - List projects
+- `POST /api/projects/` - Create project
+- `GET /api/projects/{id}/` - Get project details
+- `GET /api/projects/{id}/participants/` - Get project participants
+- `GET /api/projects/{id}/active_participants/` - Get active participants
+- `PUT /api/projects/{id}/` - Update project
+- `DELETE /api/projects/{id}/` - Delete project
 
-Field filtering (via ?field=value)
-Full-text search (via ?search=query)
-Sorting (via ?ordering=field)
-Pagination (20 items per page)
-Example requests
+#### Users
+- `GET /api/users/` - List users
+- `GET /api/users/me/` - Get current user information
+- `GET /api/users/{id}/` - Get user details
+- `PUT /api/users/{id}/` - Update user (own profile or Admin)
 
-Get all laboratories
-GET /api/labs/
+#### Participants
+- `GET /api/participants/` - List project participants
+- `POST /api/participants/` - Add participant to project
+- `GET /api/participants/{id}/` - Get participant details
+- `POST /api/participants/{id}/leave/` - Leave project
+- `PUT /api/participants/{id}/` - Update participant
+- `DELETE /api/participants/{id}/` - Remove participant
 
-Get active projects
-GET /api/projects/?active=true
+#### Achievements
+- `GET /api/achievements/` - List achievements
+- `POST /api/achievements/` - Create achievement
+- `GET /api/achievements/{id}/` - Get achievement details
+- `PUT /api/achievements/{id}/` - Update achievement
+- `DELETE /api/achievements/{id}/` - Delete achievement
 
-Search projects
-GET /api/projects/?search=web
+#### Events
+- `GET /api/events/` - List event log entries (read-only)
+- `GET /api/events/{id}/` - Get event details
 
-Get current user info
-GET /api/users/me/
+#### Settings
+- `GET /api/settings/` - Get Hub settings
+- `PUT /api/settings/` - Update Hub settings (Admin only)
 
-Leave a project
-POST /api/participants/1/leave/
+### Query Parameters
 
-Dependencies
+All list endpoints support:
 
-Django >= 4.2.0
-djangorestframework >= 3.14.0
-openpyxl >= 3.1.0 (for Excel export)
-Pillow >= 10.0.0 (for image handling)
-django-filter >= 23.0 (for API filtering)
-python-decouple >= 3.8 (for configuration management)
-django-cors-headers >= 4.3.0 (for CORS handling)
+- **Filtering**: `?field=value` (e.g., `?active=true`)
+- **Search**: `?search=query` (searches in relevant fields)
+- **Ordering**: `?ordering=field` or `?ordering=-field` (descending)
+- **Pagination**: `?page=1` (20 items per page)
+
+### Example Requests
+
+```bash
+# Get all active laboratories
+curl -u username:password http://127.0.0.1:8000/api/labs/?active=true
+
+# Search projects
+curl -u username:password http://127.0.0.1:8000/api/projects/?search=web
+
+# Get current user info
+curl -u username:password http://127.0.0.1:8000/api/users/me/
+
+# Leave a project
+curl -X POST -u username:password http://127.0.0.1:8000/api/participants/1/leave/
+```
+
+## Configuration
+
+### Database
+
+By default, the project uses SQLite. To use PostgreSQL, update `hub_backend/settings.py` or set environment variables:
+
+```env
+DATABASE_ENGINE=django.db.backends.postgresql
+DATABASE_NAME=hub_db
+DATABASE_USER=your_user
+DATABASE_PASSWORD=your_password
+DATABASE_HOST=localhost
+DATABASE_PORT=5432
+```
+
+### CORS Settings
+
+Configure allowed origins in `.env`:
+
+```env
+CORS_ALLOWED_ORIGINS=http://localhost:3000,http://localhost:8000
+```
+
+### Media Files
+
+Uploaded files are stored in the `media/` directory:
+- `media/concepts/` - Project concept files
+- `media/achievements/` - Achievement images
+
+##Dependencies
+
+- **Django** >= 4.2.0 - Web framework
+- **djangorestframework** >= 3.14.0 - REST API framework
+- **django-filter** >= 23.0 - Advanced filtering
+- **django-cors-headers** >= 4.3.0 - CORS support
+- **openpyxl** >= 3.1.0 - Excel export
+- **Pillow** >= 10.0.0 - Image processing
+- **python-decouple** >= 3.8 - Environment variables
