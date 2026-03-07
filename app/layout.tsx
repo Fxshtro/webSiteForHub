@@ -27,7 +27,7 @@ export default function RootLayout({
         from-[#00000076] to-[#000000a0] border-b-1 border-[#4a4a4a50] 
         h-[85px] w-full text-[22px] fixed backdrop-blur-sm
         ">
-        <div className="container flex justify-between ">
+        <div className="containerWider flex justify-between ">
           <div className="flex">
             <Image src="/logo.svg" width={95} height={45} alt=""/>
             <Image src="/iubip-logo.svg" width={67} height={45} alt="" className="ml-3"/>
@@ -46,6 +46,16 @@ export default function RootLayout({
         </div>
         </header>
         {children}
+        <div className="px-12 mt-[184px] mb-[67px] relative border-t-1 border-b-1 border-[#ffffff26] h-[135px] !bg-[#ffffff10] ![box-shadow:0px_0px_250px_#ffffff23]">
+          <div className="containerWider flex items-start justify-between h-full">
+            <a href="" className="text-[24px] mt-16 font-hind">Политика конфиденциальности</a>
+            <div className="absolute top-16 left-1/2 transform -translate-x-1/2 text-[24px] font-hind">© 2026 Южный Университет (ИУБиП)</div>
+            <div className="flex my-auto">
+              <Image src="/logo.svg" width={144} height={81} alt=""/>
+              <Image src="/iubip-logo.svg" width={100} height={45} alt="" className="ml-3"/>
+            </div>
+          </div>
+        </div>
       </body>
     </html>
   );
