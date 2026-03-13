@@ -21,6 +21,16 @@ body {
   color: white;
 }
 
+html {
+  scroll-behavior: smooth;
+}
+
+#laboratories,
+#achievements,
+#leadership {
+  scroll-margin-top: 100px;
+}
+
 .body-block {
   position: fixed;
   top: 0;

@@ -16,7 +16,10 @@ export default function Footer() {
               © 2026 Южный Университет (ИУБиП)
             </div>
             <div className="flex my-auto sm:w-auto w-full justify-center sm:pr-0 pr-10">
-              <Link href="/main" className="flex my-auto">
+              <Link href="/main" className="flex my-auto"
+              onClick={() => {
+                  window.scrollTo({ top: 0 });
+                }}>
                 <Image src="/logo.svg" width={144} height={45} alt="" className="cursor-pointer"/>
               </Link>
               <Link href="https://www.iubip.ru/" className="flex my-auto">
