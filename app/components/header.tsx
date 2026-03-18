@@ -33,9 +33,10 @@ export default function Header({ showAuthButton = true }: HeaderProps) {
       ></div>
 
       {/* Бургер меню */}
-      <div
-        className={`fixed top-0 left-0 z-100 h-[310px] w-full text-[22px]
-        bg-gradient-to-b from-[#00000076] to-[#000000a0] border-b-1 border-[#8585857a] backdrop-blur-sm
+      <nav 
+        className={`fixed top-0 left-0 z-100 text-[22px] border-b-1 border-[#8585857a] backdrop-blur-sm
+        ${showAuthButton ? "h-[310px]" : "h-[260px]"} w-full 
+        bg-gradient-to-b from-[#00000076] to-[#000000a0] 
         transform transition-duration-200
         ${isActive ? "translate-y-0" : "-translate-y-80"}
         sm:h-[170px]`}
@@ -45,6 +46,7 @@ export default function Header({ showAuthButton = true }: HeaderProps) {
             onClick={toggleMenu}
             href="/main#laboratories"
             className="hover:[text-shadow:0px_0px_10px_#ffffff]"
+            tabIndex={isActive ? 0 : -1}
           >
             Лаборатории
           </Link>
@@ -52,6 +54,7 @@ export default function Header({ showAuthButton = true }: HeaderProps) {
             onClick={toggleMenu}
             href="/main#achievements"
             className="hover:[text-shadow:0px_0px_10px_#ffffff]"
+            tabIndex={isActive ? 0 : -1}
           >
             Достижения
           </Link>
@@ -59,9 +62,11 @@ export default function Header({ showAuthButton = true }: HeaderProps) {
             onClick={toggleMenu}
             href="/main#leadership"
             className="hover:[text-shadow:0px_0px_10px_#ffffff]"
+            tabIndex={isActive ? 0 : -1}
           >
             Руководство
           </Link>
+          {showAuthButton && (
           <Link
             onClick={toggleMenu}
             href="/auth"
@@ -70,11 +75,13 @@ export default function Header({ showAuthButton = true }: HeaderProps) {
             shadow-[#00000050] shadow-lg text-shadow-[#00000026]
             hover:![box-shadow:0px_0px_10px_#ffffff44,_inset_0px_0px_20px_#ffffff56]
             sm:hidden"
+            tabIndex={isActive ? 0 : -1}
           >
             Вход
           </Link>
+          )}
         </div>
-      </div>
+      </nav>
 
       {/* Хедер */}
       <header className="fixed z-1000 h-[85px] w-full text-[22px] text-white p-5
@@ -87,6 +94,7 @@ export default function Header({ showAuthButton = true }: HeaderProps) {
                 width={95}
                 height={45}
                 alt=""
+                aria-hidden="true"
                 className="cursor-pointer"
                 onClick={() => {
                   window.scrollTo({ top: 0 });
@@ -99,6 +107,7 @@ export default function Header({ showAuthButton = true }: HeaderProps) {
                 width={67}
                 height={45}
                 alt=""
+                aria-hidden="true"
                 className="ml-3 cursor-pointer"
               />
             </Link>
@@ -128,8 +137,12 @@ export default function Header({ showAuthButton = true }: HeaderProps) {
           </div>
 
           <div className="flex flex-row justify-center">
-            <div
+            <button
               onClick={toggleMenu}
+              id="menu-button"
+              aria-expanded={isActive}
+              aria-controls="mobile-menu"
+              aria-label={isActive ? "Закрыть меню" : "Открыть меню"}
               className="mr-5 flex h-[45px] w-[45px] cursor-pointer items-center justify-center rounded-full xl:hidden"
             >
               <div className="flex h-5 w-6 flex-col justify-between">
@@ -153,7 +166,7 @@ export default function Header({ showAuthButton = true }: HeaderProps) {
                   } duration-400 relative h-1 bg-white rounded-full`}
                 ></span>
               </div>
-            </div>
+            </button>
             {showAuthButton && (
               <Link
                 href="/auth"

@@ -1,12 +1,10 @@
 "use client"
-import Image from "next/image";
 
 import "../globals.css";
 import 'swiper/css';
 import 'swiper/css/navigation';
 import 'swiper/css/pagination';
 import { Swiper, SwiperSlide } from 'swiper/react';
-import { useState, useEffect } from "react";
 import { Navigation, Pagination, Autoplay } from 'swiper/modules';
 
 export default function Lenta() {

@@ -60,6 +60,7 @@ export default function Home() {
             width={1000}
             height={1280}
             alt=""
+            role="presentation"
             className="absolute -z-1 -top-50 md:-top-100 -right-40 sm:-right-70"
           />
         </div>
@@ -78,7 +79,7 @@ export default function Home() {
                     src="/logo.svg"
                     width={95}
                     height={45}
-                    alt=""
+                    alt="Логотип"
                     className="ml-2 md:ml-4 w-[70px] md:w-[95px]"
                   />
                 </p>
@@ -113,6 +114,7 @@ export default function Home() {
             width={2000}
             height={1}
             alt=""
+            role="presentation"
             className="absolute -z-3 left-1/2 top-[725px] -translate-x-1/2"
           />
 
@@ -130,6 +132,7 @@ export default function Home() {
                 width={85}
                 height={1}
                 alt=""
+                role="presentation"
                 className="absolute -z-3 -top-8.5 -left-12.5"
               />
             </div>
@@ -140,6 +143,7 @@ export default function Home() {
                 width={85}
                 height={1}
                 alt=""
+                role="presentation"
                 className="absolute -z-3 -top-18 left-1/2 -translate-x-1/2"
               />
             </div>
@@ -150,6 +154,7 @@ export default function Home() {
                 width={95}
                 height={1}
                 alt=""
+                role="presentation"
                 className="absolute -z-3 -top-15 -right-15"
               />
             </div>
@@ -160,6 +165,7 @@ export default function Home() {
                 width={85}
                 height={1}
                 alt=""
+                role="presentation"
                 className="absolute -z-3 -top-10 -left-12.5"
               />
             </div>
@@ -170,6 +176,7 @@ export default function Home() {
                 width={85}
                 height={1}
                 alt=""
+                role="presentation"
                 className="absolute -z-3 -top-13 -right-13"
               />
             </div>
@@ -182,7 +189,7 @@ export default function Home() {
             <div className="flex justify-center overflow-visible">
               <PieIco />
             </div>
-            <h1 className="w-full mt-[30px] text-center">НАШИ ЛАБОРАТОРИИ</h1>
+            <h1 className="w-full mt-[30px] text-center">НАШИ ЛАБ<span className="hover:bg-red-500">О</span>РАТОРИИ</h1>
             <div className="lineClass mb-10"></div>
             <div className="flex justify-center px-4">
               <div className="glass mb-10 max-w-[570px] px-[25px] pt-[20px] pb-[23px] ![box-shadow:inset_0px_0px_15px_#ffffff96]">
@@ -234,6 +241,7 @@ export default function Home() {
               width={2200}
               height={1}
               alt=""
+              role="presentation"
               className="absolute -z-3 left-1/2 top-[360px] min-w-[600px] md:max-w-[1000px] xl:max-w-[2000px] -translate-x-1/2"
             />
           </div>
@@ -242,7 +250,7 @@ export default function Home() {
         {/* Достижения */}
         <div id="achievements" className="containerSlider">
           <div className="relative z-3 mt-20 flex w-full justify-center">
-            <Image src="/Star.png" width={125} height={125} alt="" />
+            <Image src="/Star.png" width={125} height={125} alt="" role="presentation" />
           </div>
           <h1 className="relative z-3 text-center">Наши достижения</h1>
           <div className="lineClass"></div>
@@ -265,7 +273,7 @@ export default function Home() {
         {/* Руководство */}
         <div id="leadership" className="container">
           <div className="relative z-3 flex w-full justify-center">
-            <Image src="/show.png" width={100} height={125} alt="" className="z-1" />
+            <Image src="/show.png" width={100} height={125} alt="" role="presentation" className="z-1" />
           </div>
           <h1 className="relative z-3 mt-5 text-center">Руководство</h1>
           <div className="lineClass"></div>
