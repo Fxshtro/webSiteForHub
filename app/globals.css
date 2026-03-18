@@ -1,11 +1,11 @@
-@import url('https://fonts.googleapis.com/css2?family=Abril+Fatface&family=Hind+Vadodara:wght@300;400;500;600;700&family=Jost:ital,wght@0,100..900;1,100..900&family=Unbounded:wght@200..900&display=swap');
+@import url("https://fonts.googleapis.com/css2?family=Abril+Fatface&family=Hind+Vadodara:wght@300;400;500;600;700&family=Jost:ital,wght@0,100..900;1,100..900&family=Unbounded:wght@200..900&display=swap");
 
 @import "tailwindcss";
 
 @theme {
   --font-jost: "Jost", sans-serif;
-  --font-Unbounded: "Unbounded", sans-serif;
-  --font-hind: 'Hind Vadodara', sans-serif;
+  --font-unbounded: "Unbounded", sans-serif;
+  --font-hind: "Hind Vadodara", sans-serif;
 
   --breakpoint-custom: 1220px;
 }
@@ -38,7 +38,6 @@ html {
   backdrop-filter: blur(20px);
   z-index: 10;
 }
- 
 
 h1 {
   font-weight: 900;
@@ -56,17 +55,13 @@ button {
   height: 3px;
   margin-left: auto;
   margin-right: auto;
-  background: linear-gradient(to left, 
-    transparent 0%, 
-    rgba(255, 255, 255, 0.63) 50%, 
-    transparent 100%
-  ); 
+  background: linear-gradient(to left, transparent 0%, rgba(255, 255, 255, 0.63) 50%, transparent 100%);
 }
 
 .line {
   position: relative;
 }
-  
+
 .line::before {
   content: "";
   position: absolute;
@@ -74,38 +69,36 @@ button {
   left: 0;
   width: 100%;
   height: 1px;
-  background: linear-gradient(90deg, 
-  rgba(0, 0, 0, 0), white, 
-  rgba(0, 0, 0, 0));
+  background: linear-gradient(90deg, rgba(0, 0, 0, 0), white, rgba(0, 0, 0, 0));
 }
- 
+
 .containerWider {
-   max-width: 1800px;
-   margin: 0 auto;
-   padding: 0 10px ;
-   left: 0;
-   right: 0;
+  max-width: 1800px;
+  margin: 0 auto;
+  padding: 0 10px;
+  left: 0;
+  right: 0;
 }
 
 .container {
-   max-width: 1440px;
-   margin: 0 auto;
-   padding: 0 10px ;
-   left: 0;
-   right: 0;
+  max-width: 1440px;
+  margin: 0 auto;
+  padding: 0 10px;
+  left: 0;
+  right: 0;
 }
 
 .containerSlider {
-   max-width: 1900px;
-   margin: 0 auto;
-   padding: 0 10px ;
-   left: 0;
-   right: 0;
+  max-width: 1900px;
+  margin: 0 auto;
+  padding: 0 10px;
+  left: 0;
+  right: 0;
 }
 
 .burger-menu {
   transform: translateY(-20rem);
-} 
+}
 
 .burger-menu-active {
   transform: none;
@@ -118,14 +111,16 @@ button {
 }
 
 .swiper-slide {
-  transition: transform 0.6s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.4s ease;
+  transition:
+    transform 0.6s cubic-bezier(0.34, 1.56, 0.64, 1),
+    opacity 0.4s ease;
   will-change: transform, opacity;
   transform: translateZ(0);
   backface-visibility: hidden;
 }
 
 .swiper-slide-active::before {
-  content: '';
+  content: "";
   position: absolute;
   width: 100%;
   height: 90%;
@@ -139,7 +134,7 @@ button {
 }
 
 .glass {
-  background: rgba(0, 0, 0, 0.12);
+  background: #00000020;
   border-left-width: 1px;
   border-top-width: 1px;
   border-left-style: solid;
@@ -156,7 +151,7 @@ button {
 }
 
 .glass::before {
-  content: '';
+  content: "";
   position: absolute;
   inset: 0;
   border-bottom-width: 1px;
@@ -174,25 +169,25 @@ button {
 
 .glass.custom-before::before {
   border-radius: 1rem;
-} 
+}
 
-
-@media screen and (max-width: 980px) { /*кастом*/
+@media screen and (max-width: 980px) {
+  /*кастом*/
   h1 {
     font-size: 45px;
   }
 }
 
-@media screen and (max-width: 768px) { /*md*/
+@media screen and (max-width: 768px) {
+  /*md*/
   h1 {
     font-size: 28px;
   }
 }
- 
 
-@media screen and (max-width: 640px) { /*sm*/
+@media screen and (max-width: 640px) {
+  /*sm*/
   .containerWider {
     padding: 0;
   }
 }
- 

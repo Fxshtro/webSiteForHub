@@ -15,7 +15,7 @@ export default function EntrancePage() {
     <main className="h-full">
       <div className="overflow-x-hidden overflow-y-hidden h-full">
         <div className="absolute top-0 left-0 -z-10 h-full w-full bg-gradient-to-b from-[#5F2FC3] from-10% to-black"></div>
-        <div className="containerWider relative flex h-full">
+        <div className="containerWider relative flex min-h-screen">
           <div className="xl:w-[48%]">
             <Image
               src="/figureV4Fliped.svg"
@@ -103,7 +103,7 @@ export default function EntrancePage() {
                       }
                     }}
                   />
-                  <label 
+                  <label
                     htmlFor="remember-me"
                     className="ml-3 select-none text-[22px] sm:text-[26px] cursor-pointer"
                   >

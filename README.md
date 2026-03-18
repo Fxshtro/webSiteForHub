@@ -1,13 +1,16 @@
 # IUBIP Hub - Student Digital Hub
 
-Website for project management and connecting participants of the student hub.
+Website for the Student Digital Hub of Southern University (IUBiP), Rostov-on-Don.
 
 ## Technologies
 
-- **Next.js 15.5.6** - React framework
+- **Next.js 16.1.6** - React framework
 - **React 19.1.0** - UI library
-- **TypeScript** - type safety
-- **Tailwind CSS 4** - styling
+- **TypeScript 5** - type safety
+- **Tailwind CSS 4.2.1** - styling
+- **Zustand 5.0.11** - state management
+- **Framer Motion 12.35.2** - animations
+- **Swiper 12.1.2** - slider component
 
 ## Requirements
 
@@ -17,18 +20,16 @@ Website for project management and connecting participants of the student hub.
 ## Installation
 
 1. Clone the repository:
+
 ```bash
-git clone https://github.com/your-username/iubip-hub.git
-cd iubip-hub
+git clone https://github.com/Fxshtro/webSiteForHub.git
+cd webSiteForHub
 ```
 
 2. Install dependencies:
+
 ```bash
 npm install
-# or
-yarn install
-# or
-pnpm install
 ```
 
 ## Running the Project
@@ -37,12 +38,6 @@ pnpm install
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
 Open [http://localhost:3000](http://localhost:3000) in your browser.
@@ -54,18 +49,32 @@ npm run build
 npm start
 ```
 
+### Code Quality
+
+```bash
+npm run lint
+npm run lint:fix
+npm run format
+```
+
 ## Project Structure
 
 ```
-iubip-hub/
+webSiteForHub/
 ├── app/
-│   ├── components/     # React components
-│   ├── globals.css     # Global styles
-│   ├── layout.tsx      # Root layout
-│   └── page.tsx        # Main page
-├── public/
-│   └── image/          # Images
-└── ...
+│   ├── auth/             # Authentication page
+│   ├── components/       # React components
+│   ├── main/             # Main page
+│   ├── store/            # Zustand stores
+│   ├── globals.css       # Global styles
+│   └── favicon.ico
+├── public/               # Static assets
+├── .eslintrc.json        # ESLint configuration
+├── .prettierrc           # Prettier configuration
+├── next.config.ts        # Next.js configuration
+├── package.json          # Project dependencies
+├── tailwind.config.ts    # Tailwind configuration
+└── tsconfig.json         # TypeScript configuration
 ```
 
 ## Deployment
@@ -76,4 +85,4 @@ Learn more about Next.js deployment: [Next.js Deployment Documentation](https://
 
 ## License
 
-Private project
+Private project — Southern University (IUBiP) © 2026

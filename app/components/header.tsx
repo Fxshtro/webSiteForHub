@@ -27,18 +27,15 @@ export default function Header({ showAuthButton = true }: HeaderProps) {
   return (
     <>
       {/* Размытие */}
-      <div
-        onClick={toggleMenu}
-        className={`${isActive ? "body-block" : ""} duration-100`}
-      ></div>
+      <div onClick={toggleMenu} className={`${isActive ? "body-block" : ""} duration-100`}></div>
 
       {/* Бургер меню */}
-      <nav 
+      <nav
         className={`fixed top-0 left-0 z-100 text-[22px] border-b-1 border-[#8585857a] backdrop-blur-sm
-        ${showAuthButton ? "h-[310px]" : "h-[260px]"} w-full 
-        bg-gradient-to-b from-[#00000076] to-[#000000a0] 
-        transform transition-duration-200
-        ${isActive ? "translate-y-0" : "-translate-y-80"}
+        ${showAuthButton ? "h-[310px]" : "h-[260px]"} w-full
+        bg-gradient-to-b from-[#00000076] to-[#000000a0]
+        transition-all duration-300
+        ${isActive ? "translate-y-0" : "-translate-y-full"}
         sm:h-[170px]`}
       >
         <div className="absolute top-27.5 flex w-full flex-col items-center justify-center gap-y-2 sm:flex-row sm:gap-x-31">
@@ -67,25 +64,27 @@ export default function Header({ showAuthButton = true }: HeaderProps) {
             Руководство
           </Link>
           {showAuthButton && (
-          <Link
-            onClick={toggleMenu}
-            href="/auth"
-            className="mt-2 block px-[35px] py-[5px] text-shadow-lg
+            <Link
+              onClick={toggleMenu}
+              href="/auth"
+              className="mt-2 block px-[35px] py-[5px] text-shadow-lg
             bg-gradient-to-l from-[#7743d0] to-[#512e8f] rounded-3xl
             shadow-[#00000050] shadow-lg text-shadow-[#00000026]
             hover:![box-shadow:0px_0px_10px_#ffffff44,_inset_0px_0px_20px_#ffffff56]
             sm:hidden"
-            tabIndex={isActive ? 0 : -1}
-          >
-            Вход
-          </Link>
+              tabIndex={isActive ? 0 : -1}
+            >
+              Вход
+            </Link>
           )}
         </div>
       </nav>
 
       {/* Хедер */}
-      <header className="fixed z-1000 h-[85px] w-full text-[22px] text-white p-5
-      bg-gradient-to-b from-[#00000076] to-[#000000a0] border-b-1 border-[#4a4a4a50] backdrop-blur-sm">
+      <header
+        className="fixed z-1000 h-[85px] w-full text-[22px] text-white p-5
+      bg-gradient-to-b from-[#00000076] to-[#000000a0] border-b-1 border-[#4a4a4a50] backdrop-blur-sm"
+      >
         <div className="containerWider flex justify-between">
           <div className="flex">
             <Link href="/main">
@@ -99,6 +98,9 @@ export default function Header({ showAuthButton = true }: HeaderProps) {
                 onClick={() => {
                   window.scrollTo({ top: 0 });
                 }}
+                loading="eager"
+                priority
+                sizes="95px"
               />
             </Link>
             <Link href="https://www.iubip.ru/">
@@ -109,6 +111,8 @@ export default function Header({ showAuthButton = true }: HeaderProps) {
                 alt=""
                 aria-hidden="true"
                 className="ml-3 cursor-pointer"
+                loading="lazy"
+                sizes="67px"
               />
             </Link>
           </div>
@@ -148,9 +152,7 @@ export default function Header({ showAuthButton = true }: HeaderProps) {
               <div className="flex h-5 w-6 flex-col justify-between">
                 <span
                   className={`${
-                    isActive
-                      ? "rotate-45 top-[8px] !w-[110%]"
-                      : "rotate-0 w-full"
+                    isActive ? "rotate-45 top-[8px] !w-[110%]" : "rotate-0 w-full"
                   } duration-400 relative h-1 bg-white rounded-full`}
                 ></span>
                 <span
@@ -160,9 +162,7 @@ export default function Header({ showAuthButton = true }: HeaderProps) {
                 ></span>
                 <span
                   className={`${
-                    isActive
-                      ? "-rotate-45 top-[-8px] !w-[110%]"
-                      : "rotate-0 w-full"
+                    isActive ? "-rotate-45 top-[-8px] !w-[110%]" : "rotate-0 w-full"
                   } duration-400 relative h-1 bg-white rounded-full`}
                 ></span>
               </div>

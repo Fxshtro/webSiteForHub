@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import IconStates from "../components/icoState";
+import IconStates from "../components/IconStates";
 import PieIco from "../components/pie";
 import Card from "../components/card";
 import Lenta from "../components/slider";
@@ -36,9 +36,7 @@ export default function Home() {
             <p className="w-full mt-10 text-center text-[17px] md:text-[24px] font-light leading-7">
               Открытая площадка для студенческих лабораторий.
               <br />
-              <span className="font-medium">
-                Исследуй, создавай, достигай вместе с нами!
-              </span>
+              <span className="font-medium">Исследуй, создавай, достигай вместе с нами!</span>
             </p>
             <div className="mt-20 flex w-full flex-row justify-center sm:mt-14 md:mt-7">
               <button
@@ -61,6 +59,9 @@ export default function Home() {
             height={1280}
             alt=""
             role="presentation"
+            loading="eager"
+            priority
+            sizes="(max-width: 640px) 50vw, (max-width: 1024px) 40vw, 35vw"
             className="absolute -z-1 -top-50 md:-top-100 -right-40 sm:-right-70"
           />
         </div>
@@ -81,11 +82,13 @@ export default function Home() {
                     height={45}
                     alt="Логотип"
                     className="ml-2 md:ml-4 w-[70px] md:w-[95px]"
+                    loading="lazy"
+                    sizes="(max-width: 640px) 70px, 95px"
                   />
                 </p>
                 <p className="relative z-1 text-[20px] md:text-[25px] xl:text-[32px] xl:leading-9">
-                  <span className="font-extrabold">Хаб</span> — это экосистема
-                  студенческих лабораторий Южного Университета "ИУБиП"
+                  <span className="font-extrabold">Хаб</span> — это экосистема студенческих
+                  лабораторий Южного Университета &quot;ИУБиП&quot;
                 </p>
               </div>
             </div>
@@ -93,17 +96,11 @@ export default function Home() {
             <div className="md:w-[50%]">
               <div className="glass ml-4 mr-4 md:mt-[165px] px-[25px] pt-[20px] pb-[20px] sm:ml-12.5 sm:mr-12.5 md:max-w-[520px]">
                 <div className="absolute -z-3 -bottom-4 -right-4 h-20 w-20 rounded-full bg-gradient-to-tl from-[#ffffff] to-75%"></div>
-                <p className="relative z-1 text-[20px] md:text-[25px] xl:text-[32px] font-light xl:leading-9 md:text-justify">
-                  Мы{" "}
-                  <span className="font-extrabold">объединяем</span> студентов,
-                  интересующихся разработкой, дизайном и другими цифровыми
-                  направлениями, чтобы дать им возможность{" "}
-                  <span className="font-extrabold">работать</span> над
-                  реальными проектами,
-                  <span className="font-extrabold">
-                    {" "}
-                    получать опыт и создавать портфолио.
-                  </span>
+                <p className="relative z-1 text-[20px] md:text-[25px] xl:text-[32px] font-light xl:leading-9 md:text-justify [text-shadow:2px_2px_4px_#00000025]">
+                  Мы <span className="font-extrabold">объединяем</span> студентов, интересующихся
+                  разработкой, дизайном и другими цифровыми направлениями, чтобы дать им возможность{" "}
+                  <span className="font-extrabold">работать</span> над реальными проектами,
+                  <span className="font-extrabold"> получать опыт и создавать портфолио.</span>
                 </p>
               </div>
             </div>
@@ -133,6 +130,8 @@ export default function Home() {
                 height={1}
                 alt=""
                 role="presentation"
+                loading="lazy"
+                sizes="85px"
                 className="absolute -z-3 -top-8.5 -left-12.5"
               />
             </div>
@@ -144,6 +143,8 @@ export default function Home() {
                 height={1}
                 alt=""
                 role="presentation"
+                loading="lazy"
+                sizes="85px"
                 className="absolute -z-3 -top-18 left-1/2 -translate-x-1/2"
               />
             </div>
@@ -155,6 +156,8 @@ export default function Home() {
                 height={1}
                 alt=""
                 role="presentation"
+                loading="lazy"
+                sizes="95px"
                 className="absolute -z-3 -top-15 -right-15"
               />
             </div>
@@ -166,6 +169,8 @@ export default function Home() {
                 height={1}
                 alt=""
                 role="presentation"
+                loading="lazy"
+                sizes="85px"
                 className="absolute -z-3 -top-10 -left-12.5"
               />
             </div>
@@ -177,6 +182,8 @@ export default function Home() {
                 height={1}
                 alt=""
                 role="presentation"
+                loading="lazy"
+                sizes="85px"
                 className="absolute -z-3 -top-13 -right-13"
               />
             </div>
@@ -189,50 +196,31 @@ export default function Home() {
             <div className="flex justify-center overflow-visible">
               <PieIco />
             </div>
-            <h1 className="w-full mt-[30px] text-center">НАШИ ЛАБ<span className="hover:bg-red-500">О</span>РАТОРИИ</h1>
+            <h1 className="w-full mt-[30px] text-center">
+              НАШИ ЛАБ<span className="hover:bg-red-500">О</span>РАТОРИИ
+            </h1>
             <div className="lineClass mb-10"></div>
             <div className="flex justify-center px-4">
               <div className="glass mb-10 max-w-[570px] px-[25px] pt-[20px] pb-[23px] ![box-shadow:inset_0px_0px_15px_#ffffff96]">
                 <div className="absolute -z-3 -top-3 -left-3 h-[40px] w-[44px] rounded-full bg-gradient-to-br from-[#ffffff] to-75%"></div>
                 <div className="absolute -z-3 -bottom-3 -right-3 h-[40px] w-[44px] rounded-full bg-gradient-to-tl from-[#ffffff] to-75%"></div>
                 <p className="relative z-1 text-[20px] md:text-[25px] xl:text-[32px] font-bold leading-8">
-                  Каждая лаборатория — это команда и своя экспертиза. Выбери
-                  направление по душе.
+                  Каждая лаборатория — это команда и своя экспертиза. Выбери направление по душе.
                 </p>
               </div>
             </div>
             <div className="mx-auto">
               <div className="flex flex-wrap justify-center items-start gap-x-[93px] gap-y-[57px]">
-                <Card
-                  name="Legal Tech"
-                  participants={10}
-                  project={12}
-                  img="/labLegal.png"
-                />
-                <Card
-                  name="IT-лаборатория"
-                  participants={24}
-                  project={26}
-                  img="/labIT.png"
-                />
-                <Card
-                  name="Inno Travel"
-                  participants={13}
-                  project={4}
-                  img="/labTravel.png"
-                />
+                <Card name="Legal Tech" participants={10} project={12} img="/labLegal.png" />
+                <Card name="IT-лаборатория" participants={24} project={26} img="/labIT.png" />
+                <Card name="Inno Travel" participants={13} project={4} img="/labTravel.png" />
                 <Card
                   name="Finprocess Tech"
                   participants={6}
                   project={7}
                   img="/labFinprocess.png"
                 />
-                <Card
-                  name="Psy Tech"
-                  participants={9}
-                  project={1}
-                  img="/labPsy.png"
-                />
+                <Card name="Psy Tech" participants={9} project={1} img="/labPsy.png" />
               </div>
             </div>
 
@@ -242,6 +230,8 @@ export default function Home() {
               height={1}
               alt=""
               role="presentation"
+              loading="lazy"
+              sizes="100vw"
               className="absolute -z-3 left-1/2 top-[360px] min-w-[600px] md:max-w-[1000px] xl:max-w-[2000px] -translate-x-1/2"
             />
           </div>
@@ -250,7 +240,15 @@ export default function Home() {
         {/* Достижения */}
         <div id="achievements" className="containerSlider">
           <div className="relative z-3 mt-20 flex w-full justify-center">
-            <Image src="/Star.png" width={125} height={125} alt="" role="presentation" />
+            <Image
+              src="/Star.png"
+              width={125}
+              height={125}
+              alt=""
+              role="presentation"
+              loading="lazy"
+              sizes="125px"
+            />
           </div>
           <h1 className="relative z-3 text-center">Наши достижения</h1>
           <div className="lineClass"></div>
@@ -273,13 +271,34 @@ export default function Home() {
         {/* Руководство */}
         <div id="leadership" className="container">
           <div className="relative z-3 flex w-full justify-center">
-            <Image src="/show.png" width={100} height={125} alt="" role="presentation" className="z-1" />
+            <Image
+              src="/show.png"
+              width={100}
+              height={125}
+              alt=""
+              role="presentation"
+              className="z-1"
+              loading="lazy"
+              sizes="100px"
+            />
           </div>
           <h1 className="relative z-3 mt-5 text-center">Руководство</h1>
           <div className="lineClass"></div>
           <div className="mt-[70px] flex flex-wrap justify-center gap-x-[128px] gap-y-[60px]">
-            <ManagerCard />
-            <ManagerCard />
+            <ManagerCard
+              name="Фамилия Имя Отчество"
+              title="Руководитель академии"
+              degree="к.ф.н, доцент"
+              phone="+7 (988) 892-70-02"
+              email="academy_it@iubip.ru"
+            />
+            <ManagerCard
+              name="Фамилия Имя Отчество"
+              title="Руководитель академии"
+              degree="к.ф.н, доцент"
+              phone="+7 (988) 892-70-02"
+              email="academy_it@iubip.ru"
+            />
           </div>
         </div>
       </div>

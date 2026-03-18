@@ -1,34 +1,33 @@
-"use client"
-import {Jost, Unbounded} from 'next/font/google'
+import type { Metadata } from "next";
+import { Jost, Unbounded } from "next/font/google";
 import Header from "../components/header";
-import { useMenuStore } from "../store/menuStore";
-import "../globals.css"
+import "../globals.css";
 
 const jost = Jost({
-  subsets: ['latin'],
-  variable: '--font-jost',
-  display: 'swap',
-})
+  subsets: ["latin", "cyrillic"],
+  variable: "--font-jost",
+  display: "swap",
+});
 
 const unbounded = Unbounded({
-  subsets: ['latin'],
-  variable: '--font-jost',
-  display: 'swap',
-})
+  subsets: ["latin", "cyrillic"],
+  variable: "--font-unbounded",
+  display: "swap",
+});
 
-export default function AuthLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
-    const isActive = useMenuStore((state) => state.isActive);
+export const metadata: Metadata = {
+  title: "Вход в систему | ИУБиП Хаб",
+  description: "Авторизация в системе Студенческого Цифрового Хаба ИУБиП",
+  keywords: ["вход", "авторизация", "ИУБиП", "хаб"],
+};
 
-    return (
-    <html lang="en" className="h-full">
-        <body className={`${isActive ? "overflow-hidden" : ""} h-full`}>
-            <Header showAuthButton={false}/>
-            {children}
-        </body>
+export default function AuthLayout({ children }: { children: React.ReactNode }) {
+  return (
+    <html lang="ru" className={`${jost.variable} ${unbounded.variable}`}>
+      <body className="h-full overflow-hidden">
+        <Header showAuthButton={false} />
+        {children}
+      </body>
     </html>
-    );
+  );
 }
