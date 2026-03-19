@@ -18,7 +18,7 @@ export default function EntrancePage() {
         <div className="containerWider relative flex min-h-screen">
           <div className="xl:w-[48%]">
             <Image
-              src="/figureV4Fliped.svg"
+              src="/images/decor/figureV4Fliped.svg"
               width={1000}
               height={1280}
               alt=""
@@ -77,7 +77,7 @@ export default function EntrancePage() {
                       className="absolute top-1/2 right-[12px] min-h-[55px] -translate-y-1/2 cursor-pointer rounded-[15px] border-2 border-[#ffffff] bg-[#2e2e2ed3] p-[6px] backdrop-blur-md hover:bg-[#3e3e3ed3] focus:outline-none focus:ring-2 focus:ring-blue-500 sm:right-[14px] sm:!w-[55px] !w-[45px] sm:p-[10px]"
                     >
                       <Image
-                        src={isPasswordVisible ? "/eye.svg" : "/eyeOpened.svg"}
+                        src={isPasswordVisible ? "/icons/eye.svg" : "/icons/eyeOpened.svg"}
                         width={55}
                         height={55}
                         alt=""
@@ -94,7 +94,7 @@ export default function EntrancePage() {
                     id="remember-me"
                     type="checkbox"
                     name="remember-me"
-                    className="h-[35px] w-[35px] appearance-none rounded-xl border-2 border-white bg-transparent checked:bg-white checked:bg-[url('/galk.svg')] checked:bg-center checked:bg-no-repeat checked:bg-[length:20px] focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+                    className="h-[35px] w-[35px] appearance-none rounded-xl border-2 border-white bg-transparent checked:bg-white checked:bg-[url('/icons/galk.svg')] checked:bg-center checked:bg-no-repeat checked:bg-[length:20px] focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
                     aria-describedby="remember-me-description"
                     onKeyDown={(e) => {
                       if (e.key === "Enter") {
@@ -126,7 +126,7 @@ export default function EntrancePage() {
           </div>
 
           <Image
-            src="/glists.svg"
+            src="/images/decor/glists.svg"
             width={2300}
             height={1}
             alt=""

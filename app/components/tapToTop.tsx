@@ -33,7 +33,7 @@ export default function ScrollToTop() {
     >
       <div className="z-101 h-full w-[70px] rounded-full bg-white [box-shadow:0px_0px_10px_#0000008a]"></div>
       <Image
-        src="/ArrowForTapToTop.svg"
+        src="/icons/ArrowForTapToTop.svg"
         width={35}
         height={35}
         alt="top"

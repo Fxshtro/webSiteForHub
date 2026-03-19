@@ -24,7 +24,7 @@ export default function Card({
     >
       <div className="w-full h-[198px] rounded-3xl overflow-hidden relative">
         <Image
-          src={img}
+          src={`/images/labs/${img.split('/').pop()}`}
           alt={`Изображение для карточки ${name}`}
           fill
           sizes="354px"

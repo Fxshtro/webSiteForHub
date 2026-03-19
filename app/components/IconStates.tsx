@@ -14,7 +14,7 @@ export default function IconStates() {
             block w-[73px] h-[73px] rounded-[23px]"
       >
         <Image
-          src="/line.svg"
+          src="/images/decor/line.svg"
           width={55}
           height={1}
           alt=""

@@ -89,7 +89,7 @@ export default function Header({ showAuthButton = true }: HeaderProps) {
           <div className="flex">
             <Link href="/main">
               <Image
-                src="/logo.svg"
+                src="/logos/logo.svg"
                 width={95}
                 height={45}
                 alt=""
@@ -105,7 +105,7 @@ export default function Header({ showAuthButton = true }: HeaderProps) {
             </Link>
             <Link href="https://www.iubip.ru/">
               <Image
-                src="/iubip-logo.svg"
+                src="/logos/iubip-logo.svg"
                 width={67}
                 height={45}
                 alt=""

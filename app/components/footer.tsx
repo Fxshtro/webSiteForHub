@@ -30,7 +30,7 @@ export default function Footer() {
             }}
           >
             <Image
-              src="/logo.svg"
+              src="/logos/logo.svg"
               width={144}
               height={45}
               alt=""
@@ -41,7 +41,7 @@ export default function Footer() {
           </Link>
           <Link href="https://www.iubip.ru/" className="flex my-auto">
             <Image
-              src="/iubip-logo.svg"
+              src="/logos/iubip-logo.svg"
               width={100}
               height={45}
               alt=""

@@ -14,7 +14,7 @@ export default function PieIco() {
             block w-[81px] h-[81px] rounded-full"
       ></div>
       <Image
-        src="/Pie_Element.png"
+        src="/images/ui/Pie_Element.png"
         width={65}
         height={1}
         alt=""

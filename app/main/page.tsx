@@ -54,7 +54,7 @@ export default function Home() {
             </div>
           </div>
           <Image
-            src="/figureV4.svg"
+            src="/images/decor/figureV4.svg"
             width={1000}
             height={1280}
             alt=""
@@ -77,7 +77,7 @@ export default function Home() {
                     О ХАБЕ
                   </span>
                   <Image
-                    src="/logo.svg"
+                    src="/logos/logo.svg"
                     width={95}
                     height={45}
                     alt="Логотип"
@@ -107,7 +107,7 @@ export default function Home() {
           </div>
 
           <Image
-            src="/glists.svg"
+            src="/images/decor/glists.svg"
             width={2000}
             height={1}
             alt=""
@@ -125,7 +125,7 @@ export default function Home() {
             <div className="glass custom-before !rounded-2xl !bg-[#E9E3E620] px-[55px] py-[11.5px] text-center text-[16px] md:px-[75px] md:text-[26px]">
               <div className="z-1">100+ участников</div>
               <Image
-                src="/icoHumans.svg"
+                src="/images/ui/icoHumans.svg"
                 width={85}
                 height={1}
                 alt=""
@@ -138,7 +138,7 @@ export default function Home() {
             <div className="glass custom-before !rounded-2xl !bg-[#E9E3E620] px-[55px] py-[11.5px] text-center text-[16px] md:px-[75px] md:text-[26px] xl:transform xl:translate-y-13">
               <div className="z-1">20+ направлений</div>
               <Image
-                src="/pazzle.svg"
+                src="/images/ui/pazzle.svg"
                 width={85}
                 height={1}
                 alt=""
@@ -151,7 +151,7 @@ export default function Home() {
             <div className="glass custom-before !rounded-2xl !bg-[#E9E3E620] px-[55px] py-[11.5px] text-center text-[16px] md:px-[75px] md:text-[26px]">
               <div className="z-1">... активных проектов</div>
               <Image
-                src="/lists.svg"
+                src="/images/ui/lists.svg"
                 width={95}
                 height={1}
                 alt=""
@@ -164,7 +164,7 @@ export default function Home() {
             <div className="glass custom-before !rounded-2xl !bg-[#E9E3E620] px-[55px] py-[11.5px] text-center text-[16px] md:px-[75px] md:text-[26px]">
               <div className="z-1">... партнеров-работодателей</div>
               <Image
-                src="/laptop.svg"
+                src="/images/ui/laptop.svg"
                 width={85}
                 height={1}
                 alt=""
@@ -177,7 +177,7 @@ export default function Home() {
             <div className="glass custom-before !rounded-2xl !bg-[#E9E3E620] px-[55px] py-[11.5px] text-center text-[16px] md:px-[75px] md:text-[26px]">
               <div className="z-1">5 лабораторий</div>
               <Image
-                src="/lab.svg"
+                src="/images/ui/lab.svg"
                 width={85}
                 height={1}
                 alt=""
@@ -211,22 +211,22 @@ export default function Home() {
             </div>
             <div className="mx-auto">
               <div className="flex flex-wrap justify-center items-start gap-x-[93px] gap-y-[57px]">
-                <Card name="Legal Tech" participants={10} project={12} img="/labLegal.png" slug="legal-tech" />
-                <Card name="IT-лаборатория" participants={24} project={26} img="/labIT.png" slug="it-lab" />
-                <Card name="Inno Travel" participants={13} project={4} img="/labTravel.png" slug="inno-travel" />
+                <Card name="Legal Tech" participants={10} project={12} img="labLegal.png" slug="legal-tech" />
+                <Card name="IT-лаборатория" participants={24} project={26} img="labIT.png" slug="it-lab" />
+                <Card name="Inno Travel" participants={13} project={4} img="labTravel.png" slug="inno-travel" />
                 <Card
                   name="Finprocess Tech"
                   participants={6}
                   project={7}
-                  img="/labFinprocess.png"
+                  img="labFinprocess.png"
                   slug="finprocess-tech"
                 />
-                <Card name="Psy Tech" participants={9} project={1} img="/labPsy.png" slug="psy-tech" />
+                <Card name="Psy Tech" participants={9} project={1} img="labPsy.png" slug="psy-tech" />
               </div>
             </div>
 
             <Image
-              src="/glistsMylo.svg"
+              src="/images/decor/glistsMylo.svg"
               width={2200}
               height={1}
               alt=""
@@ -242,7 +242,7 @@ export default function Home() {
         <div id="achievements" className="containerSlider">
           <div className="relative z-3 mt-20 flex w-full justify-center">
             <Image
-              src="/Star.png"
+              src="/images/ui/Star.png"
               width={125}
               height={125}
               alt=""
@@ -273,7 +273,7 @@ export default function Home() {
         <div id="leadership" className="container">
           <div className="relative z-3 flex w-full justify-center">
             <Image
-              src="/show.png"
+              src="/images/ui/show.png"
               width={100}
               height={125}
               alt=""

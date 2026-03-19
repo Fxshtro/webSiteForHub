@@ -26,7 +26,7 @@ export default function ManagerCard({
             Академия цифрового развития
           </div>
           <Image
-            src="/i.svg"
+            src="/icons/i.svg"
             width={30}
             height={30}
             alt="info"
