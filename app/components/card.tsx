@@ -7,6 +7,7 @@ interface CardProps {
   participants: number;
   project: number;
   img: string;
+  slug: string;
 }
 
 export default function Card({
@@ -14,10 +15,11 @@ export default function Card({
   participants = 0,
   project = 0,
   img = "/default-image.jpg",
+  slug = "",
 }: CardProps) {
   return (
     <Link
-      href=""
+      href={`/labs/${slug}`}
       className="w-[354px] h-[353px] glass px-[12px] pt-[12px] pb-[12px] relative hover:![box-shadow:0px_0px_50px_#ffffff44,_inset_0px_0px_50px_#ffffff56] duration-200"
     >
       <div className="w-full h-[198px] rounded-3xl overflow-hidden relative">

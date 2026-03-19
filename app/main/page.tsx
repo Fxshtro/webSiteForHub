@@ -211,16 +211,17 @@ export default function Home() {
             </div>
             <div className="mx-auto">
               <div className="flex flex-wrap justify-center items-start gap-x-[93px] gap-y-[57px]">
-                <Card name="Legal Tech" participants={10} project={12} img="/labLegal.png" />
-                <Card name="IT-лаборатория" participants={24} project={26} img="/labIT.png" />
-                <Card name="Inno Travel" participants={13} project={4} img="/labTravel.png" />
+                <Card name="Legal Tech" participants={10} project={12} img="/labLegal.png" slug="legal-tech" />
+                <Card name="IT-лаборатория" participants={24} project={26} img="/labIT.png" slug="it-lab" />
+                <Card name="Inno Travel" participants={13} project={4} img="/labTravel.png" slug="inno-travel" />
                 <Card
                   name="Finprocess Tech"
                   participants={6}
                   project={7}
                   img="/labFinprocess.png"
+                  slug="finprocess-tech"
                 />
-                <Card name="Psy Tech" participants={9} project={1} img="/labPsy.png" />
+                <Card name="Psy Tech" participants={9} project={1} img="/labPsy.png" slug="psy-tech" />
               </div>
             </div>
 
