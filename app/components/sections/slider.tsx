@@ -1,6 +1,6 @@
 "use client";
 
-import "../globals.css";
+import "../../globals.css";
 import "swiper/css";
 import "swiper/css/navigation";
 import "swiper/css/pagination";
@@ -40,6 +40,7 @@ export default function Lenta() {
         >
           <div className="absolute left-[17.3px] top-[29.4px] -translate-y-1/2 w-0 h-0 border-l-[10px] border-l-transparent border-r-[10px] border-r-transparent border-t-[10px] border-t-white rotate-90"></div>
         </button>
+
         {slidesToRender.map((card, index) => (
           <SwiperSlide key={index} className="!w-auto">
             <div className="xl:w-[627px] sm:w-[450px] w-[300px] xl:h-[405px] sm:h-[250px] h-[220px] px-[12px] pt-[12px] pb-[12px] glass hover:![box-shadow:0px_0px_50px_#ffffff1a,_inset_0px_0px_50px_#ffffff1e] duration-200">
@@ -49,6 +50,7 @@ export default function Lenta() {
             </div>
           </SwiperSlide>
         ))}
+
         <button className="custom-next !absolute md:right-20 right-5 top-1/2 transform -translate-y-1/2 w-[60px] h-[60px] px-[12px] pt-[12px] pb-[12px] !z-10 glass">
           <div className="absolute left-[21.4px] top-[29px] -translate-y-1/2 w-0 h-0 border-l-[10px] border-l-transparent border-r-[10px] border-r-transparent border-t-[10px] border-t-white -rotate-90"></div>
         </button>

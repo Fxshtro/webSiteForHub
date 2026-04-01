@@ -1,12 +1,12 @@
 "use client";
 
 import Image from "next/image";
-import IconStates from "../components/IconStates";
-import PieIco from "../components/pie";
-import Card from "../components/card";
-import Lenta from "../components/slider";
-import ManagerCard from "../components/manager";
-import ScrollToTop from "../components/tapToTop";
+import IconStates from "../components/sections/IconStates";
+import PieIco from "../components/sections/pie";
+import Card from "../components/labs/card";
+import Lenta from "../components/sections/slider";
+import ManagerCard from "../components/sections/manager";
+import ScrollToTop from "../components/ui/tapToTop";
 
 import "swiper/css";
 import "swiper/css/navigation";

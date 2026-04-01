@@ -39,3 +39,6 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 # Note: next-env.d.ts should be committed (it's required for TypeScript)
+
+# cursor
+.cursorignore

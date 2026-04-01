@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { Jost, Unbounded } from "next/font/google";
-import Header from "../components/header";
+import Header from "../components/layout/header";
 import "../globals.css";
 
 const jost = Jost({

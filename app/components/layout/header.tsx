@@ -3,7 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useEffect } from "react";
-import { useMenuStore } from "../store/menuStore";
+import { useMenuStore } from "../../store/menuStore";
 
 interface HeaderProps {
   showAuthButton?: boolean;

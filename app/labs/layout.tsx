@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { Jost, Unbounded } from "next/font/google";
-import Header from "../components/header";
-import Footer from "../components/footer";
+import Header from "../components/layout/header";
+import Footer from "../components/layout/footer";
 import "../globals.css";
 
 const jost = Jost({
@@ -47,6 +47,14 @@ export default function LabsLayout({
 }>) {
   return (
     <html lang="ru" className={`${jost.variable} ${unbounded.variable}`}>
+      <head>
+        <link
+          rel="stylesheet"
+          href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css"
+          crossOrigin="anonymous"
+          referrerPolicy="no-referrer"
+        />
+      </head>
       <body className="font-sans name">
         <Header showAuthButton={true} />
         {children}

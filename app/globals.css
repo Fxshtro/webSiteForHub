@@ -133,6 +133,22 @@ button {
   z-index: 0;
 }
 
+.labProjectsSlider .swiper-slide-active {
+  transform: none !important;
+}
+
+.labProjectsSlider .swiper-slide-active::before {
+  display: none !important;
+}
+
+#achievements .swiper-slide-active {
+  transform: scale(1.1) !important;
+}
+
+#achievements .swiper-slide-active::before {
+  display: block !important;
+}
+
 .glass {
   background: #00000020;
   border-left-width: 1px;
