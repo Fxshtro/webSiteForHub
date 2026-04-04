@@ -4,6 +4,8 @@ import Image from "next/image";
 import { notFound } from "next/navigation";
 import ScrollToTop from "../../components/ui/tapToTop";
 import LabProjectsFilter from "../../components/labs/labProjectsFilter";
+import LabAchievementsSlider from "../../components/labs/labAchievementsSlider";
+import LabProjectsSlider from "../../components/labs/labProjectsSlider";
 
 interface PageProps {
   params: Promise<{ lab: string }>;
@@ -99,13 +101,63 @@ export default async function LabPage({ params }: PageProps) {
             />
           </div>
         </div>
-      </section>
-
-      <div id="projects" className="containerSlider">
+        <div id="projects" className="containerSlider">
         <h1 className="relative z-3 text-center">проекты</h1>
         <div className="lineClass"></div>
         <LabProjectsFilter projects={labData.projects} labSlug={labData.slug} />
       </div>
+      </section>
+      <section className="mt-7">
+        <div className="relative z-3 mt-20 flex w-full justify-center">
+          <Image
+            src="/images/ui/Star.png"
+            width={125}
+            height={125}
+            alt=""
+            role="presentation"
+            loading="lazy"
+            sizes="125px"
+          />
+        </div>
+        <h1 className="relative z-3 text-center">достижения</h1>
+        <div className="lineClass"></div>
+
+        <div id="lab-achievements" className="containerSlider">
+          <div className="relative h-full w-full">
+            <div>
+              <div className="absolute -left-10 -top-20 z-2 h-30 w-100 -rotate-20 bg-gradient-to-b from-[#000000] from-50% to-[#00000000]"></div>
+              <div className="absolute left-0 top-0 z-1 h-full w-30 bg-gradient-to-r from-[#ffffff12] to-[#00000000] blur-lg md:w-80"></div>
+              <div className="absolute -left-10 top-1/2 z-2 h-[120%] w-10 -translate-y-1/2 bg-black"></div>
+              <div className="absolute -left-10 -bottom-20 z-2 h-30 w-100 rotate-20 bg-gradient-to-t from-[#000000] from-50% to-[#00000000]"></div>
+
+              <div className="absolute -right-10 top-1/2 z-2 h-[120%] w-10 -translate-y-1/2 bg-black"></div>
+              <div className="absolute -right-10 -top-20 z-2 h-30 w-100 rotate-20 bg-gradient-to-b from-[#000000] from-50% to-[#00000000]"></div>
+              <div className="absolute right-0 top-0 z-1 h-full w-30 bg-gradient-to-l from-[#ffffff12] to-[#00000000] blur-lg md:w-80"></div>
+              <div className="absolute -right-10 -bottom-20 z-2 h-30 w-100 -rotate-20 bg-gradient-to-t from-[#000000] from-50% to-[#00000000]"></div>
+            </div>
+            <LabAchievementsSlider achievements={labData.achievements} />
+          </div>
+        </div>
+
+      </section>
+      <section className="mt-7">
+      <div className="relative z-3 mt-20 flex w-full justify-center">
+        <Image
+          src="/images/ui/Arrow.png"
+          width={125}
+          height={125}
+          alt=""
+          role="presentation"
+          loading="lazy"
+          sizes="125px"
+        />
+      </div>
+        <h1 className="relative z-3 text-center">менеджеры и руководство</h1>
+        <div className="lineClass"></div>
+        <div className="containerSlider">
+          <LabProjectsSlider />
+        </div>
+      </section>
     </main>
   );
 }

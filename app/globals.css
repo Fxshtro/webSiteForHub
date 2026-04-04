@@ -25,6 +25,7 @@ html {
 
 #laboratories,
 #achievements,
+#lab-achievements,
 #leadership {
   scroll-margin-top: 100px;
 }
@@ -146,6 +147,14 @@ button {
 }
 
 #achievements .swiper-slide-active::before {
+  display: block !important;
+}
+
+#lab-achievements .swiper-slide-active {
+  transform: scale(1.1) !important;
+}
+
+#lab-achievements .swiper-slide-active::before {
   display: block !important;
 }
 

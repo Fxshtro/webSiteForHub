@@ -6,21 +6,41 @@ import "swiper/css";
 import "swiper/css/free-mode";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { FreeMode } from "swiper/modules";
+import CardAchievement from "./cardAchievement";
 
-type Card = { test: string };
+interface ManagerCardItem {
+  description: string;
+  date: string;
+}
 
 export default function LabProjectsSlider() {
-  const cardInfo: Card[] = [
-    { test: "Hello World!" },
-    { test: "Hello World!2" },
-    { test: "Hello Worl31421d!3" },
-    { test: "Hell1o3123123 World!4" },
+  const cardInfo: ManagerCardItem[] = [
+    {
+      description:
+        "Руководитель лаборатории: курирование проектных команд, согласование дорожных карт и связь с академией.",
+      date: "14.04.2026",
+    },
+    {
+      description:
+        "Заместитель: организация воркшопов, менторство по продуктовой разработке и контроль сроков релизов.",
+      date: "10.03.2026",
+    },
+    {
+      description:
+        "Менеджер проектов: планирование спринтов, коммуникация со стейкхолдерами и ведение документации.",
+      date: "02.02.2026",
+    },
+    {
+      description:
+        "Координатор: приём заявок участников, распределение нагрузки между командами и поддержка онбординга.",
+      date: "18.01.2026",
+    },
   ];
 
   const slidesToRender =
     cardInfo.length <= 4 ? [...cardInfo, ...cardInfo, ...cardInfo, ...cardInfo, ...cardInfo] : cardInfo;
 
-  const slidePairs: Card[][] = [];
+  const slidePairs: ManagerCardItem[][] = [];
   for (let i = 0; i < slidesToRender.length; i += 2) {
     slidePairs.push(slidesToRender.slice(i, i + 2));
   }
@@ -102,7 +122,7 @@ export default function LabProjectsSlider() {
     >
       <Swiper
         slidesPerView={"auto"}
-        spaceBetween={65}
+        spaceBetween={30}
         loop={true}
         centeredSlides={false}
         className="!pt-35 !pb-35 cursor-grab active:cursor-grabbing"
@@ -131,13 +151,14 @@ export default function LabProjectsSlider() {
               }`}
             >
               {pair.map((card, cardIndex) => (
-                <div
-                  key={cardIndex}
-                  className="xl:w-[627px] sm:w-[450px] w-[300px] xl:h-[405px] sm:h-[250px] h-[220px] px-[12px] pt-[12px] pb-[12px] glass hover:![box-shadow:0px_0px_50px_#ffffff1a,_inset_0px_0px_50px_#ffffff1e] duration-200"
-                >
-                  <div className="relative z-10 h-full flex flex-col items-center justify-center text-white">
-                    <h3 className="text-2xl font-bold select-none">{card.test}</h3>
-                  </div>
+                <div key={cardIndex} className="w-[min(474px,calc(100vw-48px))] shrink-0">
+                  <CardAchievement
+                    description={card.description}
+                    date={card.date}
+                    className="max-w-none mx-0 w-full"
+                    imageSizes="474px"
+                    compact
+                  />
                 </div>
               ))}
             </div>

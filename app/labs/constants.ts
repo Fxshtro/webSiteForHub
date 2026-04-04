@@ -3,12 +3,20 @@ export interface LabProject {
   description: string;
 }
 
+export interface LabAchievement {
+  description: string;
+  date: string;
+  imageSrc?: string;
+  imageAlt?: string;
+}
+
 export interface LabData {
   slug: string;
   name: string;
   /** Число участников (как на главной) */
   participants: number;
   projects: LabProject[];
+  achievements: LabAchievement[];
 }
 
 export const labsData: LabData[] = [
@@ -16,6 +24,18 @@ export const labsData: LabData[] = [
     slug: "legal-tech",
     name: "Legal Tech",
     participants: 10,
+    achievements: [
+      {
+        description:
+          "Команда заняла призовое место на хакатоне по правовым сервисам: прототип контрактного помощника прошёл ревью от индустриальных экспертов.",
+        date: "14.04.2026",
+      },
+      {
+        description:
+          "Публикация кейса по юридическому чат-боту на региональной конференции; приглашение к пилоту от партнёрской юрфирмы.",
+        date: "02.03.2026",
+      },
+    ],
     projects: [
       {
         title: "Контрактный помощник",
@@ -38,6 +58,23 @@ export const labsData: LabData[] = [
     slug: "it-lab",
     name: "IT-лаборатория",
     participants: 24,
+    achievements: [
+      {
+        description:
+          "Запуск публичной версии сайта Студенческого цифрового хаба на Next.js: адаптивная вёрстка, подготовка к размещению на домене вуза.",
+        date: "14.04.2026",
+      },
+      {
+        description:
+          "Победа во внутреннем конкурсе проектов с порталом лаборатории: единая точка входа для команд и кураторов.",
+        date: "20.01.2026",
+      },
+      {
+        description:
+          "Демо интеграций и автоматизации: выгрузка отчётов и уведомления приняты к внедрению в пилотной группе.",
+        date: "05.11.2025",
+      },
+    ],
     projects: [
       {
         title: "Сайт Студенческого цифрового хаба",
@@ -61,6 +98,18 @@ export const labsData: LabData[] = [
     slug: "inno-travel",
     name: "Inno Travel",
     participants: 13,
+    achievements: [
+      {
+        description:
+          "Презентация маршрутного конструктора на фестивале туризма; обратная связь от представителей музеев и отелей.",
+        date: "14.04.2026",
+      },
+      {
+        description:
+          "Пилот экскурсий по гиду локаций: три маршрута проведены со студенческими группами без критических замечаний.",
+        date: "08.02.2026",
+      },
+    ],
     projects: [
       {
         title: "Маршрутный конструктор",
@@ -83,6 +132,18 @@ export const labsData: LabData[] = [
     slug: "finprocess-tech",
     name: "Finprocess Tech",
     participants: 6,
+    achievements: [
+      {
+        description:
+          "Воркшоп по финансовому дашборду: студенты собрали учебные кейсы и импорт таблиц за одну сессию.",
+        date: "14.04.2026",
+      },
+      {
+        description:
+          "Калькулятор кредитных сценариев включён в программу курса финансовой грамотности как демо-инструмент.",
+        date: "17.12.2025",
+      },
+    ],
     projects: [
       {
         title: "Финансовый дашборд",
@@ -105,6 +166,18 @@ export const labsData: LabData[] = [
     slug: "psy-tech",
     name: "Psy Tech",
     participants: 9,
+    achievements: [
+      {
+        description:
+          "Этическое согласование пилота дневника саморегуляции; протокол одобрен методсоветом направления.",
+        date: "14.04.2026",
+      },
+      {
+        description:
+          "Платформа опросов использована в трёх лабораторных работах; экспорт данных без нарушения анонимности.",
+        date: "22.10.2025",
+      },
+    ],
     projects: [
       {
         title: "Дневник саморегуляции",
