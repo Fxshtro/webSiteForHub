@@ -6,6 +6,8 @@ import ScrollToTop from "../../components/ui/tapToTop";
 import LabProjectsFilter from "../../components/labs/labProjectsFilter";
 import LabAchievementsSlider from "../../components/labs/labAchievementsSlider";
 import LabProjectsSlider from "../../components/labs/labProjectsSlider";
+import LabPeopleDrawer from "../../components/labs/labPeopleDrawer";
+import { getLabPeopleBySlug } from "../../../DataBase/labs/people";
 
 interface PageProps {
   params: Promise<{ lab: string }>;
@@ -34,10 +36,12 @@ export default async function LabPage({ params }: PageProps) {
   const { lab } = await params;
   const labData = getLabBySlug(lab);
   if (!labData) notFound();
+  const labPeople = getLabPeopleBySlug(labData.slug);
 
   return (
     <main className="overflow-hidden">
       <ScrollToTop />
+      <LabPeopleDrawer people={labPeople} />
       {/* Hero Section */}
       <div className="absolute top-0 left-0 -z-10 h-[1100px] w-full bg-gradient-to-b from-[#1C1261] to-black"></div>
       <div className="absolute top-0 -z-10 w-full h-[700px] overflow-hidden">
@@ -55,11 +59,11 @@ export default async function LabPage({ params }: PageProps) {
       <section className="container !mt-[85px] !px-4 sm:!px-10 overflow-hidden">
         <div className="xl:flex justify-between min-h-[638px]">
           <div className="sm:!pt-[125px] pt-[30px]">
-            <h1>{labData.name}</h1>
+            <h1 className="mt-[38px] sm:mt-0">{labData.name}</h1>
             <div className="flex items-center gap-4 mt-2">
               <Image src="/icons/person.svg" alt="" role="presentation" width={44} height={44} />
               <p className="sm:text-[24px] text-[16px] font-semibold font-unbounded leading-6">
-                УЧАСТНИКОВ: {labData.participants}
+                УЧАСТНИКОВ: {labPeople.length}
               </p>
             </div>
             <div className="flex items-center gap-4">

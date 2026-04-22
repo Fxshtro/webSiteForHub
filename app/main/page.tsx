@@ -7,6 +7,8 @@ import Card from "../components/labs/card";
 import Lenta from "../components/sections/slider";
 import ManagerCard from "../components/sections/manager";
 import ScrollToTop from "../components/ui/tapToTop";
+import { getLabBySlug } from "../../DataBase/labs";
+import { getLabPeopleBySlug } from "../../DataBase/labs/people";
 import { homeLabs, homeManagers, homeStats } from "../../DataBase/main/home";
 
 import "swiper/css";
@@ -168,14 +170,21 @@ export default function Home() {
             <div className="mx-auto">
               <div className="flex flex-wrap justify-center items-start gap-x-[93px] gap-y-[57px]">
                 {homeLabs.map((lab) => (
+                  (() => {
+                    const linkedLabData = getLabBySlug(lab.slug);
+                    const participantsCount = getLabPeopleBySlug(lab.slug).length;
+                    const projectsCount = linkedLabData?.projects.length ?? lab.project;
+                    return (
                   <Card
                     key={lab.slug}
                     name={lab.name}
-                    participants={lab.participants}
-                    project={lab.project}
+                    participants={participantsCount}
+                    project={projectsCount}
                     img={lab.img}
                     slug={lab.slug}
                   />
+                    );
+                  })()
                 ))}
               </div>
             </div>
