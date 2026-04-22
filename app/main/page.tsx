@@ -7,6 +7,7 @@ import Card from "../components/labs/card";
 import Lenta from "../components/sections/slider";
 import ManagerCard from "../components/sections/manager";
 import ScrollToTop from "../components/ui/tapToTop";
+import { homeLabs, homeManagers, homeStats } from "../../DataBase/main/home";
 
 import "swiper/css";
 import "swiper/css/navigation";
@@ -122,71 +123,26 @@ export default function Home() {
           <h1 className="mt-[30px] text-center">СТАТИСТИКА</h1>
           <div className="mb-20 lineClass"></div>
           <div className="flex flex-wrap justify-center items-start gap-x-10 px-10 gap-y-16 xl:gap-y-23">
-            <div className="glass custom-before !rounded-2xl !bg-[#E9E3E620] px-[55px] py-[11.5px] text-center text-[16px] md:px-[75px] md:text-[26px]">
-              <div className="z-1">100+ участников</div>
-              <Image
-                src="/images/ui/icoHumans.svg"
-                width={85}
-                height={1}
-                alt=""
-                role="presentation"
-                loading="lazy"
-                sizes="85px"
-                className="absolute -z-3 -top-8.5 -left-12.5"
-              />
-            </div>
-            <div className="glass custom-before !rounded-2xl !bg-[#E9E3E620] px-[55px] py-[11.5px] text-center text-[16px] md:px-[75px] md:text-[26px] xl:transform xl:translate-y-13">
-              <div className="z-1">20+ направлений</div>
-              <Image
-                src="/images/ui/pazzle.svg"
-                width={85}
-                height={1}
-                alt=""
-                role="presentation"
-                loading="lazy"
-                sizes="85px"
-                className="absolute -z-3 -top-18 left-1/2 -translate-x-1/2"
-              />
-            </div>
-            <div className="glass custom-before !rounded-2xl !bg-[#E9E3E620] px-[55px] py-[11.5px] text-center text-[16px] md:px-[75px] md:text-[26px]">
-              <div className="z-1">... активных проектов</div>
-              <Image
-                src="/images/ui/lists.svg"
-                width={95}
-                height={1}
-                alt=""
-                role="presentation"
-                loading="lazy"
-                sizes="95px"
-                className="absolute -z-3 -top-15 -right-15"
-              />
-            </div>
-            <div className="glass custom-before !rounded-2xl !bg-[#E9E3E620] px-[55px] py-[11.5px] text-center text-[16px] md:px-[75px] md:text-[26px]">
-              <div className="z-1">... партнеров-работодателей</div>
-              <Image
-                src="/images/ui/laptop.svg"
-                width={85}
-                height={1}
-                alt=""
-                role="presentation"
-                loading="lazy"
-                sizes="85px"
-                className="absolute -z-3 -top-10 -left-12.5"
-              />
-            </div>
-            <div className="glass custom-before !rounded-2xl !bg-[#E9E3E620] px-[55px] py-[11.5px] text-center text-[16px] md:px-[75px] md:text-[26px]">
-              <div className="z-1">5 лабораторий</div>
-              <Image
-                src="/images/ui/lab.svg"
-                width={85}
-                height={1}
-                alt=""
-                role="presentation"
-                loading="lazy"
-                sizes="85px"
-                className="absolute -z-3 -top-13 -right-13"
-              />
-            </div>
+            {homeStats.map((item, index) => (
+              <div
+                key={`${item.label}-${index}`}
+                className={`glass custom-before !rounded-2xl !bg-[#E9E3E620] px-[55px] py-[11.5px] text-center text-[16px] md:px-[75px] md:text-[26px] ${
+                  index === 1 ? "xl:transform xl:translate-y-13" : ""
+                }`}
+              >
+                <div className="z-1">{item.label}</div>
+                <Image
+                  src={item.icon}
+                  width={95}
+                  height={1}
+                  alt=""
+                  role="presentation"
+                  loading="lazy"
+                  sizes="95px"
+                  className={item.iconClassName}
+                />
+              </div>
+            ))}
           </div>
         </div>
 
@@ -211,29 +167,27 @@ export default function Home() {
             </div>
             <div className="mx-auto">
               <div className="flex flex-wrap justify-center items-start gap-x-[93px] gap-y-[57px]">
-                <Card name="Legal Tech" participants={10} project={12} img="labLegal.png" slug="legal-tech" />
-                <Card name="IT-лаборатория" participants={24} project={26} img="labIT.png" slug="it-lab" />
-                <Card name="Inno Travel" participants={13} project={4} img="labTravel.png" slug="inno-travel" />
-                <Card
-                  name="Finprocess Tech"
-                  participants={6}
-                  project={7}
-                  img="labFinprocess.png"
-                  slug="finprocess-tech"
-                />
-                <Card name="Psy Tech" participants={9} project={1} img="labPsy.png" slug="psy-tech" />
+                {homeLabs.map((lab) => (
+                  <Card
+                    key={lab.slug}
+                    name={lab.name}
+                    participants={lab.participants}
+                    project={lab.project}
+                    img={lab.img}
+                    slug={lab.slug}
+                  />
+                ))}
               </div>
             </div>
 
             <Image
-              src="/images/decor/glistsMylo.svg"
+              src="/images/decor/group-206.svg"
               width={2200}
               height={1}
               alt=""
               role="presentation"
               loading="lazy"
-              sizes="100vw"
-              className="absolute -z-3 left-1/2 top-[360px] min-w-[600px] md:max-w-[1000px] xl:max-w-[2000px] -translate-x-1/2"
+              className="absolute -z-3 left-1/2 top-[460px] min-w-[600px] md:max-w-[1000px] xl:max-w-[2000px] -translate-x-1/2"
             />
           </div>
         </div>
@@ -286,20 +240,17 @@ export default function Home() {
           <h1 className="relative z-3 mt-5 text-center">Руководство</h1>
           <div className="lineClass"></div>
           <div className="mt-[70px] flex flex-wrap justify-center gap-x-[128px] gap-y-[60px]">
-            <ManagerCard
-              name="Фамилия Имя Отчество"
-              title="Руководитель академии"
-              degree="к.ф.н, доцент"
-              phone="+7 (988) 892-70-02"
-              email="academy_it@iubip.ru"
-            />
-            <ManagerCard
-              name="Фамилия Имя Отчество"
-              title="Руководитель академии"
-              degree="к.ф.н, доцент"
-              phone="+7 (988) 892-70-02"
-              email="academy_it@iubip.ru"
-            />
+            {homeManagers.map((manager, index) => (
+              <ManagerCard
+                key={`${manager.email}-${index}`}
+                name={manager.name}
+                title={manager.title}
+                degree={manager.degree}
+                phone={manager.phone}
+                email={manager.email}
+                imageSrc={manager.imageSrc}
+              />
+            ))}
           </div>
         </div>
       </div>

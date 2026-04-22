@@ -101,11 +101,21 @@ export default async function LabPage({ params }: PageProps) {
             />
           </div>
         </div>
-        <div id="projects" className="containerSlider">
-        <h1 className="relative z-3 text-center">проекты</h1>
-        <div className="lineClass"></div>
-        <LabProjectsFilter projects={labData.projects} labSlug={labData.slug} />
-      </div>
+        <div id="projects" className="containerSlider relative">
+          <h1 className="relative z-3 text-center">проекты</h1>
+          <div className="lineClass"></div>
+          <LabProjectsFilter projects={labData.projects} labSlug={labData.slug} />
+          <Image
+            src="/images/decor/group-206.svg"
+            width={2200}
+            height={813}
+            alt=""
+            role="presentation"
+            loading="lazy"
+            sizes="100vw"
+            className="pointer-events-none absolute -z-3 left-1/2 top-[180px] min-w-[600px] -translate-x-1/2 md:max-w-[1000px] xl:max-w-[2000px]"
+          />
+        </div>
       </section>
       <section className="mt-7">
         <div className="relative z-3 mt-20 flex w-full justify-center">
@@ -136,6 +146,16 @@ export default async function LabPage({ params }: PageProps) {
               <div className="absolute -right-10 -bottom-20 z-2 h-30 w-100 -rotate-20 bg-gradient-to-t from-[#000000] from-50% to-[#00000000]"></div>
             </div>
             <LabAchievementsSlider achievements={labData.achievements} />
+            <Image
+              src="/images/decor/Group%20207.svg"
+              width={2200}
+              height={813}
+              alt=""
+              role="presentation"
+              loading="lazy"
+              sizes="100vw"
+              className="pointer-events-none absolute -z-3 left-1/2 -top-[100px] min-w-[600px] -translate-x-1/2 md:max-w-[1000px] xl:max-w-[2000px]"
+            />
           </div>
         </div>
 

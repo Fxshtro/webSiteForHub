@@ -142,6 +142,20 @@ button {
   display: none !important;
 }
 
+.lab-projects-filter-swiper .swiper-slide-active {
+  z-index: 1 !important;
+  transform: none !important;
+}
+
+.lab-projects-filter-swiper .swiper-slide-active::before {
+  display: none !important;
+}
+
+.lab-projects-filter-swiper .swiper-slide {
+  transform: none !important;
+  transition: opacity 0.4s ease !important;
+}
+
 #achievements .swiper-slide-active {
   transform: scale(1.1) !important;
 }
@@ -156,6 +170,16 @@ button {
 
 #lab-achievements .swiper-slide-active::before {
   display: block !important;
+}
+
+@media screen and (max-width: 767px) {
+  #lab-achievements .swiper-slide-active {
+    transform: none !important;
+  }
+
+  #lab-achievements .swiper-slide-active::before {
+    display: none !important;
+  }
 }
 
 .glass {
