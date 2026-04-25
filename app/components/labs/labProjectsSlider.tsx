@@ -6,18 +6,26 @@ import "swiper/css";
 import { Swiper, SwiperSlide } from "swiper/react";
 import type { Swiper as SwiperType } from "swiper/types";
 import type { LeadershipSlideItem } from "../../../DataBase/types";
-import { leadershipSliderItems } from "../../../DataBase/labs";
 import CardAchievement from "./cardAchievement";
 
 const DESKTOP_STATIC_CARDS_COUNT = 6;
+const CARD_MAX_WIDTH = 474;
+const CARD_GAP = 32;
+const VIEWPORT_HORIZONTAL_PADDING = 48;
 
-export default function LabProjectsSlider() {
-  const cardInfo = leadershipSliderItems;
+interface LabProjectsSliderProps {
+  items: LeadershipSlideItem[];
+}
+
+export default function LabProjectsSlider({ items }: LabProjectsSliderProps) {
+  const cardInfo = items;
 
   const shouldAnimate = cardInfo.length > 6;
   const [isMobile, setIsMobile] = useState(false);
   const [mobilePage, setMobilePage] = useState(1);
+  const [maxMobileCardHeight, setMaxMobileCardHeight] = useState(0);
   const mobileSwiperRef = useRef<SwiperType | null>(null);
+  const mobileRootRef = useRef<HTMLDivElement | null>(null);
   const scrollViewportRef = useRef<HTMLDivElement | null>(null);
   const trackRef = useRef<HTMLDivElement | null>(null);
   const rafRef = useRef<number | null>(null);
@@ -89,14 +97,13 @@ export default function LabProjectsSlider() {
     const track = trackRef.current;
     if (!viewport || !track) return;
 
-    const cardWidth = Math.min(474, window.innerWidth - 48);
-    const cardSlotWidth = cardWidth + 32;
+    const cardWidth = Math.min(CARD_MAX_WIDTH, window.innerWidth - VIEWPORT_HORIZONTAL_PADDING);
     const topWidth =
       topRowCards.length * cardWidth +
-      Math.max(topRowCards.length - 1, 0) * 32 +
+      Math.max(topRowCards.length - 1, 0) * CARD_GAP +
       cardWidth / 2;
     const bottomWidth =
-      bottomRowCards.length * cardWidth + Math.max(bottomRowCards.length - 1, 0) * 32;
+      bottomRowCards.length * cardWidth + Math.max(bottomRowCards.length - 1, 0) * CARD_GAP;
     const contentWidth = Math.max(topWidth, bottomWidth);
     const rawMaxOffset = Math.max(contentWidth - viewport.clientWidth, 0);
 
@@ -202,6 +209,36 @@ export default function LabProjectsSlider() {
     setMobilePage(mobileTotalPages);
   }, [mobilePage, mobileTotalPages]);
 
+  useEffect(() => {
+    if (!isMobile) {
+      setMaxMobileCardHeight(0);
+      return;
+    }
+
+    const recalculateMobileCardHeight = (): void => {
+      if (!mobileRootRef.current) return;
+      const cards = Array.from(mobileRootRef.current.querySelectorAll<HTMLElement>("[data-leadership-mobile-card]"));
+      if (cards.length === 0) {
+        setMaxMobileCardHeight(0);
+        return;
+      }
+      cards.forEach((card) => {
+        card.style.minHeight = "";
+      });
+      const nextMaxHeight = cards.reduce((maxHeight, card) => {
+        return Math.max(maxHeight, card.getBoundingClientRect().height);
+      }, 0);
+      setMaxMobileCardHeight(Math.ceil(nextMaxHeight));
+    };
+
+    const rafId = window.requestAnimationFrame(recalculateMobileCardHeight);
+    window.addEventListener("resize", recalculateMobileCardHeight);
+    return () => {
+      window.cancelAnimationFrame(rafId);
+      window.removeEventListener("resize", recalculateMobileCardHeight);
+    };
+  }, [isMobile, mobilePages, mobileTotalPages]);
+
   const changeMobilePage = (nextPage: number): void => {
     if (nextPage === mobilePage) return;
     mobileSwiperRef.current?.slideTo(nextPage - 1);
@@ -241,7 +278,7 @@ export default function LabProjectsSlider() {
 
   if (isMobile) {
     return (
-      <div className="w-full select-none labProjectsSlider !pt-20 !pb-20">
+      <div ref={mobileRootRef} className="w-full select-none labProjectsSlider !pt-12 !pb-20">
         {mobileTotalPages > 1 ? (
           <Swiper
             className="lab-projects-mobile-swiper w-full select-none"
@@ -257,12 +294,17 @@ export default function LabProjectsSlider() {
               <SwiperSlide key={`mobile-projects-page-${pageIndex}`}>
                 <div className="grid grid-cols-1 gap-4 px-4">
                   {pageCards.map((card, index) => (
-                    <div key={`${card.date}-mobile-${pageIndex}-${index}`} className="h-full w-full">
+                    <div
+                      key={`${card.date}-mobile-${pageIndex}-${index}`}
+                      data-leadership-mobile-card
+                      style={maxMobileCardHeight ? { minHeight: `${maxMobileCardHeight}px` } : undefined}
+                      className="h-full w-full"
+                    >
                       <CardAchievement
                         description={card.description}
                         date={card.date}
                         className="mx-0 h-full w-full max-w-none"
-                        imageSizes="(max-width: 767px) 50vw, 474px"
+                        imageSizes={`(max-width: 767px) 50vw, ${CARD_MAX_WIDTH}px`}
                         compact
                       />
                     </div>
@@ -274,12 +316,17 @@ export default function LabProjectsSlider() {
         ) : (
           <div className="grid grid-cols-1 gap-4 px-4">
             {mobilePages[0]?.map((card, index) => (
-              <div key={`${card.date}-mobile-single-${index}`} className="h-full w-full">
+              <div
+                key={`${card.date}-mobile-single-${index}`}
+                data-leadership-mobile-card
+                style={maxMobileCardHeight ? { minHeight: `${maxMobileCardHeight}px` } : undefined}
+                className="h-full w-full"
+              >
                 <CardAchievement
                   description={card.description}
                   date={card.date}
                   className="mx-0 h-full w-full max-w-none"
-                  imageSizes="(max-width: 767px) 50vw, 474px"
+                  imageSizes={`(max-width: 767px) 50vw, ${CARD_MAX_WIDTH}px`}
                   compact
                 />
               </div>
@@ -315,26 +362,51 @@ export default function LabProjectsSlider() {
 
   if (cardInfo.length <= DESKTOP_STATIC_CARDS_COUNT) {
     return (
-      <div className="w-full select-none labProjectsSlider !pt-35 !pb-35">
-        <div className="mx-auto grid max-w-[1490px] grid-cols-1 gap-8 px-4 md:grid-cols-2 xl:grid-cols-3">
-          {cardInfo.map((card, index) => (
-            <div key={`${card.date}-desktop-static-${index}`} className="h-full w-full justify-self-center xl:max-w-[474px]">
-              <CardAchievement
-                description={card.description}
-                date={card.date}
-                className="mx-0 h-full w-full max-w-none"
-                imageSizes="474px"
-                compact
-              />
+      <div className="w-full select-none labProjectsSlider !pt-20 !pb-35">
+        <div className="mx-auto flex max-w-[1600px] flex-col gap-8 px-4">
+          <div className="flex flex-wrap justify-center gap-8">
+            {topRowCards.map((card, index) => (
+              <div
+                key={`${card.date}-desktop-static-top-${index}`}
+                className="h-full shrink-0"
+                style={{ width: `min(${CARD_MAX_WIDTH}px, calc(100vw - ${VIEWPORT_HORIZONTAL_PADDING}px))` }}
+              >
+                <CardAchievement
+                  description={card.description}
+                  date={card.date}
+                  className="mx-0 h-full w-full max-w-none"
+                  imageSizes={`${CARD_MAX_WIDTH}px`}
+                  compact
+                />
+              </div>
+            ))}
+          </div>
+          {bottomRowCards.length > 0 ? (
+            <div className="flex flex-wrap justify-center gap-8">
+              {bottomRowCards.map((card, index) => (
+                <div
+                  key={`${card.date}-desktop-static-bottom-${index}`}
+                  className="h-full shrink-0"
+                  style={{ width: `min(${CARD_MAX_WIDTH}px, calc(100vw - ${VIEWPORT_HORIZONTAL_PADDING}px))` }}
+                >
+                  <CardAchievement
+                    description={card.description}
+                    date={card.date}
+                    className="mx-0 h-full w-full max-w-none"
+                    imageSizes={`${CARD_MAX_WIDTH}px`}
+                    compact
+                  />
+                </div>
+              ))}
             </div>
-          ))}
+          ) : null}
         </div>
       </div>
     );
   }
 
   return (
-    <div className="w-full select-none labProjectsSlider !pt-35 !pb-35">
+    <div className="w-full select-none labProjectsSlider !pt-20 !pb-35">
       <div
         ref={scrollViewportRef}
         className={
@@ -354,31 +426,40 @@ export default function LabProjectsSlider() {
           }`}
           style={!shouldAnimate ? { transform: "none" } : undefined}
         >
-          <div className="flex flex-col gap-12">
+          <div className="flex flex-col gap-12 pb-2">
             <div
               className="flex gap-8"
               style={
                 shouldAnimate
-                  ? { marginLeft: "calc((min(474px, calc(100vw - 48px)) / 2) - min(474px, calc(100vw - 48px)) - 2rem)" }
+                  ? {
+                      marginLeft: `calc((min(${CARD_MAX_WIDTH}px, calc(100vw - ${VIEWPORT_HORIZONTAL_PADDING}px)) / 2) - min(${CARD_MAX_WIDTH}px, calc(100vw - ${VIEWPORT_HORIZONTAL_PADDING}px)) - 2rem)`,
+                    }
                   : undefined
               }
             >
-              <div className="glass h-full w-[min(474px,calc(100vw-48px))] shrink-0 rounded-2xl p-[10px]" />
+              <div
+                className="glass h-full shrink-0 rounded-2xl p-[10px]"
+                style={{ width: `min(${CARD_MAX_WIDTH}px, calc(100vw - ${VIEWPORT_HORIZONTAL_PADDING}px))` }}
+              />
               {topRowCards.map((card, index) => (
                 <div
                   key={`${card.date}-top-${index}`}
-                  className="h-full w-[min(474px,calc(100vw-48px))] shrink-0"
+                  className="h-full shrink-0"
+                  style={{ width: `min(${CARD_MAX_WIDTH}px, calc(100vw - ${VIEWPORT_HORIZONTAL_PADDING}px))` }}
                 >
                   <CardAchievement
                     description={card.description}
                     date={card.date}
                     className="mx-0 h-full w-full max-w-none"
-                    imageSizes="474px"
+                    imageSizes={`${CARD_MAX_WIDTH}px`}
                     compact
                   />
                 </div>
               ))}
-              <div className="glass h-full w-[min(474px,calc(100vw-48px))] shrink-0 rounded-2xl p-[10px]" />
+              <div
+                className="glass h-full shrink-0 rounded-2xl p-[10px]"
+                style={{ width: `min(${CARD_MAX_WIDTH}px, calc(100vw - ${VIEWPORT_HORIZONTAL_PADDING}px))` }}
+              />
             </div>
             <div
               className="flex gap-8"
@@ -386,18 +467,22 @@ export default function LabProjectsSlider() {
               {bottomRowCards.map((card, index) => (
                 <div
                   key={`${card.date}-bottom-${index}`}
-                  className="h-full w-[min(474px,calc(100vw-48px))] shrink-0"
+                  className="h-full shrink-0"
+                  style={{ width: `min(${CARD_MAX_WIDTH}px, calc(100vw - ${VIEWPORT_HORIZONTAL_PADDING}px))` }}
                 >
                   <CardAchievement
                     description={card.description}
                     date={card.date}
                     className="mx-0 h-full w-full max-w-none"
-                    imageSizes="474px"
+                    imageSizes={`${CARD_MAX_WIDTH}px`}
                     compact
                   />
                 </div>
               ))}
-              <div className="glass h-full w-[min(474px,calc(100vw-48px))] shrink-0 rounded-2xl p-[10px]" />
+              <div
+                className="glass h-full shrink-0 rounded-2xl p-[10px]"
+                style={{ width: `min(${CARD_MAX_WIDTH}px, calc(100vw - ${VIEWPORT_HORIZONTAL_PADDING}px))` }}
+              />
             </div>
           </div>
         </div>

@@ -11,6 +11,9 @@ import type { LabAchievement } from "../../labs/constants";
 import CardAchievement from "./cardAchievement";
 
 const MIN_SLIDES_FOR_LOOP = 24;
+const ACHIEVEMENT_CARD_MAX_WIDTH = 440;
+const ACHIEVEMENT_MOBILE_VIEWPORT_PADDING = 48;
+const ACHIEVEMENT_DESKTOP_VIEWPORT_PADDING = 64;
 
 interface LabAchievementsSliderProps {
   achievements: LabAchievement[];
@@ -80,23 +83,22 @@ export default function LabAchievementsSlider({
   }
 
   if (!isMounted) {
-    return <div className="w-full select-none !pt-35 !pb-35" />;
+    return <div className="w-full select-none !pt-12 md:!pt-20 !pb-35" />;
   }
 
   return (
-    <div className="w-full select-none">
+    <div className="relative w-full select-none">
+      <div className="pointer-events-none absolute left-0 top-0 z-2 hidden h-full w-30 bg-gradient-to-r from-[#ffffff12] to-[#00000000] blur-lg md:block md:w-80" />
+      <div className="pointer-events-none absolute right-0 top-0 z-2 hidden h-full w-30 bg-gradient-to-l from-[#ffffff12] to-[#00000000] blur-lg md:block md:w-80" />
       <Swiper
         slidesPerView={"auto"}
-        spaceBetween={65}
+        spaceBetween={100}
         loop={!isMobile}
         loopAdditionalSlides={isMobile ? 0 : 2}
         loopPreventsSliding={isMobile}
-        watchSlidesProgress={!isMobile}
-        observer={!isMobile}
-        observeSlideChildren={!isMobile}
         centeredSlides={true}
         grabCursor={true}
-        className="!pt-35 !pb-35 select-none"
+        className="!pt-12 md:!pt-20 !pb-35 select-none"
         modules={[Navigation]}
         navigation={{
           prevEl: ".lab-achievements-prev",
@@ -116,7 +118,12 @@ export default function LabAchievementsSlider({
 
         {slidesToRender.map((item, index) => (
           <SwiperSlide key={`${item.date}-${index}`} className="!w-auto select-none">
-            <div className="w-[min(676px,calc(100vw-32px))] md:w-[min(676px,calc(100vw-48px))]">
+            <div
+              style={{
+                width: `min(${ACHIEVEMENT_CARD_MAX_WIDTH}px, calc(100vw - ${ACHIEVEMENT_MOBILE_VIEWPORT_PADDING}px))`,
+              }}
+              className="md:[width:min(440px,calc(100vw-64px))]"
+            >
               <CardAchievement
                 description={item.description}
                 date={item.date}

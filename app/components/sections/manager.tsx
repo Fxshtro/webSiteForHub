@@ -36,7 +36,7 @@ export default function ManagerCard({
           />
         </div>
         <div className="flex mt-5">
-          <div className="md:w-[130px] w-[110px] md:h-[130px] h-[110px] !bg-[#D9D9D925] !rounded-2xl glass custom-before">
+          <div className="md:w-[130px] w-[110px] md:h-[173.33px] h-[146.67px] !bg-[#D9D9D925] !rounded-2xl glass custom-before">
             {imageSrc && (
               <Image src={imageSrc} alt={name} fill className="object-cover rounded-2xl" />
             )}

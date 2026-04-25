@@ -9,13 +9,77 @@ import ManagerCard from "../components/sections/manager";
 import ScrollToTop from "../components/ui/tapToTop";
 import { getLabBySlug } from "../../DataBase/labs";
 import { getLabPeopleBySlug } from "../../DataBase/labs/people";
-import { homeLabs, homeManagers, homeStats } from "../../DataBase/main/home";
+import { homeAboutContent, homeLabs, homeManagers, homeStats } from "../../DataBase/main/home";
 
 import "swiper/css";
 import "swiper/css/navigation";
 import "swiper/css/pagination";
 
+const fallbackHomeAboutContent = {
+  title: "О ХАБЕ",
+  introText: "Описание хаба скоро появится.",
+  missionText: "Информация о миссии хаба скоро появится.",
+} as const;
+
+const fallbackHomeStats = [
+  {
+    label: "Статистика скоро появится",
+    icon: "/images/ui/icoHumans.svg",
+    iconClassName: "absolute -z-3 -top-8.5 -left-12.5",
+  },
+] as const;
+
+const fallbackHomeLabs = [
+  {
+    participants: 0,
+    project: 0,
+    img: "labIT.png",
+    slug: "it-lab",
+  },
+] as const;
+
+const fallbackHomeManagers = [
+  {
+    name: "Данные обновляются",
+    title: "Руководитель",
+    degree: "Информация появится позже",
+    phone: "+7 (000) 000-00-00",
+    email: "placeholder@iubip.ru",
+    imageSrc: undefined,
+  },
+] as const;
+
+const getSafeText = (value: string | undefined, fallback: string): string => {
+  const normalized = value?.trim();
+  return normalized && normalized.length > 0 ? normalized : fallback;
+};
+
 export default function Home() {
+  const aboutContent = {
+    title: getSafeText(homeAboutContent?.title, fallbackHomeAboutContent.title),
+    introText: getSafeText(homeAboutContent?.introText, fallbackHomeAboutContent.introText),
+    missionText: getSafeText(homeAboutContent?.missionText, fallbackHomeAboutContent.missionText),
+  };
+  const stats = (homeStats.length > 0 ? homeStats : fallbackHomeStats).map((item, index) => ({
+    label: getSafeText(item.label, `Статистика ${index + 1}`),
+    icon: getSafeText(item.icon, fallbackHomeStats[0].icon),
+    iconClassName: getSafeText(item.iconClassName, fallbackHomeStats[0].iconClassName),
+  }));
+  const labs = (homeLabs.length > 0 ? homeLabs : fallbackHomeLabs).map((lab, index) => ({
+    participants: Number.isFinite(lab.participants) ? Math.max(0, lab.participants) : 0,
+    project: Number.isFinite(lab.project) ? Math.max(0, lab.project) : 0,
+    img: getSafeText(lab.img, fallbackHomeLabs[0].img),
+    slug: getSafeText(lab.slug, fallbackHomeLabs[0].slug),
+  }));
+  const managers = (homeManagers.length > 0 ? homeManagers : fallbackHomeManagers).map((manager, index) => ({
+    name: getSafeText(manager.name, `Руководитель ${index + 1}`),
+    title: getSafeText(manager.title, fallbackHomeManagers[0].title),
+    degree: getSafeText(manager.degree, fallbackHomeManagers[0].degree),
+    phone: getSafeText(manager.phone, fallbackHomeManagers[0].phone),
+    email: getSafeText(manager.email, `manager${index + 1}@iubip.ru`),
+    imageSrc: manager.imageSrc,
+  }));
+
   return (
     <main>
       <ScrollToTop />
@@ -73,11 +137,11 @@ export default function Home() {
         <div className="container">
           <div className="md:flex items-start">
             <div className="flex md:w-[50%]">
-              <div className="glass ml-4 mr-4 mb-12 px-[25px] pt-[13px] pb-[22px] md:ml-22.5 md:mr-0 md:mb-22.5 sm:ml-12.5 sm:mr-12.5 md:max-w-[490px]">
+              <div className="glass !bg-[#0F0A1F99] ml-4 mr-4 mb-12 px-[25px] pt-[13px] pb-[22px] md:ml-22.5 md:mr-0 md:mb-22.5 sm:ml-12.5 sm:mr-12.5 md:max-w-[490px]">
                 <div className="absolute -z-3 -top-4 -left-4 h-20 w-20 rounded-full bg-gradient-to-br from-[#ffffff] to-75%"></div>
                 <p className="relative z-1 mb-3 flex">
                   <span className="xl:ml-10 ml-5 text-[28px] md:text-[30px] xl:text-[48px] font-black font-Unbounded">
-                    О ХАБЕ
+                    {aboutContent.title}
                   </span>
                   <Image
                     src="/logos/logo.svg"
@@ -90,20 +154,16 @@ export default function Home() {
                   />
                 </p>
                 <p className="relative z-1 text-[20px] md:text-[25px] xl:text-[32px] xl:leading-9">
-                  <span className="font-extrabold">Хаб</span> — это экосистема студенческих
-                  лабораторий Южного Университета &quot;ИУБиП&quot;
+                  {aboutContent.introText}
                 </p>
               </div>
             </div>
 
             <div className="md:w-[50%]">
-              <div className="glass ml-4 mr-4 md:mt-[165px] px-[25px] pt-[20px] pb-[20px] sm:ml-12.5 sm:mr-12.5 md:max-w-[520px]">
+              <div className="glass !bg-[#0F0A1F99] ml-4 mr-4 md:mt-[165px] px-[25px] pt-[20px] pb-[20px] sm:ml-12.5 sm:mr-12.5 md:max-w-[520px]">
                 <div className="absolute -z-3 -bottom-4 -right-4 h-20 w-20 rounded-full bg-gradient-to-tl from-[#ffffff] to-75%"></div>
                 <p className="relative z-1 text-[20px] md:text-[25px] xl:text-[32px] font-light xl:leading-9 md:text-justify [text-shadow:2px_2px_4px_#00000025]">
-                  Мы <span className="font-extrabold">объединяем</span> студентов, интересующихся
-                  разработкой, дизайном и другими цифровыми направлениями, чтобы дать им возможность{" "}
-                  <span className="font-extrabold">работать</span> над реальными проектами,
-                  <span className="font-extrabold"> получать опыт и создавать портфолио.</span>
+                  {aboutContent.missionText}
                 </p>
               </div>
             </div>
@@ -124,12 +184,12 @@ export default function Home() {
           </div>
           <h1 className="mt-[30px] text-center">СТАТИСТИКА</h1>
           <div className="mb-20 lineClass"></div>
-          <div className="flex flex-wrap justify-center items-start gap-x-10 px-10 gap-y-16 xl:gap-y-23">
-            {homeStats.map((item, index) => (
+          <div className="flex flex-wrap justify-center items-start gap-x-10 px-10 gap-y-12 md:gap-y-16 xl:gap-y-23">
+            {stats.map((item, index) => (
               <div
                 key={`${item.label}-${index}`}
                 className={`glass custom-before !rounded-2xl !bg-[#E9E3E620] px-[55px] py-[11.5px] text-center text-[16px] md:px-[75px] md:text-[26px] ${
-                  index === 1 ? "xl:transform xl:translate-y-13" : ""
+                  index === 1 ? "xl:translate-y-13" : ""
                 }`}
               >
                 <div className="z-1">{item.label}</div>
@@ -169,15 +229,16 @@ export default function Home() {
             </div>
             <div className="mx-auto">
               <div className="flex flex-wrap justify-center items-start gap-x-[93px] gap-y-[57px]">
-                {homeLabs.map((lab) => (
+                {labs.map((lab, index) => (
                   (() => {
                     const linkedLabData = getLabBySlug(lab.slug);
                     const participantsCount = getLabPeopleBySlug(lab.slug).length;
                     const projectsCount = linkedLabData?.projects.length ?? lab.project;
+                    const labName = linkedLabData?.name ?? `Лаборатория ${index + 1}`;
                     return (
                   <Card
                     key={lab.slug}
-                    name={lab.name}
+                    name={labName}
                     participants={participantsCount}
                     project={projectsCount}
                     img={lab.img}
@@ -249,7 +310,7 @@ export default function Home() {
           <h1 className="relative z-3 mt-5 text-center">Руководство</h1>
           <div className="lineClass"></div>
           <div className="mt-[70px] flex flex-wrap justify-center gap-x-[128px] gap-y-[60px]">
-            {homeManagers.map((manager, index) => (
+            {managers.map((manager, index) => (
               <ManagerCard
                 key={`${manager.email}-${index}`}
                 name={manager.name}

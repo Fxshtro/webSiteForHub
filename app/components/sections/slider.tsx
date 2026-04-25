@@ -10,9 +10,10 @@ import type { Swiper as SwiperType } from "swiper/types";
 import { homeAchievementSlides } from "../../../DataBase/main/home";
 
 const MIN_SLIDES_FOR_LOOP = 20;
+const FALLBACK_ACHIEVEMENT_SLIDES = [{ test: "Достижения скоро появятся" }] as const;
 
 export default function Lenta(): React.JSX.Element {
-  const cardInfo = homeAchievementSlides;
+  const cardInfo = homeAchievementSlides.length > 0 ? homeAchievementSlides : FALLBACK_ACHIEVEMENT_SLIDES;
   const [isMounted, setIsMounted] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
   const [canSlidePrev, setCanSlidePrev] = useState(true);
@@ -48,7 +49,7 @@ export default function Lenta(): React.JSX.Element {
       return cardInfo;
     }
     const merged: typeof cardInfo = [...cardInfo];
-    while (merged.length < MIN_SLIDES_FOR_LOOP) {
+    while (cardInfo.length > 0 && merged.length < MIN_SLIDES_FOR_LOOP) {
       merged.push(...cardInfo);
     }
     return merged;
@@ -76,9 +77,6 @@ export default function Lenta(): React.JSX.Element {
         loop={!isMobile}
         loopAdditionalSlides={isMobile ? 0 : 2}
         loopPreventsSliding={isMobile}
-        watchSlidesProgress={!isMobile}
-        observer={!isMobile}
-        observeSlideChildren={!isMobile}
         centeredSlides={true}
         grabCursor={true}
         className="!pt-35 !pb-35 select-none"

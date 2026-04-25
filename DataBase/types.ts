@@ -3,6 +3,26 @@ export interface LabProject {
   description: string;
 }
 
+export interface LabProjectLink {
+  url: string;
+  label?: string;
+}
+
+export interface LabProjectRegistryItem extends LabProject {
+  id: string;
+  labSlug: string;
+  projectIndex: number;
+  memberIds: string[];
+  links: LabProjectLink[];
+}
+
+export interface LabPersonProjectRef {
+  projectId: string;
+  projectIndex: number;
+  title: string;
+  roles: string[];
+}
+
 export interface LabAchievement {
   description: string;
   date: string;
@@ -13,9 +33,11 @@ export interface LabAchievement {
 export interface LabData {
   slug: string;
   name: string;
+  heroImageSrc: string;
   participants: number;
   projects: LabProject[];
   achievements: LabAchievement[];
+  leadership: LeadershipSlideItem[];
 }
 
 export interface HomeStatItem {
@@ -25,7 +47,6 @@ export interface HomeStatItem {
 }
 
 export interface HomeLabCardItem {
-  name: string;
   participants: number;
   project: number;
   img: string;
@@ -43,6 +64,12 @@ export interface HomeManagerItem {
 
 export interface HomeAchievementSlide {
   test: string;
+}
+
+export interface HomeAboutContent {
+  title: string;
+  introText: string;
+  missionText: string;
 }
 
 export interface LeadershipSlideItem {

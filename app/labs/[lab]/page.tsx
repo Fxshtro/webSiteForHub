@@ -8,6 +8,7 @@ import LabAchievementsSlider from "../../components/labs/labAchievementsSlider";
 import LabProjectsSlider from "../../components/labs/labProjectsSlider";
 import LabPeopleDrawer from "../../components/labs/labPeopleDrawer";
 import { getLabPeopleBySlug } from "../../../DataBase/labs/people";
+import { getLabProjectsBySlug } from "../../../DataBase/labs/projects";
 
 interface PageProps {
   params: Promise<{ lab: string }>;
@@ -37,11 +38,12 @@ export default async function LabPage({ params }: PageProps) {
   const labData = getLabBySlug(lab);
   if (!labData) notFound();
   const labPeople = getLabPeopleBySlug(labData.slug);
+  const labProjects = getLabProjectsBySlug(labData.slug);
 
   return (
     <main className="overflow-hidden">
       <ScrollToTop />
-      <LabPeopleDrawer people={labPeople} />
+      <LabPeopleDrawer labSlug={labData.slug} people={labPeople} />
       {/* Hero Section */}
       <div className="absolute top-0 left-0 -z-10 h-[1100px] w-full bg-gradient-to-b from-[#1C1261] to-black"></div>
       <div className="absolute top-0 -z-10 w-full h-[700px] overflow-hidden">
@@ -69,12 +71,12 @@ export default async function LabPage({ params }: PageProps) {
             <div className="flex items-center gap-4">
               <Image src="/icons/layers.svg" alt="" role="presentation" width={44} height={44} />
               <p className="sm:text-[24px] text-[16px] font-semibold font-unbounded">
-                ПРОЕКТОВ: {labData.projects.length}
+                ПРОЕКТОВ: {labProjects.length}
               </p>
             </div>
           </div>
           <div className="xl:relative -z-5 absolute xl:top-0 top-55 right-0">
-            <Image src="/images/labs/labImageIT.svg" alt="" role="presentation" 
+            <Image src={labData.heroImageSrc} alt="" role="presentation" 
             width={547} height={364} 
             className="relative max-[440px]:-top-5 -top-20 w-full h-full origin-top-right"/>
           </div>
@@ -108,7 +110,7 @@ export default async function LabPage({ params }: PageProps) {
         <div id="projects" className="containerSlider relative">
           <h1 className="relative z-3 text-center">проекты</h1>
           <div className="lineClass"></div>
-          <LabProjectsFilter projects={labData.projects} labSlug={labData.slug} />
+          <LabProjectsFilter projects={labProjects} labSlug={labData.slug} />
           <Image
             src="/images/decor/group-206.svg"
             width={2200}
@@ -139,15 +141,13 @@ export default async function LabPage({ params }: PageProps) {
         <div id="lab-achievements" className="containerSlider">
           <div className="relative h-full w-full">
             <div>
-              <div className="absolute -left-10 -top-20 z-2 h-30 w-100 -rotate-20 bg-gradient-to-b from-[#000000] from-50% to-[#00000000]"></div>
-              <div className="absolute left-0 top-0 z-1 h-full w-30 bg-gradient-to-r from-[#ffffff12] to-[#00000000] blur-lg md:w-80"></div>
-              <div className="absolute -left-10 top-1/2 z-2 h-[120%] w-10 -translate-y-1/2 bg-black"></div>
-              <div className="absolute -left-10 -bottom-20 z-2 h-30 w-100 rotate-20 bg-gradient-to-t from-[#000000] from-50% to-[#00000000]"></div>
+              <div className="absolute -left-10 -top-20 z-2 hidden h-30 w-100 -rotate-20 bg-gradient-to-b from-[#000000] from-50% to-[#00000000] md:block"></div>
+              <div className="absolute -left-10 top-1/2 z-2 hidden h-[120%] w-10 -translate-y-1/2 bg-black md:block"></div>
+              <div className="absolute -left-10 -bottom-20 z-2 hidden h-30 w-100 rotate-20 bg-gradient-to-t from-[#000000] from-50% to-[#00000000] md:block"></div>
 
-              <div className="absolute -right-10 top-1/2 z-2 h-[120%] w-10 -translate-y-1/2 bg-black"></div>
-              <div className="absolute -right-10 -top-20 z-2 h-30 w-100 rotate-20 bg-gradient-to-b from-[#000000] from-50% to-[#00000000]"></div>
-              <div className="absolute right-0 top-0 z-1 h-full w-30 bg-gradient-to-l from-[#ffffff12] to-[#00000000] blur-lg md:w-80"></div>
-              <div className="absolute -right-10 -bottom-20 z-2 h-30 w-100 -rotate-20 bg-gradient-to-t from-[#000000] from-50% to-[#00000000]"></div>
+              <div className="absolute -right-10 top-1/2 z-2 hidden h-[120%] w-10 -translate-y-1/2 bg-black md:block"></div>
+              <div className="absolute -right-10 -top-20 z-2 hidden h-30 w-100 rotate-20 bg-gradient-to-b from-[#000000] from-50% to-[#00000000] md:block"></div>
+              <div className="absolute -right-10 -bottom-20 z-2 hidden h-30 w-100 -rotate-20 bg-gradient-to-t from-[#000000] from-50% to-[#00000000] md:block"></div>
             </div>
             <LabAchievementsSlider achievements={labData.achievements} />
             <Image
@@ -179,7 +179,7 @@ export default async function LabPage({ params }: PageProps) {
         <h1 className="relative z-3 text-center">менеджеры и руководство</h1>
         <div className="lineClass"></div>
         <div className="containerSlider">
-          <LabProjectsSlider />
+          <LabProjectsSlider items={labData.leadership} />
         </div>
       </section>
     </main>
