@@ -1,7 +1,6 @@
-"use client";
 import Image from "next/image";
 
-export default function PieIco() {
+export default function PieIco(): React.JSX.Element {
   return (
     <div className="relative">
       <div className="w-[81px] h-[81px] rounded-full bg-gradient-to-t from-[#5929b1] to-[#6e32de]"></div>

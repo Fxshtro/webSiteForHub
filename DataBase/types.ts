@@ -1,6 +1,7 @@
 export interface LabProject {
   title: string;
   description: string;
+  details: string;
 }
 
 export interface LabProjectLink {
@@ -63,7 +64,10 @@ export interface HomeManagerItem {
 }
 
 export interface HomeAchievementSlide {
-  test: string;
+  description: string;
+  date: string;
+  imageSrc?: string;
+  imageAlt?: string;
 }
 
 export interface HomeAboutContent {

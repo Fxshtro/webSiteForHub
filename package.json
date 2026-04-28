@@ -9,7 +9,11 @@
     "start": "next start",
     "lint": "eslint . --ext .ts,.tsx",
     "lint:fix": "eslint . --ext .ts,.tsx --fix",
-    "format": "prettier --write \"**/*.{ts,tsx,js,jsx,json,css,md}\""
+    "typecheck": "tsc --noEmit",
+    "format": "prettier --write \"**/*.{ts,tsx,js,jsx,json,css,md}\"",
+    "format:check": "prettier --check \"**/*.{ts,tsx,js,jsx,json,css,md}\"",
+    "validate:data": "node scripts/validate-data.mjs",
+    "validate": "npm run typecheck && npm run lint && npm run validate:data && npm run build"
   },
   "dependencies": {
     "framer-motion": "^12.35.2",

@@ -1,6 +1,6 @@
-"use client";
 import Image from "next/image";
 import Link from "next/link";
+import { FALLBACK_IMAGE_SRC } from "../../constants/images";
 
 interface CardProps {
   name: string;
@@ -14,9 +14,14 @@ export default function Card({
   name = "name",
   participants = 0,
   project = 0,
-  img = "/default-image.jpg",
+  img = FALLBACK_IMAGE_SRC,
   slug = "",
-}: CardProps) {
+}: CardProps): React.JSX.Element {
+  const normalizedImage = img.trim();
+  const imageSrc = normalizedImage
+    ? normalizedImage.startsWith("/") ? normalizedImage : `/images/labs/${normalizedImage.split("/").pop()}`
+    : FALLBACK_IMAGE_SRC;
+
   return (
     <Link
       href={`/labs/${slug}`}
@@ -24,9 +29,10 @@ export default function Card({
     >
       <div className="w-full h-[198px] rounded-3xl overflow-hidden relative">
         <Image
-          src={`/images/labs/${img.split('/').pop()}`}
+          src={imageSrc}
           alt={`Изображение для карточки ${name}`}
           fill
+          quality={92}
           sizes="354px"
           loading="lazy"
           className="object-cover rounded-3xl [box-shadow:0px_4px_9px_#00000052]"

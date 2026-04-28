@@ -13,8 +13,10 @@ export const labsData: LabData[] = [
   psyTechLabData,
 ];
 
+const labsBySlug = new Map<string, LabData>(labsData.map((lab) => [lab.slug, lab]));
+
 export function getLabBySlug(slug: string): LabData | undefined {
-  return labsData.find((lab) => lab.slug === slug);
+  return labsBySlug.get(slug);
 }
 
 export function getAllLabSlugs(): string[] {

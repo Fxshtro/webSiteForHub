@@ -6,6 +6,7 @@ import "swiper/css";
 import { Swiper, SwiperSlide } from "swiper/react";
 import type { Swiper as SwiperType } from "swiper/types";
 import type { LabProjectRegistryItem } from "../../labs/constants";
+import { useMediaQuery } from "../../hooks/use-media-query";
 import CardProject from "./cardProject";
 
 interface LabProjectsFilterProps {
@@ -19,7 +20,7 @@ export default function LabProjectsFilter({
 }: LabProjectsFilterProps): React.JSX.Element {
   const rootRef = useRef<HTMLDivElement | null>(null);
   const [query, setQuery] = useState("");
-  const [isMobile, setIsMobile] = useState(false);
+  const isMobile = useMediaQuery("(max-width: 767px)");
   const [currentPage, setCurrentPage] = useState(1);
   const [maxProjectCardHeight, setMaxProjectCardHeight] = useState(0);
   const swiperRef = useRef<SwiperType | null>(null);
@@ -32,21 +33,6 @@ export default function LabProjectsFilter({
         p.title.toLowerCase().includes(q) || p.description.toLowerCase().includes(q),
     );
   }, [projects, query]);
-
-  useEffect(() => {
-    if (typeof window === "undefined") return;
-
-    const media = window.matchMedia("(max-width: 767px)");
-    const updateViewport = () => {
-      setIsMobile(media.matches);
-    };
-
-    updateViewport();
-    media.addEventListener("change", updateViewport);
-    return () => {
-      media.removeEventListener("change", updateViewport);
-    };
-  }, []);
 
   const cardsPerPage = isMobile ? 2 : 6;
   const pagedProjects = useMemo((): LabProjectRegistryItem[][] => {
@@ -65,14 +51,26 @@ export default function LabProjectsFilter({
   const hasPagination = totalPages > 1;
   const activePage = Math.min(currentPage, totalPages);
 
-  const changePage = (nextPage: number): void => {
+  const changePage = useCallback((nextPage: number): void => {
     if (nextPage === activePage) return;
     swiperRef.current?.slideTo(nextPage - 1);
-  };
+  }, [activePage]);
 
-  const handleSlideChange = (swiper: SwiperType): void => {
+  const handleSwiper = useCallback((swiper: SwiperType): void => {
+    swiperRef.current = swiper;
+  }, []);
+
+  const handleSlideChange = useCallback((swiper: SwiperType): void => {
     setCurrentPage(swiper.activeIndex + 1);
-  };
+  }, []);
+
+  const handlePreviousPage = useCallback((): void => {
+    changePage(Math.max(1, activePage - 1));
+  }, [activePage, changePage]);
+
+  const handleNextPage = useCallback((): void => {
+    changePage(Math.min(totalPages, activePage + 1));
+  }, [activePage, changePage, totalPages]);
 
   const handleSearchChange = useCallback((event: ChangeEvent<HTMLInputElement>): void => {
     setQuery(event.target.value);
@@ -141,9 +139,7 @@ export default function LabProjectsFilter({
             <Swiper
               className="lab-projects-filter-swiper w-full select-none"
               speed={500}
-              onSwiper={(swiper): void => {
-                swiperRef.current = swiper;
-              }}
+              onSwiper={handleSwiper}
               onSlideChange={handleSlideChange}
             >
               {pagedProjects.map((pageProjects, pageIndex) => {
@@ -201,7 +197,7 @@ export default function LabProjectsFilter({
             <div className="mb-10 flex items-center justify-center gap-4 px-4">
               <button
                 type="button"
-                onClick={() => changePage(Math.max(1, activePage - 1))}
+                onClick={handlePreviousPage}
                 disabled={activePage === 1}
                 className="lab-projects-filter-prev glass flex h-[48px] w-[48px] items-center justify-center disabled:cursor-not-allowed disabled:opacity-40"
                 aria-label="Предыдущая страница проектов"
@@ -213,7 +209,7 @@ export default function LabProjectsFilter({
               </p>
               <button
                 type="button"
-                onClick={() => changePage(Math.min(totalPages, activePage + 1))}
+                onClick={handleNextPage}
                 disabled={activePage === totalPages}
                 className="lab-projects-filter-next glass flex h-[48px] w-[48px] items-center justify-center disabled:cursor-not-allowed disabled:opacity-40"
                 aria-label="Следующая страница проектов"

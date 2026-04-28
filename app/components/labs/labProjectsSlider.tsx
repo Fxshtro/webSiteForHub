@@ -1,11 +1,11 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
-import "../../globals.css";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import "swiper/css";
 import { Swiper, SwiperSlide } from "swiper/react";
 import type { Swiper as SwiperType } from "swiper/types";
 import type { LeadershipSlideItem } from "../../../DataBase/types";
+import { useMediaQuery } from "../../hooks/use-media-query";
 import CardAchievement from "./cardAchievement";
 
 const DESKTOP_STATIC_CARDS_COUNT = 6;
@@ -17,11 +17,11 @@ interface LabProjectsSliderProps {
   items: LeadershipSlideItem[];
 }
 
-export default function LabProjectsSlider({ items }: LabProjectsSliderProps) {
+export default function LabProjectsSlider({ items }: LabProjectsSliderProps): React.JSX.Element {
   const cardInfo = items;
 
   const shouldAnimate = cardInfo.length > 6;
-  const [isMobile, setIsMobile] = useState(false);
+  const isMobile = useMediaQuery("(max-width: 767px)");
   const [mobilePage, setMobilePage] = useState(1);
   const [maxMobileCardHeight, setMaxMobileCardHeight] = useState(0);
   const mobileSwiperRef = useRef<SwiperType | null>(null);
@@ -65,34 +65,33 @@ export default function LabProjectsSlider({ items }: LabProjectsSliderProps) {
 
     return { topRowCards: top, bottomRowCards: bottom };
   }, [cardInfo]);
-  const mobileCards = useMemo((): LeadershipSlideItem[] => cardInfo, [cardInfo]);
   const mobileCardsPerPage = 2;
   const mobilePages = useMemo((): LeadershipSlideItem[][] => {
     const pages: LeadershipSlideItem[][] = [];
-    for (let index = 0; index < mobileCards.length; index += mobileCardsPerPage) {
-      pages.push(mobileCards.slice(index, index + mobileCardsPerPage));
+    for (let index = 0; index < cardInfo.length; index += mobileCardsPerPage) {
+      pages.push(cardInfo.slice(index, index + mobileCardsPerPage));
     }
     return pages;
-  }, [mobileCards]);
+  }, [cardInfo]);
   const mobileTotalPages = Math.max(1, mobilePages.length);
 
-  const clearResumeTimer = (): void => {
+  const clearResumeTimer = useCallback((): void => {
     if (resumeTimerRef.current) window.clearTimeout(resumeTimerRef.current);
     resumeTimerRef.current = null;
-  };
+  }, []);
 
-  const stopAnimation = (): void => {
+  const stopAnimation = useCallback((): void => {
     if (rafRef.current) window.cancelAnimationFrame(rafRef.current);
     rafRef.current = null;
     lastTimeRef.current = null;
-  };
+  }, []);
 
-  const applyOffset = (offset: number): void => {
+  const applyOffset = useCallback((offset: number): void => {
     if (!trackRef.current) return;
     trackRef.current.style.transform = `translate3d(${-offset}px, 0, 0)`;
-  };
+  }, []);
 
-  const recalculateBounds = (): void => {
+  const recalculateBounds = useCallback((): void => {
     const viewport = scrollViewportRef.current;
     const track = trackRef.current;
     if (!viewport || !track) return;
@@ -111,13 +110,13 @@ export default function LabProjectsSlider({ items }: LabProjectsSliderProps) {
     maxOffsetRef.current = rawMaxOffset;
     offsetRef.current = Math.min(Math.max(offsetRef.current, minOffsetRef.current), maxOffsetRef.current);
     applyOffset(offsetRef.current);
-  };
+  }, [applyOffset, bottomRowCards.length, topRowCards.length]);
 
-  const clampOffset = (value: number): number => {
+  const clampOffset = useCallback((value: number): number => {
     return Math.min(Math.max(value, minOffsetRef.current), maxOffsetRef.current);
-  };
+  }, []);
 
-  const startAnimation = (): void => {
+  const startAnimation = useCallback((): void => {
     if (!shouldAnimate) return;
     stopAnimation();
     lastTimeRef.current = null;
@@ -148,16 +147,16 @@ export default function LabProjectsSlider({ items }: LabProjectsSliderProps) {
     };
 
     rafRef.current = window.requestAnimationFrame(step);
-  };
+  }, [applyOffset, shouldAnimate, stopAnimation]);
 
-  const scheduleAutoResume = (): void => {
+  const scheduleAutoResume = useCallback((): void => {
     clearResumeTimer();
     resumeTimerRef.current = window.setTimeout(() => {
       startAnimation();
     }, 15000);
-  };
+  }, [clearResumeTimer, startAnimation]);
 
-  const handlePointerDown = (event: React.PointerEvent<HTMLDivElement>): void => {
+  const handlePointerDown = useCallback((event: React.PointerEvent<HTMLDivElement>): void => {
     if (!shouldAnimate) return;
     event.preventDefault();
     isDraggingRef.current = true;
@@ -166,52 +165,60 @@ export default function LabProjectsSlider({ items }: LabProjectsSliderProps) {
     event.currentTarget.setPointerCapture(event.pointerId);
     stopAnimation();
     clearResumeTimer();
-  };
+  }, [clearResumeTimer, shouldAnimate, stopAnimation]);
 
-  const handlePointerMove = (event: React.PointerEvent<HTMLDivElement>): void => {
+  const handlePointerMove = useCallback((event: React.PointerEvent<HTMLDivElement>): void => {
     if (!shouldAnimate || !isDraggingRef.current) return;
     const deltaX = event.clientX - dragStartXRef.current;
     const nextOffset = clampOffset(dragStartOffsetRef.current - deltaX);
     directionRef.current = nextOffset >= offsetRef.current ? 1 : -1;
     offsetRef.current = nextOffset;
     applyOffset(nextOffset);
-  };
+  }, [applyOffset, clampOffset, shouldAnimate]);
 
-  const handlePointerUp = (event: React.PointerEvent<HTMLDivElement>): void => {
+  const handlePointerUp = useCallback((event: React.PointerEvent<HTMLDivElement>): void => {
     if (!shouldAnimate) return;
     if (!isDraggingRef.current) return;
     isDraggingRef.current = false;
     event.currentTarget.releasePointerCapture(event.pointerId);
     scheduleAutoResume();
-  };
-
-  useEffect(() => {
-    if (typeof window === "undefined") return;
-    const media = window.matchMedia("(max-width: 767px)");
-    const updateViewport = () => {
-      setIsMobile(media.matches);
-    };
-    updateViewport();
-    media.addEventListener("change", updateViewport);
-    return () => {
-      media.removeEventListener("change", updateViewport);
-    };
-  }, []);
+  }, [scheduleAutoResume, shouldAnimate]);
 
   useEffect(() => {
     if (!isMobile) return;
-    setMobilePage(1);
-    mobileSwiperRef.current?.slideTo(0, 0);
+    const rafId = window.requestAnimationFrame(() => {
+      setMobilePage(1);
+      mobileSwiperRef.current?.slideTo(0, 0);
+    });
+
+    return (): void => {
+      window.cancelAnimationFrame(rafId);
+    };
   }, [isMobile]);
 
   useEffect(() => {
     if (mobilePage <= mobileTotalPages) return;
-    setMobilePage(mobileTotalPages);
+    const rafId = window.requestAnimationFrame(() => {
+      setMobilePage(mobileTotalPages);
+    });
+
+    return (): void => {
+      window.cancelAnimationFrame(rafId);
+    };
   }, [mobilePage, mobileTotalPages]);
 
   useEffect(() => {
     if (!isMobile) {
-      setMaxMobileCardHeight(0);
+      const rafId = window.requestAnimationFrame(() => {
+        setMaxMobileCardHeight(0);
+      });
+
+      return (): void => {
+        window.cancelAnimationFrame(rafId);
+      };
+    }
+
+    if (typeof window === "undefined") {
       return;
     }
 
@@ -239,10 +246,26 @@ export default function LabProjectsSlider({ items }: LabProjectsSliderProps) {
     };
   }, [isMobile, mobilePages, mobileTotalPages]);
 
-  const changeMobilePage = (nextPage: number): void => {
+  const changeMobilePage = useCallback((nextPage: number): void => {
     if (nextPage === mobilePage) return;
     mobileSwiperRef.current?.slideTo(nextPage - 1);
-  };
+  }, [mobilePage]);
+
+  const handleMobileSwiper = useCallback((swiper: SwiperType): void => {
+    mobileSwiperRef.current = swiper;
+  }, []);
+
+  const handleMobileSlideChange = useCallback((swiper: SwiperType): void => {
+    setMobilePage(swiper.activeIndex + 1);
+  }, []);
+
+  const handlePreviousMobilePage = useCallback((): void => {
+    changeMobilePage(Math.max(1, mobilePage - 1));
+  }, [changeMobilePage, mobilePage]);
+
+  const handleNextMobilePage = useCallback((): void => {
+    changeMobilePage(Math.min(mobileTotalPages, mobilePage + 1));
+  }, [changeMobilePage, mobilePage, mobileTotalPages]);
 
   useEffect(() => {
     if (isMobile) {
@@ -274,7 +297,17 @@ export default function LabProjectsSlider({ items }: LabProjectsSliderProps) {
       stopAnimation();
       clearResumeTimer();
     };
-  }, [isMobile, shouldAnimate, topRowCards.length, bottomRowCards.length]);
+  }, [
+    applyOffset,
+    bottomRowCards.length,
+    clearResumeTimer,
+    isMobile,
+    recalculateBounds,
+    shouldAnimate,
+    startAnimation,
+    stopAnimation,
+    topRowCards.length,
+  ]);
 
   if (isMobile) {
     return (
@@ -283,12 +316,8 @@ export default function LabProjectsSlider({ items }: LabProjectsSliderProps) {
           <Swiper
             className="lab-projects-mobile-swiper w-full select-none"
             speed={500}
-            onSwiper={(swiper): void => {
-              mobileSwiperRef.current = swiper;
-            }}
-            onSlideChange={(swiper): void => {
-              setMobilePage(swiper.activeIndex + 1);
-            }}
+            onSwiper={handleMobileSwiper}
+            onSlideChange={handleMobileSlideChange}
           >
             {mobilePages.map((pageCards, pageIndex) => (
               <SwiperSlide key={`mobile-projects-page-${pageIndex}`}>
@@ -336,7 +365,7 @@ export default function LabProjectsSlider({ items }: LabProjectsSliderProps) {
         <div className="mt-6 flex items-center justify-center gap-4 px-4">
           <button
             type="button"
-            onClick={() => changeMobilePage(Math.max(1, mobilePage - 1))}
+            onClick={handlePreviousMobilePage}
             disabled={mobilePage === 1}
             className="lab-projects-mobile-prev glass flex h-[48px] w-[48px] items-center justify-center disabled:cursor-not-allowed disabled:opacity-40"
             aria-label="Предыдущая страница карточек"
@@ -348,7 +377,7 @@ export default function LabProjectsSlider({ items }: LabProjectsSliderProps) {
           </p>
           <button
             type="button"
-            onClick={() => changeMobilePage(Math.min(mobileTotalPages, mobilePage + 1))}
+            onClick={handleNextMobilePage}
             disabled={mobilePage === mobileTotalPages}
             className="lab-projects-mobile-next glass flex h-[48px] w-[48px] items-center justify-center disabled:cursor-not-allowed disabled:opacity-40"
             aria-label="Следующая страница карточек"

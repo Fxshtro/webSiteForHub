@@ -5,6 +5,7 @@ import { notFound } from "next/navigation";
 import LabAchievementsSlider from "../../../../components/labs/labAchievementsSlider";
 import LabPeopleDrawer from "../../../../components/labs/labPeopleDrawer";
 import ScrollToTop from "../../../../components/ui/tapToTop";
+import type { LabAchievement } from "../../../../../DataBase/types";
 import { getLabBySlug } from "../../../../../DataBase/labs";
 import { getLabPeopleBySlug } from "../../../../../DataBase/labs/people";
 import {
@@ -18,7 +19,7 @@ const LAB_TITLE_PNG_BY_SLUG = {
   "inno-travel": "/images/labs/labImageTRAVEL.png",
   "finprocess-tech": "/images/labs/labImageFINP.png",
   "psy-tech": "/images/labs/labImagePSY.png",
-} as const;
+} satisfies Record<string, string>;
 
 interface ProjectPageProps {
   params: Promise<{ lab: string; project: string }>;
@@ -34,15 +35,42 @@ export function generateStaticParams(): { lab: string; project: string }[] {
   return getAllLabProjectParams();
 }
 
+function getLabTitleImageSrc(slug: string, fallbackSrc: string): string {
+  if (!isLabTitleImageSlug(slug)) {
+    return fallbackSrc;
+  }
+
+  return LAB_TITLE_PNG_BY_SLUG[slug];
+}
+
+function isLabTitleImageSlug(slug: string): slug is keyof typeof LAB_TITLE_PNG_BY_SLUG {
+  return Object.hasOwn(LAB_TITLE_PNG_BY_SLUG, slug);
+}
+
+function getProjectAchievements(achievements: LabAchievement[], projectIndex: number): LabAchievement[] {
+  const startIndex = projectIndex % Math.max(achievements.length - 2, 1);
+
+  return achievements.slice(startIndex, startIndex + 2);
+}
+
 export async function generateMetadata({ params }: ProjectPageProps): Promise<Metadata> {
   const { lab, project } = await params;
   const labData = getLabBySlug(lab);
   const projectData = getLabProjectById(lab, project);
+  const title = labData && projectData
+    ? `${projectData.title} | ${labData.name}`
+    : "Проект | Студенческий Цифровой Хаб";
+  const description = projectData?.description ?? "Страница проекта студенческой лаборатории.";
 
   return {
-    title: labData && projectData
-      ? `${projectData.title} | ${labData.name}`
-      : "Проект | Студенческий Цифровой Хаб",
+    title,
+    description,
+    openGraph: {
+      title,
+      description,
+      type: "article",
+      locale: "ru_RU",
+    },
   };
 }
 
@@ -72,12 +100,10 @@ export default async function ProjectPage({ params }: ProjectPageProps): Promise
   }
 
   const labPeople = getLabPeopleBySlug(labData.slug);
-  const projectPeople = labPeople.filter((person) => projectData.memberIds.includes(person.id));
-  const labTitleImageSrc = LAB_TITLE_PNG_BY_SLUG[labData.slug as keyof typeof LAB_TITLE_PNG_BY_SLUG] ?? labData.heroImageSrc;
-  const projectAchievements = labData.achievements.slice(
-    projectData.projectIndex % Math.max(labData.achievements.length - 2, 1),
-    projectData.projectIndex % Math.max(labData.achievements.length - 2, 1) + 2,
-  );
+  const projectMemberIds = new Set(projectData.memberIds);
+  const projectPeople = labPeople.filter((person) => projectMemberIds.has(person.id));
+  const labTitleImageSrc = getLabTitleImageSrc(labData.slug, labData.heroImageSrc);
+  const projectAchievements = getProjectAchievements(labData.achievements, projectData.projectIndex);
 
   return (
     <main className="overflow-hidden pb-24">
@@ -132,7 +158,7 @@ export default async function ProjectPage({ params }: ProjectPageProps): Promise
         <div className="mt-20 grid gap-6 md:mt-28 xl:grid-cols-[minmax(0,1.2fr)_minmax(320px,0.8fr)]">
           <div className="grid gap-6">
             <ProjectInfoCard iconClassName="fa-align-left" title="Описание">
-              <p>{projectData.description}</p>
+              <p>{projectData.details}</p>
             </ProjectInfoCard>
 
           </div>

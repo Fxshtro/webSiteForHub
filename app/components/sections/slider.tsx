@@ -1,73 +1,57 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
-import "../../globals.css";
+import { useCallback, useMemo, useState } from "react";
 import "swiper/css";
 import "swiper/css/navigation";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Navigation } from "swiper/modules";
 import type { Swiper as SwiperType } from "swiper/types";
 import { homeAchievementSlides } from "../../../DataBase/main/home";
+import type { HomeAchievementSlide } from "../../../DataBase/types";
+import { useMediaQuery } from "../../hooks/use-media-query";
+import CardAchievement from "../labs/cardAchievement";
 
 const MIN_SLIDES_FOR_LOOP = 20;
-const FALLBACK_ACHIEVEMENT_SLIDES = [{ test: "Достижения скоро появятся" }] as const;
+const ACHIEVEMENT_CARD_MAX_WIDTH = 440;
+const ACHIEVEMENT_MOBILE_VIEWPORT_PADDING = 48;
+const FALLBACK_ACHIEVEMENT_SLIDES: HomeAchievementSlide[] = [
+  {
+    description: "Достижения скоро появятся.",
+    date: "Скоро",
+  },
+];
 
 export default function Lenta(): React.JSX.Element {
-  const cardInfo = homeAchievementSlides.length > 0 ? homeAchievementSlides : FALLBACK_ACHIEVEMENT_SLIDES;
-  const [isMounted, setIsMounted] = useState(false);
-  const [isMobile, setIsMobile] = useState(false);
+  const cardInfo = useMemo<HomeAchievementSlide[]>(() => {
+    return homeAchievementSlides.length > 0 ? homeAchievementSlides : FALLBACK_ACHIEVEMENT_SLIDES;
+  }, []);
+  const isMobile = useMediaQuery("(max-width: 767px)");
   const [canSlidePrev, setCanSlidePrev] = useState(true);
   const [canSlideNext, setCanSlideNext] = useState(true);
 
-  useEffect((): (() => void) => {
-    setIsMounted(true);
-    const media = window.matchMedia("(max-width: 767px)");
-    const updateViewport = (): void => {
-      setIsMobile(media.matches);
-    };
-
-    updateViewport();
-    media.addEventListener("change", updateViewport);
-
-    return (): void => {
-      media.removeEventListener("change", updateViewport);
-    };
-  }, []);
-
-  useEffect((): void => {
-    if (!isMobile) {
-      setCanSlidePrev(true);
-      setCanSlideNext(true);
-      return;
-    }
-    setCanSlidePrev(false);
-    setCanSlideNext(cardInfo.length > 1);
-  }, [cardInfo.length, isMobile]);
-
-  const slidesToRender = useMemo(() => {
+  const slidesToRender = useMemo((): HomeAchievementSlide[] => {
     if (isMobile) {
       return cardInfo;
     }
-    const merged: typeof cardInfo = [...cardInfo];
+    const merged: HomeAchievementSlide[] = [...cardInfo];
     while (cardInfo.length > 0 && merged.length < MIN_SLIDES_FOR_LOOP) {
       merged.push(...cardInfo);
     }
     return merged;
   }, [cardInfo, isMobile]);
 
-  const syncNavigationVisibility = (swiper: SwiperType): void => {
-    if (!isMobile) {
-      setCanSlidePrev(true);
-      setCanSlideNext(true);
-      return;
-    }
-    setCanSlidePrev(!swiper.isBeginning);
-    setCanSlideNext(!swiper.isEnd);
-  };
-
-  if (!isMounted) {
-    return <div className="w-full select-none !pt-35 !pb-35" />;
-  }
+  const syncNavigationVisibility = useCallback(
+    (swiper: SwiperType): void => {
+      if (!isMobile) {
+        setCanSlidePrev(true);
+        setCanSlideNext(true);
+        return;
+      }
+      setCanSlidePrev(!swiper.isBeginning);
+      setCanSlideNext(!swiper.isEnd);
+    },
+    [isMobile],
+  );
 
   return (
     <div className="w-full select-none">
@@ -79,7 +63,7 @@ export default function Lenta(): React.JSX.Element {
         loopPreventsSliding={isMobile}
         centeredSlides={true}
         grabCursor={true}
-        className="!pt-35 !pb-35 select-none"
+        className="!pt-12 md:!pt-20 !pb-35 select-none"
         modules={[Navigation]}
         navigation={{
           prevEl: ".custom-prev",
@@ -98,11 +82,20 @@ export default function Lenta(): React.JSX.Element {
         </button>
 
         {slidesToRender.map((card, index) => (
-          <SwiperSlide key={index} className="!w-auto select-none">
-            <div className="w-[300px] md:w-[627px] h-[220px] md:h-[405px] px-[12px] pt-[12px] pb-[12px] glass hover:![box-shadow:0px_0px_50px_#ffffff1a,_inset_0px_0px_50px_#ffffff1e] duration-200">
-              <div className="relative z-10 h-full flex flex-col items-center justify-center text-white">
-                <h3 className="text-2xl font-bold select-none">{card.test}</h3>
-              </div>
+          <SwiperSlide key={`${card.date}-${index}`} className="!w-auto select-none">
+            <div
+              style={{
+                width: `min(${ACHIEVEMENT_CARD_MAX_WIDTH}px, calc(100vw - ${ACHIEVEMENT_MOBILE_VIEWPORT_PADDING}px))`,
+              }}
+              className="md:[width:min(440px,calc(100vw-64px))]"
+            >
+              <CardAchievement
+                description={card.description}
+                date={card.date}
+                imageSrc={card.imageSrc}
+                imageAlt={card.imageAlt ?? ""}
+                className="max-w-none"
+              />
             </div>
           </SwiperSlide>
         ))}

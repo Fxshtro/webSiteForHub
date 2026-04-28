@@ -1,5 +1,3 @@
-"use client";
-
 import Image from "next/image";
 import IconStates from "../components/sections/IconStates";
 import PieIco from "../components/sections/pie";
@@ -10,10 +8,6 @@ import ScrollToTop from "../components/ui/tapToTop";
 import { getLabBySlug } from "../../DataBase/labs";
 import { getLabPeopleBySlug } from "../../DataBase/labs/people";
 import { homeAboutContent, homeLabs, homeManagers, homeStats } from "../../DataBase/main/home";
-
-import "swiper/css";
-import "swiper/css/navigation";
-import "swiper/css/pagination";
 
 const fallbackHomeAboutContent = {
   title: "О ХАБЕ",
@@ -54,7 +48,15 @@ const getSafeText = (value: string | undefined, fallback: string): string => {
   return normalized && normalized.length > 0 ? normalized : fallback;
 };
 
-export default function Home() {
+interface HomeLabViewModel {
+  name: string;
+  participants: number;
+  project: number;
+  img: string;
+  slug: string;
+}
+
+export default function Home(): React.JSX.Element {
   const aboutContent = {
     title: getSafeText(homeAboutContent?.title, fallbackHomeAboutContent.title),
     introText: getSafeText(homeAboutContent?.introText, fallbackHomeAboutContent.introText),
@@ -65,12 +67,18 @@ export default function Home() {
     icon: getSafeText(item.icon, fallbackHomeStats[0].icon),
     iconClassName: getSafeText(item.iconClassName, fallbackHomeStats[0].iconClassName),
   }));
-  const labs = (homeLabs.length > 0 ? homeLabs : fallbackHomeLabs).map((lab, index) => ({
-    participants: Number.isFinite(lab.participants) ? Math.max(0, lab.participants) : 0,
-    project: Number.isFinite(lab.project) ? Math.max(0, lab.project) : 0,
-    img: getSafeText(lab.img, fallbackHomeLabs[0].img),
-    slug: getSafeText(lab.slug, fallbackHomeLabs[0].slug),
-  }));
+  const labs: HomeLabViewModel[] = (homeLabs.length > 0 ? homeLabs : fallbackHomeLabs).map((lab, index) => {
+    const slug = getSafeText(lab.slug, fallbackHomeLabs[0].slug);
+    const linkedLabData = getLabBySlug(slug);
+
+    return {
+      name: linkedLabData?.name ?? `Лаборатория ${index + 1}`,
+      participants: getLabPeopleBySlug(slug).length,
+      project: linkedLabData?.projects.length ?? (Number.isFinite(lab.project) ? Math.max(0, lab.project) : 0),
+      img: getSafeText(lab.img, fallbackHomeLabs[0].img),
+      slug,
+    };
+  });
   const managers = (homeManagers.length > 0 ? homeManagers : fallbackHomeManagers).map((manager, index) => ({
     name: getSafeText(manager.name, `Руководитель ${index + 1}`),
     title: getSafeText(manager.title, fallbackHomeManagers[0].title),
@@ -229,23 +237,15 @@ export default function Home() {
             </div>
             <div className="mx-auto">
               <div className="flex flex-wrap justify-center items-start gap-x-[93px] gap-y-[57px]">
-                {labs.map((lab, index) => (
-                  (() => {
-                    const linkedLabData = getLabBySlug(lab.slug);
-                    const participantsCount = getLabPeopleBySlug(lab.slug).length;
-                    const projectsCount = linkedLabData?.projects.length ?? lab.project;
-                    const labName = linkedLabData?.name ?? `Лаборатория ${index + 1}`;
-                    return (
+                {labs.map((lab) => (
                   <Card
                     key={lab.slug}
-                    name={labName}
-                    participants={participantsCount}
-                    project={projectsCount}
+                    name={lab.name}
+                    participants={lab.participants}
+                    project={lab.project}
                     img={lab.img}
                     slug={lab.slug}
                   />
-                    );
-                  })()
                 ))}
               </div>
             </div>

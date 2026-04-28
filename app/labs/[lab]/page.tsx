@@ -14,31 +14,42 @@ interface PageProps {
   params: Promise<{ lab: string }>;
 }
 
-// Генерация метаданных для каждой лаборатории
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { lab } = await params;
   const labData = getLabBySlug(lab);
+  const title = labData
+    ? `${labData.name} | Студенческий Цифровой Хаб`
+    : "Лаборатория | Студенческий Цифровой Хаб";
+  const description = labData
+    ? `Проекты, участники и достижения направления ${labData.name} в Студенческом Цифровом Хабе.`
+    : "Проекты, участники и достижения студенческой лаборатории.";
 
   return {
-    title: labData
-      ? `${labData.name} | Студенческий Цифровой Хаб`
-      : "Лаборатория | Студенческий Цифровой Хаб",
+    title,
+    description,
+    openGraph: {
+      title,
+      description,
+      type: "website",
+      locale: "ru_RU",
+    },
   };
 }
 
-// Генерация статических путей для всех лабораторий
-export function generateStaticParams() {
+export function generateStaticParams(): { lab: string }[] {
   return getAllLabSlugs().map((slug) => ({
     lab: slug,
   }));
 }
 
-export default async function LabPage({ params }: PageProps) {
+export default async function LabPage({ params }: PageProps): Promise<React.JSX.Element> {
   const { lab } = await params;
   const labData = getLabBySlug(lab);
   if (!labData) notFound();
   const labPeople = getLabPeopleBySlug(labData.slug);
   const labProjects = getLabProjectsBySlug(labData.slug);
+  const peopleCount = labPeople.length;
+  const projectsCount = labProjects.length;
 
   return (
     <main className="overflow-hidden">
@@ -65,20 +76,26 @@ export default async function LabPage({ params }: PageProps) {
             <div className="flex items-center gap-4 mt-2">
               <Image src="/icons/person.svg" alt="" role="presentation" width={44} height={44} />
               <p className="sm:text-[24px] text-[16px] font-semibold font-unbounded leading-6">
-                УЧАСТНИКОВ: {labPeople.length}
+                УЧАСТНИКОВ: {peopleCount}
               </p>
             </div>
             <div className="flex items-center gap-4">
               <Image src="/icons/layers.svg" alt="" role="presentation" width={44} height={44} />
               <p className="sm:text-[24px] text-[16px] font-semibold font-unbounded">
-                ПРОЕКТОВ: {labProjects.length}
+                ПРОЕКТОВ: {projectsCount}
               </p>
             </div>
           </div>
           <div className="xl:relative -z-5 absolute xl:top-0 top-55 right-0">
-            <Image src={labData.heroImageSrc} alt="" role="presentation" 
-            width={547} height={364} 
-            className="relative max-[440px]:-top-5 -top-20 w-full h-full origin-top-right"/>
+            <Image
+              src={labData.heroImageSrc}
+              alt=""
+              role="presentation"
+              width={547}
+              height={364}
+              sizes="(max-width: 768px) 70vw, 547px"
+              className="relative max-[440px]:-top-5 -top-20 w-full h-full origin-top-right"
+            />
           </div>
         </div>
       </section>

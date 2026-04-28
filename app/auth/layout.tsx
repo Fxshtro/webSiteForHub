@@ -1,19 +1,7 @@
 import type { Metadata } from "next";
-import { Jost, Unbounded } from "next/font/google";
 import Header from "../components/layout/header";
+import { fontVariables } from "../fonts";
 import "../globals.css";
-
-const jost = Jost({
-  subsets: ["latin", "cyrillic"],
-  variable: "--font-jost",
-  display: "swap",
-});
-
-const unbounded = Unbounded({
-  subsets: ["latin", "cyrillic"],
-  variable: "--font-unbounded",
-  display: "swap",
-});
 
 export const metadata: Metadata = {
   title: "Вход в систему | ИУБиП Хаб",
@@ -21,9 +9,9 @@ export const metadata: Metadata = {
   keywords: ["вход", "авторизация", "ИУБиП", "хаб"],
 };
 
-export default function AuthLayout({ children }: { children: React.ReactNode }) {
+export default function AuthLayout({ children }: { children: React.ReactNode }): React.JSX.Element {
   return (
-    <html lang="ru" className={`${jost.variable} ${unbounded.variable}`}>
+    <html lang="ru" className={fontVariables}>
       <body className="h-full overflow-hidden">
         <Header showAuthButton={false} />
         {children}

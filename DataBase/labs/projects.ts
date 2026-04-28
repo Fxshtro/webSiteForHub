@@ -87,19 +87,58 @@ function createRegistryProject(record: LabProjectRegistryRecord): LabProjectRegi
   };
 }
 
+function createProjectKey(labSlug: string, projectId: string): string {
+  return `${labSlug}:${projectId}`;
+}
+
+function createProjectIndexKey(labSlug: string, projectIndex: number): string {
+  return `${labSlug}:${projectIndex}`;
+}
+
+function cloneRegistryProject(project: LabProjectRegistryItem): LabProjectRegistryItem {
+  return {
+    ...project,
+    memberIds: [...project.memberIds],
+    links: project.links.map((link) => ({ ...link })),
+  };
+}
+
+const registryProjects = projectRegistryRecords
+  .map(createRegistryProject)
+  .filter((project): project is LabProjectRegistryItem => Boolean(project));
+
+const labProjectsBySlug = new Map<string, LabProjectRegistryItem[]>();
+const projectByLabAndId = new Map<string, LabProjectRegistryItem>();
+const projectIdByLabAndIndex = new Map<string, string>();
+const projectIndexesByLabAndMember = new Map<string, number[]>();
+
+for (const project of registryProjects) {
+  const projects = labProjectsBySlug.get(project.labSlug) ?? [];
+  projects.push(project);
+  labProjectsBySlug.set(project.labSlug, projects);
+  projectByLabAndId.set(createProjectKey(project.labSlug, project.id), project);
+  projectIdByLabAndIndex.set(createProjectIndexKey(project.labSlug, project.projectIndex), project.id);
+
+  for (const memberId of project.memberIds) {
+    const memberKey = createProjectKey(project.labSlug, memberId);
+    const projectIndexes = projectIndexesByLabAndMember.get(memberKey) ?? [];
+    projectIndexes.push(project.projectIndex);
+    projectIndexesByLabAndMember.set(memberKey, projectIndexes);
+  }
+}
+
 export function getLabProjectsBySlug(slug: string): LabProjectRegistryItem[] {
-  return projectRegistryRecords
-    .filter((record) => record.labSlug === slug)
-    .map(createRegistryProject)
-    .filter((project): project is LabProjectRegistryItem => Boolean(project));
+  return (labProjectsBySlug.get(slug) ?? []).map(cloneRegistryProject);
 }
 
 export function getLabProjectById(labSlug: string, projectId: string): LabProjectRegistryItem | undefined {
-  return getLabProjectsBySlug(labSlug).find((project) => project.id === projectId);
+  const project = projectByLabAndId.get(createProjectKey(labSlug, projectId));
+
+  return project ? cloneRegistryProject(project) : undefined;
 }
 
 export function getLabProjectIdByIndex(labSlug: string, projectIndex: number): string | undefined {
-  return getLabProjectsBySlug(labSlug).find((project) => project.projectIndex === projectIndex)?.id;
+  return projectIdByLabAndIndex.get(createProjectIndexKey(labSlug, projectIndex));
 }
 
 export function getAllLabProjectParams(): { lab: string; project: string }[] {
@@ -110,7 +149,5 @@ export function getAllLabProjectParams(): { lab: string; project: string }[] {
 }
 
 export function getLabProjectIndexesByMemberId(slug: string, personId: string): number[] {
-  return projectRegistryRecords
-    .filter((record) => record.labSlug === slug && record.memberIds.includes(personId))
-    .map((record) => record.projectIndex);
+  return [...(projectIndexesByLabAndMember.get(createProjectKey(slug, personId)) ?? [])];
 }

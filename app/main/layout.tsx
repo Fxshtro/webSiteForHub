@@ -1,20 +1,8 @@
 import type { Metadata } from "next";
-import { Jost, Unbounded } from "next/font/google";
 import Header from "../components/layout/header";
 import Footer from "../components/layout/footer";
+import { fontVariables } from "../fonts";
 import "../globals.css";
-
-const jost = Jost({
-  subsets: ["latin", "cyrillic"],
-  variable: "--font-jost",
-  display: "swap",
-});
-
-const unbounded = Unbounded({
-  subsets: ["latin", "cyrillic"],
-  variable: "--font-unbounded",
-  display: "swap",
-});
 
 export const metadata: Metadata = {
   title: "Студенческий Цифровой Хаб | ИУБиП",
@@ -45,9 +33,9 @@ export default function MainLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
-}>) {
+}>): React.JSX.Element {
   return (
-    <html lang="ru" className={`${jost.variable} ${unbounded.variable}`}>
+    <html lang="ru" className={fontVariables}>
       <body className="font-sans">
         <Header />
         {children}

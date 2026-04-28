@@ -1,19 +1,18 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
-import "../../globals.css";
+import { useCallback, useMemo, useState } from "react";
 import "swiper/css";
 import "swiper/css/navigation";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Navigation } from "swiper/modules";
 import type { Swiper as SwiperType } from "swiper/types";
 import type { LabAchievement } from "../../labs/constants";
+import { useMediaQuery } from "../../hooks/use-media-query";
 import CardAchievement from "./cardAchievement";
 
 const MIN_SLIDES_FOR_LOOP = 24;
 const ACHIEVEMENT_CARD_MAX_WIDTH = 440;
 const ACHIEVEMENT_MOBILE_VIEWPORT_PADDING = 48;
-const ACHIEVEMENT_DESKTOP_VIEWPORT_PADDING = 64;
 
 interface LabAchievementsSliderProps {
   achievements: LabAchievement[];
@@ -22,45 +21,22 @@ interface LabAchievementsSliderProps {
 export default function LabAchievementsSlider({
   achievements,
 }: LabAchievementsSliderProps): React.JSX.Element | null {
-  const [isMounted, setIsMounted] = useState(false);
-  const [isMobile, setIsMobile] = useState(false);
+  const isMobile = useMediaQuery("(max-width: 767px)");
   const [canSlidePrev, setCanSlidePrev] = useState(true);
   const [canSlideNext, setCanSlideNext] = useState(true);
 
-  useEffect((): (() => void) => {
-    setIsMounted(true);
-    const media = window.matchMedia("(max-width: 767px)");
-    const updateViewport = (): void => {
-      setIsMobile(media.matches);
-    };
-
-    updateViewport();
-    media.addEventListener("change", updateViewport);
-
-    return (): void => {
-      media.removeEventListener("change", updateViewport);
-    };
-  }, []);
-
-  useEffect((): void => {
-    if (!isMobile) {
-      setCanSlidePrev(true);
-      setCanSlideNext(true);
-      return;
-    }
-    setCanSlidePrev(false);
-    setCanSlideNext(achievements.length > 1);
-  }, [achievements.length, isMobile]);
-
-  const syncNavigationVisibility = (swiper: SwiperType): void => {
-    if (!isMobile) {
-      setCanSlidePrev(true);
-      setCanSlideNext(true);
-      return;
-    }
-    setCanSlidePrev(!swiper.isBeginning);
-    setCanSlideNext(!swiper.isEnd);
-  };
+  const syncNavigationVisibility = useCallback(
+    (swiper: SwiperType): void => {
+      if (!isMobile) {
+        setCanSlidePrev(true);
+        setCanSlideNext(true);
+        return;
+      }
+      setCanSlidePrev(!swiper.isBeginning);
+      setCanSlideNext(!swiper.isEnd);
+    },
+    [isMobile],
+  );
 
   const slidesToRender = useMemo((): LabAchievement[] => {
     if (achievements.length === 0) {
@@ -80,10 +56,6 @@ export default function LabAchievementsSlider({
 
   if (achievements.length === 0) {
     return null;
-  }
-
-  if (!isMounted) {
-    return <div className="w-full select-none !pt-12 md:!pt-20 !pb-35" />;
   }
 
   return (

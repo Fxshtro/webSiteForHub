@@ -525,6 +525,7 @@ export default function LabPeopleDrawer({ labSlug, people }: LabPeopleDrawerProp
         <aside
           className="flex h-full w-screen flex-col overflow-hidden border-l border-white/20 bg-black/70 px-[20px] backdrop-blur-md md:w-[390px]"
           onWheelCapture={stopScrollPropagation}
+          aria-label="Список участников лаборатории"
         >
           <div className="border-b border-white/20 px-0 pb-3 pt-5">
             <div className="mb-3 flex items-center justify-end">
@@ -544,6 +545,7 @@ export default function LabPeopleDrawer({ labSlug, people }: LabPeopleDrawerProp
                 value={query}
                 onChange={handleSearchChange}
                 placeholder="Имя, роль или ключевое слово"
+                aria-label="Поиск участника по имени или роли"
                 className="h-[42px] w-full rounded-lg border border-white/30 bg-transparent pl-10 pr-3 text-[14px] text-white placeholder:text-white/40 focus:outline-none"
               />
             </div>
@@ -554,6 +556,7 @@ export default function LabPeopleDrawer({ labSlug, people }: LabPeopleDrawerProp
                 type="button"
                 data-category="all"
                 onClick={handleCategoryClick}
+                aria-pressed={activeCategory === "all"}
                 className={`rounded-2xl px-3 py-1.5 text-[12px] font-semibold transition-colors ${
                   activeCategory === "all"
                     ? "bg-white/20 text-white"
@@ -566,6 +569,7 @@ export default function LabPeopleDrawer({ labSlug, people }: LabPeopleDrawerProp
                 type="button"
                 data-category="recent"
                 onClick={handleCategoryClick}
+                aria-pressed={activeCategory === "recent"}
                 className={`rounded-2xl px-3 py-1.5 text-[12px] font-semibold transition-colors ${
                   activeCategory === "recent"
                     ? "bg-white/20 text-white"
@@ -578,6 +582,7 @@ export default function LabPeopleDrawer({ labSlug, people }: LabPeopleDrawerProp
                 type="button"
                 data-category="favorites"
                 onClick={handleCategoryClick}
+                aria-pressed={activeCategory === "favorites"}
                 className={`rounded-2xl px-3 py-1.5 text-[12px] font-semibold transition-colors ${
                   activeCategory === "favorites"
                     ? "bg-white/20 text-white"

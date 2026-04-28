@@ -28,12 +28,17 @@ export default function CardProject({
         {href ? (
           <Link
             href={href}
+            aria-label={`Подробнее о проекте ${title}`}
             className="glass custom-before mt-4 inline-flex hover:![box-shadow:0px_0px_10px_#ffffff34,_inset_0px_0px_10px_#ffffff26] duration-200 !rounded-2xl !bg-[#afafaf30] px-[24px] py-[12px] text-[16px] uppercase font-black font-unbounded"
           >
             подробнее
           </Link>
         ) : (
-          <button className="glass custom-before mt-4 hover:![box-shadow:0px_0px_10px_#ffffff34,_inset_0px_0px_10px_#ffffff26] duration-200 !rounded-2xl !bg-[#afafaf30] px-[24px] py-[12px] text-[16px] uppercase font-black font-unbounded">
+          <button
+            type="button"
+            aria-label={`Подробнее о проекте ${title}`}
+            className="glass custom-before mt-4 hover:![box-shadow:0px_0px_10px_#ffffff34,_inset_0px_0px_10px_#ffffff26] duration-200 !rounded-2xl !bg-[#afafaf30] px-[24px] py-[12px] text-[16px] uppercase font-black font-unbounded"
+          >
             подробнее
           </button>
         )}

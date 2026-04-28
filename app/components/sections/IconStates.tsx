@@ -1,7 +1,6 @@
-"use client";
 import Image from "next/image";
 
-export default function IconStates() {
+export default function IconStates(): React.JSX.Element {
   return (
     <div className="relative">
       <div className="block w-[73px] h-[73px] bg-[#6E32DE] rounded-[20px] -rotate-15"></div>
