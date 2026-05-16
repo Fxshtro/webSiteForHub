@@ -4,7 +4,8 @@ from . import views
 from .viewsets import (
     DirectionViewSet, LabViewSet, ProjectViewSet,
     UserViewSet, ProjectParticipantViewSet,
-    AchievementViewSet, EventLogViewSet, HubSettingsViewSet
+    AchievementViewSet, EventLogViewSet, HubSettingsViewSet,
+    HubLeaderViewSet
 )
 
 router = routers.DefaultRouter()
@@ -16,9 +17,9 @@ router.register(r'participants', ProjectParticipantViewSet, basename='participan
 router.register(r'achievements', AchievementViewSet, basename='achievement')
 router.register(r'events', EventLogViewSet, basename='event')
 router.register(r'settings', HubSettingsViewSet, basename='settings')
+router.register(r'leaders', HubLeaderViewSet, basename='leader')
 
 urlpatterns = [
     path('', include(router.urls)),
     path('download/concept/<int:project_id>/', views.download_concept_file, name='download_concept_file'),
 ]
-
