@@ -1,4 +1,36 @@
 from django.db import models
+from django.core.validators import MaxLengthValidator
+from django.core.exceptions import ValidationError
+
+
+# =============================================================================
+# ВАЛИДАТОРЫ
+# =============================================================================
+
+def validate_image_4x3(file):
+    """Изображение 4:3, максимум 2МБ"""
+    from PIL import Image
+    from django.core.exceptions import ValidationError
+
+    # Проверка размера
+    if file.size > 2 * 1024 * 1024:
+        raise ValidationError('Размер изображения не может превышать 2МБ')
+
+    # Проверка соотношения сторон 4:3
+    try:
+        img = Image.open(file)
+        width, height = img.size
+        aspect_ratio = width / height
+        expected_ratio = 4 / 3
+        tolerance = 0.15
+        if abs(aspect_ratio - expected_ratio) > tolerance:
+            raise ValidationError(
+                f'Изображение должно быть соотношения 4:3 (текущее: {width}x{height})'
+            )
+        # Сбрасываем указатель чтобы файл можно было сохранить
+        file.seek(0)
+    except Exception:
+        pass  # Если PIL не может открыть — пропускаем проверку размеров
 
 
 # =============================================================================
@@ -175,6 +207,27 @@ class Guide(models.Model):
         return f"{self.surname} {self.name} {self.patronymic}"
 
 
+class HubLeader(models.Model):
+    student = models.OneToOneField(
+        'Student', on_delete=models.CASCADE,
+        db_column='student_id', related_name='hub_leader_profile'
+    )
+    position = models.CharField(max_length=200, blank=True, verbose_name='Должность')
+    phone = models.CharField(max_length=50, blank=True, verbose_name='Телефон')
+    is_active = models.BooleanField(default=True, verbose_name='Активен')
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name='Добавлен')
+
+    class Meta:
+        db_table = 'hub_leaders'
+        managed = True
+        verbose_name = 'Руководитель хаба'
+        verbose_name_plural = 'Руководители хаба'
+        ordering = ['student__surname', 'student__name']
+
+    def __str__(self):
+        return f"{self.student.full_name} ({self.position})"
+
+
 # =============================================================================
 # ЛАБОРАТОРИИ И НАПРАВЛЕНИЯ
 # =============================================================================
@@ -196,6 +249,9 @@ class Direction(models.Model):
 class Laboratory(models.Model):
     title = models.CharField(max_length=50, unique=True, verbose_name='Название')
     link = models.URLField(max_length=50, blank=True, null=True, verbose_name='Ссылка на чат')
+    active = models.BooleanField(default=True, verbose_name='Активна', db_column='active')
+    images = models.JSONField(default=list, blank=True, verbose_name='Фотографии (JSON массив)')
+    short_description = models.CharField(max_length=350, blank=True, null=True, verbose_name='Краткое описание')
 
     class Meta:
         db_table = 'laboratories'
@@ -324,6 +380,12 @@ class Role(models.Model):
 class Project(models.Model):
     title = models.CharField(max_length=100, unique=True, verbose_name='Название')
     description = models.TextField(max_length=2048, blank=True, null=True, verbose_name='Описание')
+    goal = models.CharField(
+        max_length=350, blank=True, null=True,
+        verbose_name='Цель проекта',
+        db_column='goal',
+        validators=[MaxLengthValidator(350)]
+    )
     need_report = models.BooleanField(default=False, verbose_name='Требуется отчёт')
 
     class Meta:
@@ -443,6 +505,12 @@ class Achievement(models.Model):
         related_name='achievements'
     )
     text = models.TextField(blank=True, null=True, verbose_name='Текст')
+    text_limited = models.CharField(
+        max_length=350, blank=True, null=True,
+        verbose_name='Описание (350 симв.)',
+        db_column='text_limited',
+        validators=[MaxLengthValidator(350)]
+    )
     link = models.URLField(max_length=2048, blank=True, null=True, verbose_name='Ссылка')
     file_achievements = models.ForeignKey(
         File, on_delete=models.SET_NULL,
