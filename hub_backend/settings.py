@@ -72,7 +72,7 @@ WSGI_APPLICATION = 'hub_backend.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases
 
-DATABASE_ENGINE = config('DATABASE_ENGINE', default='django.db.backends.sqlite3')
+DATABASE_ENGINE = config('DATABASE_ENGINE', default='django.db.backends.mysql')
 
 if DATABASE_ENGINE == 'django.db.backends.postgresql':
     DATABASES = {
@@ -85,6 +85,20 @@ if DATABASE_ENGINE == 'django.db.backends.postgresql':
             'PORT': config('DATABASE_PORT', default='5432'),
         }
     }
+elif DATABASE_ENGINE == 'django.db.backends.mysql':
+    DATABASES = {
+        'default': {
+            'ENGINE': DATABASE_ENGINE,
+            'NAME': config('DATABASE_NAME', default='appiub95_it_hub'),
+            'USER': config('DATABASE_USER', default='appiub95_it_hub'),
+            'PASSWORD': config('DATABASE_PASSWORD', default=''),
+            'HOST': config('DATABASE_HOST', default='localhost'),
+            'PORT': config('DATABASE_PORT', default='3306'),
+            'OPTIONS': {
+                'charset': 'utf8mb4',
+            },
+        }
+    }
 else:
     DATABASES = {
         'default': {
@@ -94,8 +108,8 @@ else:
     }
 
 
-# Custom User Model
-AUTH_USER_MODEL = 'hub.User'
+# Custom User Model - используем встроенную модель Django
+# AUTH_USER_MODEL = 'hub.User'  # отключено — используем существующую таблицу user
 
 # Password validation
 # https://docs.djangoproject.com/en/4.2/ref/settings/#auth-password-validators
