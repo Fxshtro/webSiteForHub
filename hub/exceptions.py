@@ -4,12 +4,15 @@ from rest_framework import status
 
 
 def custom_exception_handler(exc, context):
+    if not context.get('view'):
+        return None
+
     response = exception_handler(exc, context)
     
     if response is not None:
         custom_response_data = {
             'error': True,
-            'message': 'Произошла ошибка при обработке запроса',
+            'message': 'Ошибка запроса',
             'details': response.data
         }
         response.data = custom_response_data

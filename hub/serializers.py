@@ -1,249 +1,343 @@
 from rest_framework import serializers
-from django.contrib.auth.hashers import make_password
 from .models import (
-    Lab, Project, ProjectParticipant, Achievement, User,
-    Direction, EventLog, HubSettings, HubLeader
+    SiteRole, User, Student, Guide,
+    Direction, Laboratory, LaboratoryDirection, LaboratoryLeader,
+    StudentLaboratory, StudentDirection,
+    Role, Project, ProjectLaboratory, ProjectRole, StudentProjectRole,
+    Achievement, Report, EventLog, HubLeader
 )
 
 
+class SiteRoleSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = SiteRole
+        fields = ['id', 'title']
+
+
 class DirectionSerializer(serializers.ModelSerializer):
-    labs_count = serializers.IntegerField(source='labs.count', read_only=True)
-    labs_multi_count = serializers.IntegerField(source='labs_multi.count', read_only=True)
+    labs_count = serializers.SerializerMethodField()
 
     class Meta:
         model = Direction
-        fields = ['id', 'name', 'labs_count', 'labs_multi_count']
-        read_only_fields = ['id']
+        fields = ['id', 'title', 'labs_count']
+
+    def get_labs_count(self, obj):
+        return obj.laboratory_links.count()
 
 
-class LabSerializer(serializers.ModelSerializer):
-    directions_names = serializers.SerializerMethodField()
-    projects_count = serializers.IntegerField(source='projects.count', read_only=True)
-    active_projects_count = serializers.SerializerMethodField()
+class LaboratorySerializer(serializers.ModelSerializer):
+    directions_list = serializers.SerializerMethodField()
+    leaders_list = serializers.SerializerMethodField()
+    students_count = serializers.SerializerMethodField()
+    projects_count = serializers.SerializerMethodField()
 
     class Meta:
-        model = Lab
+        model = Laboratory
         fields = [
-            'id', 'name', 'short_description', 'full_description',
-            'directions', 'directions_names', 'images',
-            'active', 'created_at', 'updated_at',
-            'projects_count', 'active_projects_count'
+            'id', 'title', 'link', 'active', 'short_description', 'description',
+            'images', 'directions_list', 'leaders_list', 'students_count', 'projects_count'
         ]
-        read_only_fields = ['id', 'created_at', 'updated_at']
 
-    def get_directions_names(self, obj):
-        directions = list(obj.directions.all()) + list(obj.directions_multi.all())
-        return [d.name for d in directions]
+    def get_directions_list(self, obj):
+        return [
+            {'id': ld.direction.id, 'title': ld.direction.title, 'link': ld.link}
+            for ld in obj.direction_links.all()
+        ]
 
-    def get_active_projects_count(self, obj):
-        return obj.projects.filter(active=True).count()
+    def get_leaders_list(self, obj):
+        return [
+            {'id': ll.student.id, 'full_name': ll.student.full_name, 'email': ll.student.email}
+            for ll in obj.leaders.all()
+        ]
+
+    def get_students_count(self, obj):
+        return obj.student_links.filter(laboratory__isnull=False).count()
+
+    def get_projects_count(self, obj):
+        return obj.project_links.count()
+
+
+class LaboratoryDirectionSerializer(serializers.ModelSerializer):
+    direction_title = serializers.CharField(source='direction.title', read_only=True)
+    laboratory_title = serializers.CharField(source='laboratory.title', read_only=True)
+
+    class Meta:
+        model = LaboratoryDirection
+        fields = ['id', 'laboratory', 'laboratory_title', 'direction', 'direction_title', 'link']
+
+
+class StudentSerializer(serializers.ModelSerializer):
+    full_name = serializers.CharField(read_only=True)
+    laboratories = serializers.SerializerMethodField()
+    directions = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Student
+        fields = [
+            'id', 'surname', 'name', 'patronymic', 'full_name',
+            'study_group', 'phone_number', 'email', 'university_city',
+            'task_board', 'telegram_nickname', 'telegram_id',
+            'experience', 'wishes', 'metaverse_account_link',
+            'laboratories', 'directions'
+        ]
+
+    def get_laboratories(self, obj):
+        return [
+            {'id': sl.laboratory.id, 'title': sl.laboratory.title}
+            for sl in obj.laboratory_links.filter(laboratory__isnull=False)
+        ]
+
+    def get_directions(self, obj):
+        return [
+            {'id': sd.direction.id, 'title': sd.direction.title}
+            for sd in obj.direction_links.all()
+        ]
+
+
+class GuideSerializer(serializers.ModelSerializer):
+    laboratory_title = serializers.CharField(source='laboratory.title', read_only=True)
+
+    class Meta:
+        model = Guide
+        fields = ['id', 'surname', 'name', 'patronymic', 'laboratory', 'laboratory_title']
+
+
+class RoleSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Role
+        fields = ['id', 'title']
 
 
 class ProjectSerializer(serializers.ModelSerializer):
-    lab_name = serializers.CharField(source='lab.name', read_only=True)
-    participants_count = serializers.SerializerMethodField()
+    laboratories = serializers.SerializerMethodField()
+    roles = serializers.SerializerMethodField()
+    participants = serializers.SerializerMethodField()
     active_participants_count = serializers.SerializerMethodField()
-    concept_file_url = serializers.SerializerMethodField()
 
     class Meta:
         model = Project
         fields = [
-            'id', 'title', 'description', 'goal', 'concept_file', 'concept_file_url',
-            'lab', 'lab_name', 'active', 'created_at', 'updated_at',
-            'participants_count', 'active_participants_count'
+            'id', 'title', 'description', 'goal', 'need_report',
+            'laboratories', 'roles', 'participants', 'active_participants_count'
         ]
-        read_only_fields = ['id', 'created_at', 'updated_at']
 
-    def get_participants_count(self, obj):
-        return obj.participants.count()
+    def get_laboratories(self, obj):
+        return [
+            {'id': pl.laboratory.id, 'title': pl.laboratory.title}
+            for pl in obj.laboratory_links.all()
+        ]
+
+    def get_roles(self, obj):
+        return [
+            {'id': pr.role.id, 'title': pr.role.title, 'slot_id': pr.id,
+             'assigned_count': pr.assigned_students.filter(present=True).count()}
+            for pr in obj.role_slots.all()
+        ]
+
+    def get_participants(self, obj):
+        active = obj.role_slots.filter(assigned_students__present=True)
+        result = []
+        for pr in obj.role_slots.all():
+            for spr in pr.assigned_students.filter(present=True):
+                result.append({
+                    'id': spr.id,
+                    'student_id': spr.student.id,
+                    'student_name': spr.student.full_name,
+                    'role': pr.role.title,
+                    'present': spr.present
+                })
+        return result
 
     def get_active_participants_count(self, obj):
-        return obj.participants.filter(left_at__isnull=True).count()
-
-    def get_concept_file_url(self, obj):
-        if obj.concept_file:
-            request = self.context.get('request')
-            if request:
-                return request.build_absolute_uri(obj.concept_file.url)
-        return None
+        return StudentProjectRole.objects.filter(
+            project_role__project=obj, present=True
+        ).count()
 
 
-class UserSerializer(serializers.ModelSerializer):
-    role_display = serializers.CharField(source='get_role_display', read_only=True)
-    managed_lab_name = serializers.CharField(source='managed_lab.name', read_only=True)
-    is_hub_leader = serializers.SerializerMethodField()
+class StudentProjectRoleSerializer(serializers.ModelSerializer):
+    student_name = serializers.CharField(source='student.full_name', read_only=True)
+    project_title = serializers.CharField(source='project_role.project.title', read_only=True)
+    role_title = serializers.CharField(source='project_role.role.title', read_only=True)
 
     class Meta:
-        model = User
+        model = StudentProjectRole
         fields = [
-            'id', 'username', 'email', 'first_name', 'last_name',
-            'role', 'role_display', 'metaverse_link', 'managed_lab',
-            'managed_lab_name', 'is_active', 'date_joined', 'last_login',
-            'is_hub_leader'
+            'id', 'student', 'student_name',
+            'project_role', 'project_title', 'role_title',
+            'present'
         ]
-        read_only_fields = ['id', 'date_joined', 'last_login', 'is_hub_leader']
-
-    def get_is_hub_leader(self, obj):
-        return hasattr(obj, 'hub_leader_profile') and obj.hub_leader_profile.is_active
-
-    def validate(self, data):
-        role = data.get('role')
-        managed_lab = data.get('managed_lab')
-
-        if role == 'lab_lead' and not managed_lab:
-            raise serializers.ValidationError({
-                'managed_lab': 'Лидер лаборатории должен быть привязан к лаборатории'
-            })
-
-        return data
-
-    def update(self, instance, validated_data):
-        # Хешируем пароль если передан
-        password = validated_data.pop('password', None)
-        if password:
-            instance.password = make_password(password)
-
-        # Обработка снятия с роли lab_lead или project_manager
-        old_role = instance.role
-        new_role = validated_data.get('role', old_role)
-
-        if old_role in ['lab_lead', 'project_manager'] and new_role != old_role:
-            instance.is_active = False
-
-        return super().update(instance, validated_data)
-
-
-class UserRoleListSerializer(serializers.ModelSerializer):
-    """Упрощенный сериализатор для списка пользователей по ролям"""
-    role_display = serializers.CharField(source='get_role_display', read_only=True)
-    lab_name = serializers.CharField(source='managed_lab.name', read_only=True, allow_null=True)
-
-    class Meta:
-        model = User
-        fields = ['id', 'username', 'email', 'first_name', 'last_name', 'role', 'role_display', 'lab_name', 'is_active']
-
-
-class ProjectParticipantSerializer(serializers.ModelSerializer):
-    user_username = serializers.CharField(source='user.username', read_only=True)
-    user_email = serializers.EmailField(source='user.email', read_only=True)
-    project_title = serializers.CharField(source='project.title', read_only=True)
-    role_display = serializers.CharField(source='get_role_display', read_only=True)
-    is_active = serializers.SerializerMethodField()
-
-    class Meta:
-        model = ProjectParticipant
-        fields = [
-            'id', 'user', 'user_username', 'user_email', 'project',
-            'project_title', 'role', 'role_display', 'joined_at',
-            'left_at', 'is_active'
-        ]
-        read_only_fields = ['id', 'joined_at']
-
-    def get_is_active(self, obj):
-        return obj.left_at is None
+        read_only_fields = ['id']
 
 
 class AchievementSerializer(serializers.ModelSerializer):
-    lab_name = serializers.CharField(source='lab.name', read_only=True)
-    project_title = serializers.CharField(source='project.title', read_only=True)
+    laboratory_title = serializers.CharField(source='laboratory.title', read_only=True, default=None)
+    project_title = serializers.CharField(source='project.title', read_only=True, default=None)
     image_url = serializers.SerializerMethodField()
 
     class Meta:
         model = Achievement
         fields = [
-            'id', 'title', 'description', 'image', 'image_url',
-            'lab', 'lab_name', 'project', 'project_title', 'created_at'
+            'id', 'title', 'laboratory', 'laboratory_title',
+            'project', 'project_title',
+            'text', 'text_limited', 'link', 'image', 'image_url',
         ]
-        read_only_fields = ['id', 'created_at']
+        read_only_fields = ['id']
 
     def get_image_url(self, obj):
         if obj.image:
             request = self.context.get('request')
             if request:
                 return request.build_absolute_uri(obj.image.url)
+            return obj.image.url
         return None
 
-    def validate(self, data):
-        lab = data.get('lab')
-        project = data.get('project')
+    def validate_text_limited(self, value):
+        if value and len(value) > 350:
+            raise serializers.ValidationError('Описание не может превышать 350 символов')
+        return value
 
-        if not lab and not project:
-            raise serializers.ValidationError(
-                'Достижение должно быть связано либо с лабораторией, либо с проектом'
-            )
-        if lab and project:
-            raise serializers.ValidationError(
-                'Достижение может быть связано только с лабораторией ИЛИ проектом'
-            )
-
-        # Проверка длины описания
-        description = data.get('description', '')
-        if len(description) > 350:
-            raise serializers.ValidationError({
-                'description': 'Описание не может превышать 350 символов'
-            })
-
-        return data
+    def validate_text(self, value):
+        if value and len(value) > 350:
+            raise serializers.ValidationError('Текст не может превышать 350 символов')
+        return value
 
     def validate_image(self, value):
         if value:
-            # Проверка размера файла (2МБ)
             if value.size > 2 * 1024 * 1024:
                 raise serializers.ValidationError('Размер изображения не может превышать 2МБ')
-
-            # Проверка соотношения сторон (4:3)
             from PIL import Image
             try:
                 img = Image.open(value)
                 width, height = img.size
                 aspect_ratio = width / height
                 expected_ratio = 4 / 3
-                tolerance = 0.1
+                tolerance = 0.15
                 if abs(aspect_ratio - expected_ratio) > tolerance:
                     raise serializers.ValidationError(
-                        f'Изображение должно быть соотношения 4:3 (было {width}x{height})'
+                        f'Изображение должно быть соотношения 4:3 ({width}x{height})'
                     )
+                value.seek(0)
             except Exception as e:
-                raise serializers.ValidationError(f'Ошибка обработки изображения: {str(e)}')
-
+                if isinstance(e, serializers.ValidationError):
+                    raise e
         return value
 
 
+class ReportSerializer(serializers.ModelSerializer):
+    laboratory_title = serializers.CharField(source='laboratory.title', read_only=True, default=None)
+    project_title = serializers.CharField(source='project.title', read_only=True, default=None)
+
+    class Meta:
+        model = Report
+        fields = [
+            'id', 'laboratory', 'laboratory_title',
+            'project', 'project_title',
+            'date_time', 'report_text', 'confirmation'
+        ]
+        read_only_fields = ['id', 'date_time']
+
+
+class UserSerializer(serializers.ModelSerializer):
+    site_role_title = serializers.CharField(source='site_role.title', read_only=True, default=None)
+    laboratory_title = serializers.CharField(source='laboratory.title', read_only=True, default=None)
+
+    class Meta:
+        model = User
+        fields = [
+            'id', 'login', 'site_role', 'site_role_title',
+            'laboratory', 'laboratory_title'
+        ]
+        read_only_fields = ['id', 'password']
+
+
+class UserListSerializer(serializers.ModelSerializer):
+    site_role_title = serializers.CharField(source='site_role.title', read_only=True, default=None)
+    laboratory_title = serializers.CharField(source='laboratory.title', read_only=True, default=None)
+    is_hub_leader = serializers.SerializerMethodField()
+
+    class Meta:
+        model = User
+        fields = [
+            'id', 'login', 'site_role_title', 'laboratory_title', 'is_hub_leader'
+        ]
+
+    def get_is_hub_leader(self, obj):
+        try:
+            return obj.hub_leader_profile.is_active
+        except HubLeader.DoesNotExist:
+            return False
+
+
+class HubLeaderSerializer(serializers.ModelSerializer):
+    user_login = serializers.CharField(source='user.login', read_only=True)
+    user_role = serializers.CharField(source='user.site_role.title', read_only=True, default=None)
+    laboratory_title = serializers.CharField(source='user.laboratory.title', read_only=True, default=None)
+
+    class Meta:
+        model = HubLeader
+        fields = [
+            'id', 'user', 'user_login', 'user_role',
+            'position', 'is_active', 'created_at', 'laboratory_title'
+        ]
+        read_only_fields = ['id', 'created_at']
+
+
 class EventLogSerializer(serializers.ModelSerializer):
-    user_username = serializers.CharField(source='user.username', read_only=True)
     action_display = serializers.CharField(source='get_action_display', read_only=True)
 
     class Meta:
         model = EventLog
         fields = [
-            'id', 'user', 'user_username', 'action', 'action_display',
+            'id', 'user_login', 'action', 'action_display',
             'entity_type', 'entity_id', 'timestamp', 'details'
         ]
         read_only_fields = ['id', 'timestamp']
 
 
-class HubLeaderSerializer(serializers.ModelSerializer):
-    user_username = serializers.CharField(source='user.username', read_only=True)
-    user_email = serializers.EmailField(source='user.email', read_only=True)
-    user_role = serializers.CharField(source='user.role', read_only=True)
+class LaboratoryLeaderSerializer(serializers.ModelSerializer):
+    student_name = serializers.CharField(source='student.full_name', read_only=True)
+    laboratory_title = serializers.CharField(source='laboratory.title', read_only=True)
 
     class Meta:
-        model = HubLeader
-        fields = [
-            'id', 'user', 'user_username', 'user_email', 'user_role',
-            'position', 'phone', 'is_active', 'created_at'
-        ]
-        read_only_fields = ['id', 'created_at']
+        model = LaboratoryLeader
+        fields = ['id', 'student', 'student_name', 'laboratory', 'laboratory_title']
 
 
-class HubSettingsSerializer(serializers.ModelSerializer):
-    leaders = serializers.SerializerMethodField()
+class StudentLaboratorySerializer(serializers.ModelSerializer):
+    student_name = serializers.CharField(source='student.full_name', read_only=True)
+    laboratory_title = serializers.CharField(source='laboratory.title', read_only=True, default=None)
 
     class Meta:
-        model = HubSettings
-        fields = ['id', 'name', 'description', 'leaders', 'updated_at']
-        read_only_fields = ['id', 'updated_at', 'leaders']
+        model = StudentLaboratory
+        fields = ['id', 'student', 'student_name', 'laboratory', 'laboratory_title']
 
-    def get_leaders(self, obj):
-        leaders = HubLeader.objects.filter(is_active=True)
-        return HubLeaderSerializer(leaders, many=True).data
+
+class StudentDirectionSerializer(serializers.ModelSerializer):
+    student_name = serializers.CharField(source='student.full_name', read_only=True)
+    direction_title = serializers.CharField(source='direction.title', read_only=True)
+
+    class Meta:
+        model = StudentDirection
+        fields = ['id', 'student', 'student_name', 'direction', 'direction_title']
+
+
+class ProjectLaboratorySerializer(serializers.ModelSerializer):
+    project_title = serializers.CharField(source='project.title', read_only=True)
+    laboratory_title = serializers.CharField(source='laboratory.title', read_only=True)
+
+    class Meta:
+        model = ProjectLaboratory
+        fields = ['id', 'project', 'project_title', 'laboratory', 'laboratory_title']
+
+
+class ProjectRoleSerializer(serializers.ModelSerializer):
+    project_title = serializers.CharField(source='project.title', read_only=True)
+    role_title = serializers.CharField(source='role.title', read_only=True)
+    assigned_count = serializers.SerializerMethodField()
+
+    class Meta:
+        model = ProjectRole
+        fields = ['id', 'project', 'project_title', 'role', 'role_title', 'assigned_count']
+
+    def get_assigned_count(self, obj):
+        return obj.assigned_students.filter(present=True).count()

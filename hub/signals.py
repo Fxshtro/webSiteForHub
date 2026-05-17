@@ -18,15 +18,13 @@ def log_project_changes(sender, instance, created, **kwargs):
     except Exception:
         user_login = None
 
-    details = {'title': instance.title}
     action = 'project_created' if created else 'project_updated'
-
     log_event(
         user_login=user_login,
         action=action,
         entity_type='Project',
         entity_id=instance.id,
-        details=details
+        details={'title': instance.title}
     )
 
 
@@ -46,7 +44,6 @@ def log_lab_changes(sender, instance, created, **kwargs):
         user_login = None
 
     action = 'lab_created' if created else 'lab_updated'
-
     log_event(
         user_login=user_login,
         action=action,

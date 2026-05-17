@@ -8,15 +8,13 @@ from django.core.exceptions import ValidationError
 # =============================================================================
 
 def validate_image_4x3(file):
-    """Изображение 4:3, максимум 2МБ"""
+    """Изображение 4:3, максимум 2МБ, одна штука"""
     from PIL import Image
     from django.core.exceptions import ValidationError
 
-    # Проверка размера
     if file.size > 2 * 1024 * 1024:
         raise ValidationError('Размер изображения не может превышать 2МБ')
 
-    # Проверка соотношения сторон 4:3
     try:
         img = Image.open(file)
         width, height = img.size
@@ -27,10 +25,9 @@ def validate_image_4x3(file):
             raise ValidationError(
                 f'Изображение должно быть соотношения 4:3 (текущее: {width}x{height})'
             )
-        # Сбрасываем указатель чтобы файл можно было сохранить
         file.seek(0)
     except Exception:
-        pass  # Если PIL не может открыть — пропускаем проверку размеров
+        pass
 
 
 # =============================================================================
@@ -72,39 +69,32 @@ class EventLog(models.Model):
 # =============================================================================
 
 class SiteRole(models.Model):
-    title = models.CharField(max_length=50, verbose_name='Название роли')
+    title = models.CharField(
+        max_length=50, verbose_name='Название',
+        help_text='Уровень доступа пользователя: Администратор (полный доступ), '
+                  'Лидер лаборатории (управление своей лаб.), '
+                  'Менеджер проекта (управление проектом), '
+                  'Студент (только чтение)'
+    )
 
     class Meta:
         db_table = 'site_role'
         managed = False
-        verbose_name = 'Роль сайта'
-        verbose_name_plural = 'Роли сайта'
-
-    def __str__(self):
-        return self.title
-
-
-class Status(models.Model):
-    title = models.CharField(max_length=50, verbose_name='Название статуса')
-
-    class Meta:
-        db_table = 'status'
-        managed = False
-        verbose_name = 'Статус'
-        verbose_name_plural = 'Статусы'
+        verbose_name = 'Уровень доступа'
+        verbose_name_plural = 'Уровни доступа (кто может заходить в админку)'
 
     def __str__(self):
         return self.title
 
 
 class Type(models.Model):
-    title = models.CharField(max_length=100, verbose_name='Название типа')
+    title = models.CharField(max_length=100, verbose_name='Название категории')
 
     class Meta:
         db_table = 'type'
         managed = False
-        verbose_name = 'Тип'
-        verbose_name_plural = 'Типы'
+        verbose_name = 'Категория'
+        verbose_name_plural = 'Категории (типы проектов/достижений)'
 
     def __str__(self):
         return self.title
@@ -208,12 +198,11 @@ class Guide(models.Model):
 
 
 class HubLeader(models.Model):
-    student = models.OneToOneField(
-        'Student', on_delete=models.CASCADE,
-        db_column='student_id', related_name='hub_leader_profile'
+    user = models.OneToOneField(
+        'User', on_delete=models.CASCADE,
+        db_column='user_id', related_name='hub_leader_profile'
     )
     position = models.CharField(max_length=200, blank=True, verbose_name='Должность')
-    phone = models.CharField(max_length=50, blank=True, verbose_name='Телефон')
     is_active = models.BooleanField(default=True, verbose_name='Активен')
     created_at = models.DateTimeField(auto_now_add=True, verbose_name='Добавлен')
 
@@ -222,10 +211,10 @@ class HubLeader(models.Model):
         managed = True
         verbose_name = 'Руководитель хаба'
         verbose_name_plural = 'Руководители хаба'
-        ordering = ['student__surname', 'student__name']
+        ordering = ['user__login']
 
     def __str__(self):
-        return f"{self.student.full_name} ({self.position})"
+        return f"{self.user.login} ({self.position})"
 
 
 # =============================================================================
@@ -252,6 +241,7 @@ class Laboratory(models.Model):
     active = models.BooleanField(default=True, verbose_name='Активна', db_column='active')
     images = models.JSONField(default=list, blank=True, verbose_name='Фотографии (JSON массив)')
     short_description = models.CharField(max_length=350, blank=True, null=True, verbose_name='Краткое описание')
+    description = models.TextField(blank=True, null=True, verbose_name='Полное описание')
 
     class Meta:
         db_table = 'laboratories'
@@ -364,14 +354,14 @@ class StudentDirection(models.Model):
 # =============================================================================
 
 class Role(models.Model):
-    title = models.CharField(max_length=50, verbose_name='Название роли')
+    title = models.CharField(max_length=50, verbose_name='Название роли в проекте',
+                             help_text='Например: Дизайнер, Разработчик, Проектный менеджер, Тестировщик')
 
     class Meta:
         db_table = 'roles'
         managed = False
-        verbose_name = 'Роль проекта'
-        verbose_name_plural = 'Роли проектов'
-        ordering = ['title']
+        verbose_name = 'Роль в проекте'
+        verbose_name_plural = 'Роли в проектах (добавляются внутри Проекта)'
 
     def __str__(self):
         return self.title
@@ -465,8 +455,7 @@ class StudentProjectRole(models.Model):
         db_table = 'student_project_roles'
         managed = False
         verbose_name = 'Участник проекта'
-        verbose_name_plural = 'Участники проектов'
-        ordering = ['-id']
+        ordering = ['id', 'student__surname', 'student__name']
 
     def __str__(self):
         status = "активен" if self.present else "покинул"
@@ -478,13 +467,14 @@ class StudentProjectRole(models.Model):
 # =============================================================================
 
 class File(models.Model):
-    link = models.URLField(max_length=2048, verbose_name='Ссылка на файл')
+    link = models.URLField(max_length=2048, verbose_name='Ссылка на внешний документ',
+                           help_text='URL на файл в Google Drive, Dropbox, Яндекс.Диск и т.д.')
 
     class Meta:
         db_table = 'file'
         managed = False
-        verbose_name = 'Файл'
-        verbose_name_plural = 'Файлы'
+        verbose_name = 'Ссылка на документ'
+        verbose_name_plural = 'Ссылки на документы (Google Drive, Dropbox и т.д.)'
 
     def __str__(self):
         return self.link.split('/')[-1] if self.link else str(self.id)
@@ -512,6 +502,11 @@ class Achievement(models.Model):
         validators=[MaxLengthValidator(350)]
     )
     link = models.URLField(max_length=2048, blank=True, null=True, verbose_name='Ссылка')
+    image = models.ImageField(
+        upload_to='achievements/', blank=True, null=True,
+        verbose_name='Изображение',
+        validators=[validate_image_4x3]
+    )
     file_achievements = models.ForeignKey(
         File, on_delete=models.SET_NULL,
         null=True, blank=True,

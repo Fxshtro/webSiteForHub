@@ -1,23 +1,36 @@
 # Student Digital Hub - Backend
 
-A comprehensive Django REST API backend for managing student projects, laboratories, and participants in a digital hub platform.
+Django REST API backend для управления студенческими проектами, лабораториями и участниками Цифрового Хаба.
 
-- **Role-based Access Control** - Admin, Lab Lead, Project Manager, and Student roles
-- **RESTful API** - Full CRUD operations with Django REST Framework
-- **Admin Panel** - Customized Django admin with role-based filtering
-- **Event Logging** - Automatic tracking of key actions
-- **Excel Export** - Export reports for projects, labs, participants, and achievements
-- **File Management** - Upload and manage project concept files and achievement images
-- **Advanced Filtering** - Search, filter, and pagination for all endpoints
-##Installation
+## Функционал
 
-### Prerequisites
+- **Ролевой доступ** — Администратор, Лидер лаборатории, Менеджер проекта, Студент
+- **RESTful API** — Полный CRUD через Django REST Framework
+- **Админ-панель** — Настроенная Django-admin с тёмно-фиолетовой темой и ролевой фильтрацией
+- **Журнал событий** — Автоматическое отслеживание ключевых действий
+- **Excel-экспорт** — Отчёты по проектам, лабам, участникам, достижениям
+- **Файлы** — Загрузка концепций проектов и изображений достижений
+- **Фильтрация** — Поиск, фильтры и пагинация на всех эндпоинтах
+- **Email-пароли** — Генерация 8-симв. пароля при назначении Менеджер/Лидер лаборатории
+- **Деактивация** — При снятии роли Менеджер/Лидер аккаунт становится неактивным
+
+## Ограничения
+
+- **Достижения**: описание до 350 символов, изображение 4:3, max 2МБ, 1 штука
+- **Лаборатории**: несколько направлений (M2M), несколько фото (JSON), краткое и полное описание
+- **Руководители хаба**: добавляются из пользователей сайта (User), без email-вкладки
+- **Участники проектов**: сортировка по ID (1→203) и алфавиту, только редактирование, добавление через бот/форму
+
+## Установка (Linux)
+
+### Требования
 
 - Python 3.8+
 - pip
-- PostgreSQL (optional, SQLite by default)
+- MySQL 5.7+ (или SQLite для разработки)
+- виртуальное окружение (рекомендуется)
 
-### Step 1: Clone the Repository
+### Шаг 1: Клонирование
 
 ```bash
 git clone https://github.com/Fxshtro/webSiteForHub.git
@@ -25,200 +38,288 @@ cd webSiteForHub
 git checkout Backend
 ```
 
-### Step 2: Install Dependencies
+### Шаг 2: Виртуальное окружение
 
 ```bash
+python3 -m venv venv
+source venv/bin/activate
 pip install -r requirements.txt
 ```
 
-### Step 3: Configure Environment
+### Шаг 3: Настройка окружения
 
-Create a `.env` file in the project root (optional):
+Создайте `.env` в корне проекта:
 
 ```env
 SECRET_KEY=your-secret-key-here
 DEBUG=True
 ALLOWED_HOSTS=localhost,127.0.0.1
-DATABASE_ENGINE=django.db.backends.sqlite3
+DATABASE_ENGINE=django.db.backends.mysql
+DATABASE_NAME=appiub95_it_hub
+DATABASE_USER=your_user
+DATABASE_PASSWORD=your_password
+DATABASE_HOST=localhost
+DATABASE_PORT=3306
+DEFAULT_FROM_EMAIL=webmaster@localhost
+CORS_ALLOWED_ORIGINS=http://localhost:3000,http://localhost:8000
 ```
 
-### Step 4: Run Migrations
+Для SQLite (разработка без MySQL):
+
+```env
+DATABASE_ENGINE=sqlite
+```
+
+### Шаг 4: Миграции
 
 ```bash
 python manage.py makemigrations
 python manage.py migrate
 ```
 
-### Step 5: Initialize Data
+### Шаг 5: Инициализация
 
 ```bash
 python manage.py init_hub
 ```
 
-This creates default Hub settings and sample activity directions.
+Создает роли сайта (Администратор, Лидер лаборатории, Менеджер проекта, Студент).
 
-### Step 6: Create Superuser
+### Шаг 6: Суперпользователь
 
 ```bash
 python manage.py createsuperuser
 ```
 
-After creation, log in to the admin panel and set the `admin` role for this user.
+После создания зайдите в админ-панель и назначьте роль `Администратор`.
 
-### Step 7: Run Development Server
+### Шаг 7: Сборка статики
+
+```bash
+python manage.py collectstatic --noinput
+```
+
+### Шаг 8: Запуск
 
 ```bash
 python manage.py runserver
 ```
 
-Visit http://127.0.0.1:8000/admin/ for the admin panel or http://127.0.0.1:8000/api/ for the API root.
+- Админ-панель: http://127.0.0.1:8000/admin/
+- API: http://127.0.0.1:8000/api/
 
-## Project Structure
+## Установка (Windows)
+
+### Требования
+
+- Python 3.8+ (https://python.org/downloads/)
+- pip (входит в Python)
+- MySQL 5.7+ (https://dev.mysql.com/downloads/) или SQLite
+- Git (https://git-scm.com/downloads/)
+
+### Шаг 1: Клонирование
+
+```cmd
+git clone https://github.com/Fxshtro/webSiteForHub.git
+cd webSiteForHub
+git checkout Backend
+```
+
+### Шаг 2: Виртуальное окружение
+
+```cmd
+python -m venv venv
+venv\Scripts\activate
+pip install -r requirements.txt
+```
+
+### Шаг 3: Настройка окружения
+
+Создайте `.env` в корне проекта (см. пример выше).
+
+### Шаг 4: Миграции
+
+```cmd
+python manage.py makemigrations
+python manage.py migrate
+```
+
+### Шаг 5: Инициализация
+
+```cmd
+python manage.py init_hub
+```
+
+### Шаг 6: Суперпользователь
+
+```cmd
+python manage.py createsuperuser
+```
+
+### Шаг 7: Сборка статики
+
+```cmd
+python manage.py collectstatic --noinput
+```
+
+### Шаг 8: Запуск
+
+```cmd
+python manage.py runserver
+```
+
+## Структура проекта
 
 ```
 hub_backend/
-├── hub/                    # Main application
-│   ├── models.py           # Data models
-│   ├── viewsets.py         # API viewsets
-│   ├── serializers.py      # API serializers
-│   ├── permissions.py      # Custom permissions
-│   ├── admin.py            # Admin panel configuration
-│   ├── urls.py             # API URL routing
-│   ├── views.py            # Additional views
-│   ├── signals.py          # Django signals
-│   └── utils.py            # Utility functions
-├── hub_backend/            # Project settings
+├── hub/                    # Основное приложение
+│   ├── models.py           # Модели данных (MySQL + managed)
+│   ├── admin.py            # Админ-панель с ролевым доступом
+│   ├── serializers.py      # API сериализаторы
+│   ├── viewsets.py         # API viewsets (DRF)
+│   ├── permissions.py      # Кастомные разрешения
+│   ├── urls.py             # API маршруты (router)
+│   ├── signals.py          # Django сигналы (журнал)
+│   ├── utils.py            # Утилиты (log_event)
+│   ├── exceptions.py       # Обработчик исключений
+│   ├── templates/          # Кастомные шаблоны админ-панели
+│   │   └── admin/
+│   │       └── base_site.html  # Подключение тёмно-фиолетовой темы
+│   ├── static/             # Кастомная стилизация
+│   │   └── admin/css/
+│   │       └── dark_purple_theme.css  # Тёмно-фиолетовая тема
+│   ├── management/
+│   │   └── commands/
+│   │       └── init_hub.py # Инициализация данных
+│   └── migrations/         # Миграции БД
+│       ├── 0001_initial.py
+│       ├── 0002_*.py        # Переход к MySQL-моделям
+│       ├── 0003_*.py        # HubLeader, goal, text_limited
+│       ├── 0004_*.py        # ALTER TABLE (RunSQL)
+│       └── 0005_*.py        # HubLeader: student→user
+├── hub_backend/            # Настройки проекта
 │   ├── settings.py         # Django settings
-│   └── urls.py             # Root URL configuration
-├── media/                  # Uploaded files
+│   └── urls.py             # Root URL + media
+├── media/                  # Загруженные файлы
+│   ├── achievements/       # Изображения достижений
+│   └── concepts/           # Файлы концепций проектов
+├── logs/                   # Логи Django
+├── staticfiles/            # Собранные статические файлы
 ├── manage.py               # Django management script
-└── requirements.txt        # Python dependencies
+└── requirements.txt        # Python зависимости
 ```
 
-## User Roles
+## Роли пользователей
 
-### Administrator
-- Full access to all data and settings
-- Can manage all laboratories, projects, and participants
-- Access to event logs and system settings
-- Can export reports
+### Администратор
+- Полный доступ ко всем данным и настройкам
+- Управление лабораториями, проектами, участниками
+- Журнал событий, системные настройки
+- Экспорт отчётов
 
-### Laboratory Leader
-- Can edit only their assigned laboratory
-- Sees and manages projects within their laboratory
-- Can manage participants of their laboratory's projects
-- Limited access to other data
+### Лидер лаборатории
+- Редактирование только своей лаборатории
+- Управление проектами внутри лаборатории
+- Управление участниками проектов лаборатории
+- Ограниченный доступ к остальным данным
 
-### Project Manager
-- Can edit only projects where they are assigned as manager
-- Can submit reports for their projects
-- Sees participants of their managed projects
-- Read-only access to other data
+### Менеджер проекта
+- Редактирование проектов где назначен менеджером
+- Отправка отчётов по своим проектам
+- Просмотр участников управляемых проектов
+- Read-only к остальным данным
 
-### Student
-- Read-only access to available data
-- No admin panel access
-- Can view projects, labs, and achievements through API
+### Студент
+- Read-only доступ к доступным данным
+- Нет доступа к админ-панели
+- Просмотр проектов, лаб, достижений через API
 
-## API Documentation
+## API-эндпоинты
 
-### Base URL
+### Базовый URL
 ```
 http://127.0.0.1:8000/api/
 ```
 
-### Authentication
+### Аутентификация
 
-All API endpoints require authentication. Two methods are supported:
+- **Session Authentication** — для веб-интерфейса
+- **Basic Authentication** — для API-клиентов
 
-- **Session Authentication** - For web interface
-- **Basic Authentication** - For API clients
+### Основные эндпоинты
 
-### Endpoints
+| Endpoint | Методы | Описание |
+|---|---|---|
+| `/api/directions/` | CRUD | Направления деятельности |
+| `/api/roles/` | CRUD | Роли в проектах |
+| `/api/site-roles/` | CRUD | Роли доступа (админ только) |
+| `/api/labs/` | CRUD | Лаборатории |
+| `/api/labs/{id}/projects/` | GET | Проекты лаборатории |
+| `/api/projects/` | CRUD | Проекты |
+| `/api/projects/{id}/participants/` | GET | Участники проекта |
+| `/api/projects/{id}/active_participants/` | GET | Активные участники |
+| `/api/participants/` | CRUD | Участники проектов |
+| `/api/participants/{id}/leave/` | POST | Покинуть проект |
+| `/api/achievements/` | CRUD | Достижения |
+| `/api/reports/` | CRUD | Отчёты |
+| `/api/students/` | CRUD | Студенты |
+| `/api/guides/` | READ | Руководители лабораторий |
+| `/api/users/` | CRUD | Пользователи админки |
+| `/api/users/me/` | GET | Текущий пользователь |
+| `/api/hub-leaders/` | CRUD | Руководители хаба |
+| `/api/events/` | READ | Журнал событий |
 
-#### Directions
-- `GET /api/directions/` - List all activity directions
-- `POST /api/directions/` - Create direction (Admin only)
-- `GET /api/directions/{id}/` - Get direction details
-- `PUT /api/directions/{id}/` - Update direction (Admin only)
-- `DELETE /api/directions/{id}/` - Delete direction (Admin only)
+### Query-параметры
 
-#### Laboratories
-- `GET /api/labs/` - List laboratories
-- `POST /api/labs/` - Create laboratory (Admin only)
-- `GET /api/labs/{id}/` - Get laboratory details
-- `GET /api/labs/{id}/projects/` - Get laboratory projects
-- `PUT /api/labs/{id}/` - Update laboratory
-- `DELETE /api/labs/{id}/` - Delete laboratory
+Все list-эндпоинты поддерживают:
 
-#### Projects
-- `GET /api/projects/` - List projects
-- `POST /api/projects/` - Create project
-- `GET /api/projects/{id}/` - Get project details
-- `GET /api/projects/{id}/participants/` - Get project participants
-- `GET /api/projects/{id}/active_participants/` - Get active participants
-- `PUT /api/projects/{id}/` - Update project
-- `DELETE /api/projects/{id}/` - Delete project
+- **Фильтрация**: `?field=value`
+- **Поиск**: `?search=query`
+- **Сортировка**: `?ordering=field` / `?ordering=-field`
+- **Пагинация**: `?page=1` (20 на страницу)
 
-#### Users
-- `GET /api/users/` - List users
-- `GET /api/users/me/` - Get current user information
-- `GET /api/users/{id}/` - Get user details
-- `PUT /api/users/{id}/` - Update user (own profile or Admin)
-
-#### Participants
-- `GET /api/participants/` - List project participants
-- `POST /api/participants/` - Add participant to project
-- `GET /api/participants/{id}/` - Get participant details
-- `POST /api/participants/{id}/leave/` - Leave project
-- `PUT /api/participants/{id}/` - Update participant
-- `DELETE /api/participants/{id}/` - Remove participant
-
-#### Achievements
-- `GET /api/achievements/` - List achievements
-- `POST /api/achievements/` - Create achievement
-- `GET /api/achievements/{id}/` - Get achievement details
-- `PUT /api/achievements/{id}/` - Update achievement
-- `DELETE /api/achievements/{id}/` - Delete achievement
-
-#### Events
-- `GET /api/events/` - List event log entries (read-only)
-- `GET /api/events/{id}/` - Get event details
-
-#### Settings
-- `GET /api/settings/` - Get Hub settings
-- `PUT /api/settings/` - Update Hub settings (Admin only)
-
-### Query Parameters
-
-All list endpoints support:
-
-- **Filtering**: `?field=value` (e.g., `?active=true`)
-- **Search**: `?search=query` (searches in relevant fields)
-- **Ordering**: `?ordering=field` or `?ordering=-field` (descending)
-- **Pagination**: `?page=1` (20 items per page)
-
-### Example Requests
+### Примеры
 
 ```bash
-# Get all active laboratories
-curl -u username:password http://127.0.0.1:8000/api/labs/?active=true
+# Все активные лаборатории
+curl -u login:password http://127.0.0.1:8000/api/labs/?active=true
 
-# Search projects
-curl -u username:password http://127.0.0.1:8000/api/projects/?search=web
+# Поиск проектов
+curl -u login:password http://127.0.0.1:8000/api/projects/?search=web
 
-# Get current user info
-curl -u username:password http://127.0.0.1:8000/api/users/me/
+# Текущий пользователь
+curl -u login:password http://127.0.0.1:8000/api/users/me/
 
-# Leave a project
-curl -X POST -u username:password http://127.0.0.1:8000/api/participants/1/leave/
+# Покинуть проект
+curl -X POST -u login:password http://127.0.0.1:8000/api/participants/1/leave/
 ```
 
-## Configuration
+## Админ-панель — Тёмно-фиолетовая тема
 
-### Database
+Админ-панель использует кастомную тёмно-фиолетовую тему:
+- Фон: `#1a0a2e`
+- Акцент: `#7b2fbe`
+- Текст: `#d4c0e8`
+- Хедер/сайдбар: `#120620`
 
-By default, the project uses SQLite. To use PostgreSQL, update `hub_backend/settings.py` or set environment variables:
+Файлы темы:
+- `hub/static/admin/css/dark_purple_theme.css` — полная стилизация всех элементов
+- `hub/templates/admin/base_site.html` — подключение CSS к админке
+
+## Настройка БД
+
+### MySQL (по умолчанию)
+
+```env
+DATABASE_ENGINE=django.db.backends.mysql
+DATABASE_NAME=appiub95_it_hub
+DATABASE_USER=your_user
+DATABASE_PASSWORD=your_password
+DATABASE_HOST=localhost
+DATABASE_PORT=3306
+```
+
+### PostgreSQL
 
 ```env
 DATABASE_ENGINE=django.db.backends.postgresql
@@ -229,26 +330,38 @@ DATABASE_HOST=localhost
 DATABASE_PORT=5432
 ```
 
-### CORS Settings
+### SQLite (для разработки)
 
-Configure allowed origins in `.env`:
+```env
+DATABASE_ENGINE=sqlite
+```
+
+## CORS
 
 ```env
 CORS_ALLOWED_ORIGINS=http://localhost:3000,http://localhost:8000
 ```
 
-### Media Files
+## Media-файлы
 
-Uploaded files are stored in the `media/` directory:
-- `media/concepts/` - Project concept files
-- `media/achievements/` - Achievement images
+- `media/achievements/` — Изображения достижений (4:3, max 2МБ)
+- `media/concepts/` — Файлы концепций проектов
 
-##Dependencies
+## Зависимости
 
-- **Django** >= 4.2.0 - Web framework
-- **djangorestframework** >= 3.14.0 - REST API framework
-- **django-filter** >= 23.0 - Advanced filtering
-- **django-cors-headers** >= 4.3.0 - CORS support
-- **openpyxl** >= 3.1.0 - Excel export
-- **Pillow** >= 10.0.0 - Image processing
-- **python-decouple** >= 3.8 - Environment variables
+| Пакет | Версия | Назначение |
+|---|---|---|
+| Django | >= 4.2.0 | Web framework |
+| djangorestframework | >= 3.14.0 | REST API |
+| django-filter | >= 23.0 | Фильтрация |
+| django-cors-headers | >= 4.3.0 | CORS |
+| openpyxl | >= 3.1.0 | Excel export |
+| Pillow | >= 10.0.0 | Обработка изображений |
+| python-decouple | >= 3.8 | env vars |
+| mysqlclient | >= 2.2.0 | MySQL driver |
+
+## На будущее
+
+- **Статистика**: кто где был, какие команды, история участия
+- **Telegram-бот**: автоматический сбор данных
+- **Миграции на PostgreSQL**: для production
