@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
-import { notFound } from "next/navigation";
+import { redirect } from "next/navigation";
 import LabAchievementsSlider from "../../../../components/labs/labAchievementsSlider";
 import LabPeopleDrawer from "../../../../components/labs/labPeopleDrawer";
 import ScrollToTop from "../../../../components/ui/tapToTop";
@@ -96,7 +96,7 @@ export default async function ProjectPage({ params }: ProjectPageProps): Promise
   const projectData = getLabProjectById(lab, project);
 
   if (!labData || !projectData) {
-    notFound();
+    redirect("/main");
   }
 
   const labPeople = getLabPeopleBySlug(labData.slug);

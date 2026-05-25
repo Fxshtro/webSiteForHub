@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { getAllLabSlugs, getLabBySlug } from "../constants";
 import Image from "next/image";
-import { notFound } from "next/navigation";
+import { redirect } from "next/navigation";
 import ScrollToTop from "../../components/ui/tapToTop";
 import LabProjectsFilter from "../../components/labs/labProjectsFilter";
 import LabAchievementsSlider from "../../components/labs/labAchievementsSlider";
@@ -45,7 +45,7 @@ export function generateStaticParams(): { lab: string }[] {
 export default async function LabPage({ params }: PageProps): Promise<React.JSX.Element> {
   const { lab } = await params;
   const labData = getLabBySlug(lab);
-  if (!labData) notFound();
+  if (!labData) redirect("/main");
   const labPeople = getLabPeopleBySlug(labData.slug);
   const labProjects = getLabProjectsBySlug(labData.slug);
   const peopleCount = labPeople.length;
