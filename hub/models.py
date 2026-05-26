@@ -237,11 +237,13 @@ class Direction(models.Model):
 
 class Laboratory(models.Model):
     title = models.CharField(max_length=50, unique=True, verbose_name='Название')
+    slug = models.CharField(max_length=50, unique=True, blank=True, null=True, verbose_name='ЧПУ (slug)')
     link = models.URLField(max_length=50, blank=True, null=True, verbose_name='Ссылка на чат')
     active = models.BooleanField(default=True, verbose_name='Активна', db_column='active')
     images = models.JSONField(default=list, blank=True, verbose_name='Фотографии (JSON массив)')
     short_description = models.CharField(max_length=350, blank=True, null=True, verbose_name='Краткое описание')
     description = models.TextField(blank=True, null=True, verbose_name='Полное описание')
+
 
     class Meta:
         db_table = 'laboratories'

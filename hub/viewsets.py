@@ -1,7 +1,7 @@
 from rest_framework import viewsets, filters, status
 from rest_framework.decorators import action, api_view
 from rest_framework.response import Response
-from rest_framework.permissions import IsAuthenticated, IsAdminUser
+from rest_framework.permissions import IsAuthenticated, IsAuthenticatedOrReadOnly, IsAdminUser
 from django_filters.rest_framework import DjangoFilterBackend
 from django.contrib.auth.hashers import make_password
 from django.core.mail import send_mail
@@ -94,17 +94,24 @@ class UserViewSet(viewsets.ModelViewSet):
 class StudentViewSet(viewsets.ModelViewSet):
     queryset = Student.objects.all()
     serializer_class = StudentSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticatedOrReadOnly]
     filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
     filterset_fields = ['study_group', 'experience', 'university_city']
     search_fields = ['surname', 'name', 'email', 'telegram_nickname', 'study_group']
     ordering_fields = ['surname', 'name']
 
+    def get_queryset(self):
+        qs = super().get_queryset()
+        lab_id = self.request.query_params.get('laboratory')
+        if lab_id:
+            qs = qs.filter(laboratory_links__laboratory_id=lab_id)
+        return qs
+
 
 class GuideViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = Guide.objects.all()
     serializer_class = GuideSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticatedOrReadOnly]
     filter_backends = [DjangoFilterBackend, filters.SearchFilter]
     filterset_fields = ['laboratory']
     search_fields = ['surname', 'name']
@@ -117,10 +124,10 @@ class GuideViewSet(viewsets.ReadOnlyModelViewSet):
 class LaboratoryViewSet(viewsets.ModelViewSet):
     queryset = Laboratory.objects.all()
     serializer_class = LaboratorySerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticatedOrReadOnly]
     filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
-    filterset_fields = ['active']
-    search_fields = ['title', 'short_description']
+    filterset_fields = ['active', 'slug']
+    search_fields = ['title', 'slug', 'short_description']
     ordering_fields = ['title']
 
     @action(detail=True, methods=['get'])
@@ -128,6 +135,13 @@ class LaboratoryViewSet(viewsets.ModelViewSet):
         lab = self.get_object()
         projects = Project.objects.filter(laboratory_links__laboratory=lab)
         serializer = ProjectSerializer(projects, many=True, context={'request': request})
+        return Response(serializer.data)
+
+    @action(detail=True, methods=['get'])
+    def members(self, request, pk=None):
+        lab = self.get_object()
+        students = Student.objects.filter(laboratory_links__laboratory=lab)
+        serializer = StudentSerializer(students, many=True, context={'request': request})
         return Response(serializer.data)
 
 
@@ -142,7 +156,7 @@ class LaboratoryDirectionViewSet(viewsets.ModelViewSet):
 class LaboratoryLeaderViewSet(viewsets.ModelViewSet):
     queryset = LaboratoryLeader.objects.all()
     serializer_class = LaboratoryLeaderSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticatedOrReadOnly]
     filter_backends = [DjangoFilterBackend, filters.SearchFilter]
     filterset_fields = ['laboratory']
     search_fields = ['student__surname', 'student__name']
@@ -151,7 +165,7 @@ class LaboratoryLeaderViewSet(viewsets.ModelViewSet):
 class StudentLaboratoryViewSet(viewsets.ModelViewSet):
     queryset = StudentLaboratory.objects.all()
     serializer_class = StudentLaboratorySerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticatedOrReadOnly]
     filter_backends = [DjangoFilterBackend]
     filterset_fields = ['laboratory']
 
@@ -171,11 +185,18 @@ class StudentDirectionViewSet(viewsets.ModelViewSet):
 class ProjectViewSet(viewsets.ModelViewSet):
     queryset = Project.objects.all()
     serializer_class = ProjectSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticatedOrReadOnly]
     filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
     filterset_fields = ['need_report']
     search_fields = ['title', 'description', 'goal']
     ordering_fields = ['title']
+
+    def get_queryset(self):
+        qs = super().get_queryset()
+        lab_slug = self.request.query_params.get('lab_slug')
+        if lab_slug:
+            qs = qs.filter(laboratory_links__laboratory__slug=lab_slug)
+        return qs
 
     @action(detail=True, methods=['get'])
     def participants(self, request, pk=None):
@@ -235,7 +256,7 @@ class StudentProjectRoleViewSet(viewsets.ModelViewSet):
 class AchievementViewSet(viewsets.ModelViewSet):
     queryset = Achievement.objects.all()
     serializer_class = AchievementSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticatedOrReadOnly]
     filter_backends = [DjangoFilterBackend, filters.SearchFilter]
     filterset_fields = ['laboratory', 'project']
     search_fields = ['title', 'text', 'text_limited']

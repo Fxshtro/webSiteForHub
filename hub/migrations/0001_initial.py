@@ -355,40 +355,81 @@ class Migration(migrations.Migration):
                 'managed': False,
             },
         ),
-        migrations.CreateModel(
-            name='EventLog',
-            fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('user_login', models.CharField(blank=True, max_length=50, null=True, verbose_name='Пользователь')),
-                ('action', models.CharField(choices=[('project_created', 'Создан проект'), ('project_updated', 'Обновлен проект'), ('lab_created', 'Создана лаборатория'), ('lab_updated', 'Обновлена лаборатория'), ('participant_left', 'Участник покинул проект'), ('participant_joined', 'Участник присоединился'), ('report_created', 'Создан отчёт'), ('report_confirmed', 'Отчёт подтверждён')], max_length=50, verbose_name='Действие')),
-                ('entity_type', models.CharField(max_length=50, verbose_name='Тип сущности')),
-                ('entity_id', models.IntegerField(verbose_name='ID сущности')),
-                ('timestamp', models.DateTimeField(auto_now_add=True, verbose_name='Время')),
-                ('details', models.TextField(blank=True, null=True, verbose_name='Детали (JSON)')),
+        migrations.SeparateDatabaseAndState(
+            state_operations=[
+                migrations.CreateModel(
+                    name='EventLog',
+                    fields=[
+                        ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
+                        ('user_login', models.CharField(blank=True, max_length=50, null=True, verbose_name='Пользователь')),
+                        ('action', models.CharField(choices=[('project_created', 'Создан проект'), ('project_updated', 'Обновлен проект'), ('lab_created', 'Создана лаборатория'), ('lab_updated', 'Обновлена лаборатория'), ('participant_left', 'Участник покинул проект'), ('participant_joined', 'Участник присоединился'), ('report_created', 'Создан отчёт'), ('report_confirmed', 'Отчёт подтверждён')], max_length=50, verbose_name='Действие')),
+                        ('entity_type', models.CharField(max_length=50, verbose_name='Тип сущности')),
+                        ('entity_id', models.IntegerField(verbose_name='ID сущности')),
+                        ('timestamp', models.DateTimeField(auto_now_add=True, verbose_name='Время')),
+                        ('details', models.TextField(blank=True, null=True, verbose_name='Детали (JSON)')),
+                    ],
+                    options={
+                        'verbose_name': 'Событие',
+                        'verbose_name_plural': 'Журнал событий',
+                        'db_table': 'event_log',
+                        'ordering': ['-timestamp'],
+                        'managed': True,
+                    },
+                ),
             ],
-            options={
-                'verbose_name': 'Событие',
-                'verbose_name_plural': 'Журнал событий',
-                'db_table': 'event_log',
-                'ordering': ['-timestamp'],
-                'managed': True,
-            },
+            database_operations=[
+                migrations.RunSQL(
+                    sql="""
+                        CREATE TABLE IF NOT EXISTS `event_log` (
+                            `id` bigint NOT NULL AUTO_INCREMENT,
+                            `user_login` varchar(50) DEFAULT NULL,
+                            `action` varchar(50) NOT NULL,
+                            `entity_type` varchar(50) NOT NULL,
+                            `entity_id` int NOT NULL,
+                            `timestamp` datetime(6) NOT NULL,
+                            `details` longtext DEFAULT NULL,
+                            PRIMARY KEY (`id`)
+                        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+                    """,
+                    reverse_sql=migrations.RunSQL.noop,
+                ),
+            ],
         ),
-        migrations.CreateModel(
-            name='HubLeader',
-            fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('position', models.CharField(blank=True, max_length=200, verbose_name='Должность')),
-                ('is_active', models.BooleanField(default=True, verbose_name='Активен')),
-                ('created_at', models.DateTimeField(auto_now_add=True, verbose_name='Добавлен')),
-                ('user', models.OneToOneField(db_column='user_id', on_delete=django.db.models.deletion.CASCADE, related_name='hub_leader_profile', to='hub.user')),
+        migrations.SeparateDatabaseAndState(
+            state_operations=[
+                migrations.CreateModel(
+                    name='HubLeader',
+                    fields=[
+                        ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
+                        ('position', models.CharField(blank=True, max_length=200, verbose_name='Должность')),
+                        ('is_active', models.BooleanField(default=True, verbose_name='Активен')),
+                        ('created_at', models.DateTimeField(auto_now_add=True, verbose_name='Добавлен')),
+                        ('user', models.OneToOneField(db_column='user_id', on_delete=django.db.models.deletion.CASCADE, related_name='hub_leader_profile', to='hub.user')),
+                    ],
+                    options={
+                        'verbose_name': 'Руководитель хаба',
+                        'verbose_name_plural': 'Руководители хаба',
+                        'db_table': 'hub_leaders',
+                        'ordering': ['user__login'],
+                        'managed': True,
+                    },
+                ),
             ],
-            options={
-                'verbose_name': 'Руководитель хаба',
-                'verbose_name_plural': 'Руководители хаба',
-                'db_table': 'hub_leaders',
-                'ordering': ['user__login'],
-                'managed': True,
-            },
+            database_operations=[
+                migrations.RunSQL(
+                    sql="""
+                        CREATE TABLE IF NOT EXISTS `hub_leaders` (
+                            `id` bigint NOT NULL AUTO_INCREMENT,
+                            `position` varchar(200) NOT NULL,
+                            `is_active` tinyint(1) NOT NULL,
+                            `created_at` datetime(6) NOT NULL,
+                            `user_id` bigint NOT NULL,
+                            PRIMARY KEY (`id`),
+                            UNIQUE KEY `user_id` (`user_id`)
+                        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+                    """,
+                    reverse_sql=migrations.RunSQL.noop,
+                ),
+            ],
         ),
     ]

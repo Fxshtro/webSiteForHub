@@ -34,7 +34,7 @@ class LaboratorySerializer(serializers.ModelSerializer):
     class Meta:
         model = Laboratory
         fields = [
-            'id', 'title', 'link', 'active', 'short_description', 'description',
+            'id', 'title', 'slug', 'link', 'active', 'short_description', 'description',
             'images', 'directions_list', 'leaders_list', 'students_count', 'projects_count'
         ]
 
@@ -70,6 +70,7 @@ class StudentSerializer(serializers.ModelSerializer):
     full_name = serializers.CharField(read_only=True)
     laboratories = serializers.SerializerMethodField()
     directions = serializers.SerializerMethodField()
+    projects = serializers.SerializerMethodField()
 
     class Meta:
         model = Student
@@ -78,7 +79,7 @@ class StudentSerializer(serializers.ModelSerializer):
             'study_group', 'phone_number', 'email', 'university_city',
             'task_board', 'telegram_nickname', 'telegram_id',
             'experience', 'wishes', 'metaverse_account_link',
-            'laboratories', 'directions'
+            'laboratories', 'directions', 'projects'
         ]
 
     def get_laboratories(self, obj):
@@ -91,6 +92,18 @@ class StudentSerializer(serializers.ModelSerializer):
         return [
             {'id': sd.direction.id, 'title': sd.direction.title}
             for sd in obj.direction_links.all()
+        ]
+
+    def get_projects(self, obj):
+        return [
+            {
+                'id': spr.project_role.project.id,
+                'title': spr.project_role.project.title,
+                'role': spr.project_role.role.title
+            }
+            for spr in obj.project_roles.filter(present=True).select_related(
+                'project_role__project', 'project_role__role'
+            )
         ]
 
 
