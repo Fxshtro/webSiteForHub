@@ -12,6 +12,10 @@ function isAllowedPath(pathname: string): boolean {
     return true;
   }
 
+  if (pathname.startsWith("/api/")) {
+    return true;
+  }
+
   if (pathname.startsWith("/_next/")) {
     return true;
   }

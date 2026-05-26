@@ -5,8 +5,8 @@ import Card from "../components/labs/card";
 import Lenta from "../components/sections/slider";
 import ManagerCard from "../components/sections/manager";
 import ScrollToTop from "../components/ui/tapToTop";
-import { getLabBySlug } from "../../DataBase/labs";
-import { getLabPeopleBySlug } from "../../DataBase/labs/people";
+import type { HomeAchievementSlide, HomeLabCardItem, HomeManagerItem, HomeStatItem, HomeAboutContent } from "../../DataBase/types";
+import { fetchLabs } from "../lib/api";
 import { homeAboutContent, homeLabs, homeManagers, homeStats } from "../../DataBase/main/home";
 
 const fallbackHomeAboutContent = {
@@ -25,6 +25,7 @@ const fallbackHomeStats = [
 
 const fallbackHomeLabs = [
   {
+    name: "ИТ-лаборатория",
     participants: 0,
     project: 0,
     img: "labIT.png",
@@ -43,6 +44,8 @@ const fallbackHomeManagers = [
   },
 ] as const;
 
+export const dynamic = "force-dynamic";
+
 const getSafeText = (value: string | undefined, fallback: string): string => {
   const normalized = value?.trim();
   return normalized && normalized.length > 0 ? normalized : fallback;
@@ -56,7 +59,9 @@ interface HomeLabViewModel {
   slug: string;
 }
 
-export default function Home(): React.JSX.Element {
+export default async function Home(): Promise<React.JSX.Element> {
+  const apiLabs = await fetchLabs();
+
   const aboutContent = {
     title: getSafeText(homeAboutContent?.title, fallbackHomeAboutContent.title),
     introText: getSafeText(homeAboutContent?.introText, fallbackHomeAboutContent.introText),
@@ -67,18 +72,27 @@ export default function Home(): React.JSX.Element {
     icon: getSafeText(item.icon, fallbackHomeStats[0].icon),
     iconClassName: getSafeText(item.iconClassName, fallbackHomeStats[0].iconClassName),
   }));
-  const labs: HomeLabViewModel[] = (homeLabs.length > 0 ? homeLabs : fallbackHomeLabs).map((lab, index) => {
-    const slug = getSafeText(lab.slug, fallbackHomeLabs[0].slug);
-    const linkedLabData = getLabBySlug(slug);
 
-    return {
-      name: linkedLabData?.name ?? `Лаборатория ${index + 1}`,
-      participants: getLabPeopleBySlug(slug).length,
-      project: linkedLabData?.projects.length ?? (Number.isFinite(lab.project) ? Math.max(0, lab.project) : 0),
-      img: getSafeText(lab.img, fallbackHomeLabs[0].img),
-      slug,
-    };
-  });
+  const localLabBySlug = new Map(homeLabs.map(l => [l.slug, l]));
+  const labs: HomeLabViewModel[] = apiLabs.length > 0
+    ? apiLabs.filter(l => l.slug).map((apiLab) => {
+        const slug = apiLab.slug!;
+        const localLab = localLabBySlug.get(slug);
+        return {
+          name: apiLab.title,
+          participants: apiLab.students_count,
+          project: apiLab.projects_count,
+          img: localLab?.img || apiLab.images?.[0] || fallbackHomeLabs[0].img,
+          slug,
+        };
+      })
+    : (homeLabs.length > 0 ? homeLabs : [...fallbackHomeLabs]).map((lab) => ({
+        name: lab.name,
+        participants: lab.participants,
+        project: lab.project,
+        img: lab.img,
+        slug: lab.slug,
+      }));
   const managers = (homeManagers.length > 0 ? homeManagers : fallbackHomeManagers).map((manager, index) => ({
     name: getSafeText(manager.name, `Руководитель ${index + 1}`),
     title: getSafeText(manager.title, fallbackHomeManagers[0].title),
@@ -87,6 +101,20 @@ export default function Home(): React.JSX.Element {
     email: getSafeText(manager.email, `manager${index + 1}@iubip.ru`),
     imageSrc: manager.imageSrc,
   }));
+
+  const hubSlides: HomeAchievementSlide[] = await fetch(`${process.env.API_BASE_URL || "/api"}/achievements/`)
+    .then(r => r.ok ? r.json() : { results: [] })
+    .then(d => (d.results ?? []) as { laboratory: number | null; project: number | null; text_limited: string | null; text: string | null; title: string; image_url: string | null }[])
+    .then(items => items
+      .filter(a => !a.laboratory && !a.project)
+      .map(a => ({
+        description: a.text_limited ?? a.text ?? a.title,
+        date: "",
+        imageSrc: a.image_url ?? undefined,
+        imageAlt: a.title,
+      }))
+    )
+    .catch(() => []);
 
   return (
     <main>
@@ -289,7 +317,7 @@ export default function Home(): React.JSX.Element {
               <div className="absolute right-0 top-0 z-1 h-full w-30 bg-gradient-to-l from-[#ffffff12] to-[#00000000] blur-lg md:w-80"></div>
               <div className="absolute -right-10 -bottom-20 z-2 h-30 w-100 -rotate-20 bg-gradient-to-t from-[#000000] from-50% to-[#00000000]"></div>
             </div>
-            <Lenta />
+            <Lenta slides={hubSlides} />
           </div>
         </div>
 

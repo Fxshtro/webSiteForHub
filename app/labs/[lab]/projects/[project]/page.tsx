@@ -6,20 +6,25 @@ import LabAchievementsSlider from "../../../../components/labs/labAchievementsSl
 import LabPeopleDrawer from "../../../../components/labs/labPeopleDrawer";
 import ScrollToTop from "../../../../components/ui/tapToTop";
 import type { LabAchievement } from "../../../../../DataBase/types";
+import {
+  fetchLabBySlug,
+  fetchLabProjectById,
+  fetchLabMembersByLabId,
+  fetchProjectAchievementsByProjectId,
+} from "../../../../lib/api";
 import { getLabBySlug } from "../../../../../DataBase/labs";
 import { getLabPeopleBySlug } from "../../../../../DataBase/labs/people";
-import {
-  getAllLabProjectParams,
-  getLabProjectById,
-} from "../../../../../DataBase/labs/projects";
+import { getAllLabProjectParams } from "../../../../../DataBase/labs/projects";
 
-const LAB_TITLE_PNG_BY_SLUG = {
+export const dynamic = "force-dynamic";
+
+const LAB_TITLE_PNG_BY_SLUG: Record<string, string> = {
   "legal-tech": "/images/labs/labImageLEGAL.png",
   "it-lab": "/images/labs/labImageIT.png",
   "inno-travel": "/images/labs/labImageTRAVEL.png",
   "finprocess-tech": "/images/labs/labImageFINP.png",
   "psy-tech": "/images/labs/labImagePSY.png",
-} satisfies Record<string, string>;
+};
 
 interface ProjectPageProps {
   params: Promise<{ lab: string; project: string }>;
@@ -47,18 +52,21 @@ function isLabTitleImageSlug(slug: string): slug is keyof typeof LAB_TITLE_PNG_B
   return Object.hasOwn(LAB_TITLE_PNG_BY_SLUG, slug);
 }
 
-function getProjectAchievements(achievements: LabAchievement[], projectIndex: number): LabAchievement[] {
-  const startIndex = projectIndex % Math.max(achievements.length - 2, 1);
-
-  return achievements.slice(startIndex, startIndex + 2);
+async function fetchProjectByCompositeId(lab: string, project: string) {
+  const numericId = parseInt(project.replace(`${lab}-project-`, ""), 10);
+  if (isNaN(numericId)) return null;
+  return fetchLabProjectById(numericId);
 }
 
 export async function generateMetadata({ params }: ProjectPageProps): Promise<Metadata> {
   const { lab, project } = await params;
-  const labData = getLabBySlug(lab);
-  const projectData = getLabProjectById(lab, project);
-  const title = labData && projectData
-    ? `${projectData.title} | ${labData.name}`
+  const [apiLabData, projectData] = await Promise.all([
+    fetchLabBySlug(lab),
+    fetchProjectByCompositeId(lab, project),
+  ]);
+  const labName = apiLabData?.title ?? getLabBySlug(lab)?.name ?? lab;
+  const title = projectData
+    ? `${projectData.title} | ${labName}`
     : "Проект | Студенческий Цифровой Хаб";
   const description = projectData?.description ?? "Страница проекта студенческой лаборатории.";
 
@@ -92,23 +100,67 @@ function ProjectInfoCard({
 
 export default async function ProjectPage({ params }: ProjectPageProps): Promise<React.JSX.Element> {
   const { lab, project } = await params;
-  const labData = getLabBySlug(lab);
-  const projectData = getLabProjectById(lab, project);
+  const [apiLabData, projectData] = await Promise.all([
+    fetchLabBySlug(lab),
+    fetchProjectByCompositeId(lab, project),
+  ]);
+  const mockLabData = getLabBySlug(lab);
+  const labData = apiLabData ?? mockLabData;
 
   if (!labData || !projectData) {
     redirect("/main");
   }
 
-  const labPeople = getLabPeopleBySlug(labData.slug);
-  const projectMemberIds = new Set(projectData.memberIds);
-  const projectPeople = labPeople.filter((person) => projectMemberIds.has(person.id));
-  const labTitleImageSrc = getLabTitleImageSrc(labData.slug, labData.heroImageSrc);
-  const projectAchievements = getProjectAchievements(labData.achievements, projectData.projectIndex);
+  const slug = lab;
+  const labName = apiLabData?.title ?? mockLabData?.name ?? slug;
+  const labHeroImage = apiLabData?.images?.[0] ?? mockLabData?.heroImageSrc ?? "";
+
+  const [apiMembers, apiProjectAchievements] = apiLabData
+    ? await Promise.all([
+        fetchLabMembersByLabId(apiLabData.id),
+        fetchProjectAchievementsByProjectId(projectData.id),
+      ])
+    : [ [] as Awaited<ReturnType<typeof fetchLabMembersByLabId>>,
+        [] as Awaited<ReturnType<typeof fetchProjectAchievementsByProjectId>> ];
+
+  const labPeople = apiMembers.length > 0
+    ? apiMembers.map((s) => ({
+        id: `${slug}-student-${s.id}`,
+        name: s.full_name,
+        role: s.experience ?? "Участник лаборатории",
+        directions: s.directions.map(d => d.title).concat(s.laboratories.map(l => l.title)),
+        projects: s.projects.map(p => ({
+          projectId: `${slug}-project-${p.id}`,
+          projectIndex: p.id,
+          title: p.title,
+          roles: [p.role],
+        })),
+        roles: [s.experience ?? "Участник"].filter(Boolean),
+        metaverseUrl: s.metaverse_account_link ?? "",
+        avatarIcon: "fa-user",
+      }))
+    : getLabPeopleBySlug(slug);
+
+  const projectMemberIds = new Set(projectData.participants.map(p => p.student_id));
+  const projectPeople = labPeople.filter((person) => {
+    const idNum = parseInt(person.id.replace(`${slug}-student-`, ""), 10);
+    return projectMemberIds.has(idNum);
+  });
+
+  const projectAchievements: LabAchievement[] = apiProjectAchievements.length > 0
+    ? apiProjectAchievements.map(a => ({
+        description: a.text_limited ?? a.text ?? a.title,
+        date: "",
+        imageSrc: a.image_url ?? undefined,
+        imageAlt: a.title,
+      }))
+    : [];
+  const labTitleImageSrc = getLabTitleImageSrc(slug, labHeroImage);
 
   return (
     <main className="overflow-hidden pb-24">
       <ScrollToTop />
-      <LabPeopleDrawer labSlug={`${labData.slug}:${projectData.id}`} people={projectPeople} />
+      <LabPeopleDrawer labSlug={`${slug}:${projectData.id}`} people={projectPeople} />
 
       <div className="absolute top-0 left-0 -z-10 h-[1100px] w-full bg-gradient-to-b from-[#1C1261] to-black" />
       <div className="absolute top-0 -z-10 h-[700px] w-full overflow-hidden">
@@ -125,7 +177,7 @@ export default async function ProjectPage({ params }: ProjectPageProps): Promise
 
       <section className="container !mt-[85px] !px-4 pt-12 sm:!px-10 md:pt-20">
         <Link
-          href={`/labs/${labData.slug}#projects`}
+          href={`/labs/${slug}#projects`}
           className="glass custom-before mt-4 inline-flex items-center gap-3 !rounded-2xl !bg-[#afafaf30] px-5 py-3 text-[14px] font-bold uppercase text-white/85 duration-200 hover:text-white"
         >
           <i className="fas fa-arrow-left text-[13px]" />
@@ -135,7 +187,7 @@ export default async function ProjectPage({ params }: ProjectPageProps): Promise
         <div className="mt-10 max-w-[980px]">
           <div className="flex items-center gap-1.5">
             <p className="font-unbounded text-[16px] font-black uppercase text-white/60">
-              {labData.name}
+              {labName}
             </p>
             <Image
               src={labTitleImageSrc}
@@ -158,20 +210,21 @@ export default async function ProjectPage({ params }: ProjectPageProps): Promise
         <div className="mt-20 grid gap-6 md:mt-28 xl:grid-cols-[minmax(0,1.2fr)_minmax(320px,0.8fr)]">
           <div className="grid gap-6">
             <ProjectInfoCard iconClassName="fa-align-left" title="Описание">
-              <p>{projectData.details}</p>
+              <p>{projectData.goal}</p>
             </ProjectInfoCard>
-
           </div>
 
           <div className="grid gap-6">
             <ProjectInfoCard iconClassName="fa-users" title="Команда">
               <div id="team" className="grid gap-3">
-                {projectPeople.map((person) => (
+                {projectPeople.length > 0 ? projectPeople.map((person) => (
                   <article key={person.id} className="glass custom-before !rounded-2xl !bg-[#afafaf30] px-4 py-3">
                     <p className="font-bold text-white">{person.name}</p>
                     <p className="mt-1 text-[14px] text-white/65">{person.role}</p>
                   </article>
-                ))}
+                )) : (
+                  <p className="text-white/60">Участники не назначены.</p>
+                )}
               </div>
             </ProjectInfoCard>
           </div>
@@ -182,25 +235,7 @@ export default async function ProjectPage({ params }: ProjectPageProps): Promise
             ссылки
           </h2>
           <div className="mt-5 grid gap-4 md:grid-cols-2">
-            {projectData.links.map((linkItem, index) => (
-              <a
-                key={`${linkItem.url}-${index}`}
-                href={linkItem.url}
-                target="_blank"
-                rel="noreferrer"
-                className="glass custom-before flex items-center justify-between gap-4 !rounded-2xl !bg-gradient-to-b from-[#afafaf30] to-[#6f6f6f40] px-4 py-3 text-white/85 duration-200 hover:text-white"
-              >
-                <span className="flex items-center gap-3">
-                  <span className="glass custom-before flex h-[42px] w-[42px] items-center justify-center !rounded-xl !bg-[#afafaf30]">
-                    <i className="far fa-file-lines text-[20px] text-white/90" />
-                  </span>
-                  <span className="text-[22px] font-medium underline underline-offset-4 md:text-[26px]">
-                    {linkItem.label ?? `Ссылка ${index + 1}`}
-                  </span>
-                </span>
-                <i className="fas fa-up-right-from-square text-[20px]" />
-              </a>
-            ))}
+            <p className="text-white/60">Нет ссылок на ресурсы.</p>
           </div>
         </section>
 

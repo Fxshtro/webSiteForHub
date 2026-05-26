@@ -48,6 +48,7 @@ export interface HomeStatItem {
 }
 
 export interface HomeLabCardItem {
+  name: string;
   participants: number;
   project: number;
   img: string;

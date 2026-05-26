@@ -65,11 +65,11 @@ export const homeStats: HomeStatItem[] = [
 ];
 
 export const homeLabs: HomeLabCardItem[] = [
-  { participants: 6, project: 9, img: "labLegal.png", slug: "legal-tech" },
-  { participants: 25, project: 14, img: "labIT.png", slug: "it-lab" },
-  { participants: 6, project: 9, img: "labTravel.png", slug: "inno-travel" },
-  { participants: 5, project: 9, img: "labFinprocess.png", slug: "finprocess-tech" },
-  { participants: 6, project: 9, img: "labPsy.png", slug: "psy-tech" },
+  { name: "Legal Tech", participants: 6, project: 9, img: "labLegal.png", slug: "legal-tech" },
+  { name: "ИТ-лаборатория", participants: 25, project: 14, img: "labIT.png", slug: "it-lab" },
+  { name: "Inno Travel", participants: 6, project: 9, img: "labTravel.png", slug: "inno-travel" },
+  { name: "Finprocess Tech", participants: 5, project: 9, img: "labFinprocess.png", slug: "finprocess-tech" },
+  { name: "Psy Tech", participants: 6, project: 9, img: "labPsy.png", slug: "psy-tech" },
 ];
 
 export const homeManagers: HomeManagerItem[] = [

@@ -21,10 +21,15 @@ const FALLBACK_ACHIEVEMENT_SLIDES: HomeAchievementSlide[] = [
   },
 ];
 
-export default function Lenta(): React.JSX.Element {
+interface LentaProps {
+  slides?: HomeAchievementSlide[];
+}
+
+export default function Lenta({ slides }: LentaProps): React.JSX.Element {
   const cardInfo = useMemo<HomeAchievementSlide[]>(() => {
+    if (slides && slides.length > 0) return slides;
     return homeAchievementSlides.length > 0 ? homeAchievementSlides : FALLBACK_ACHIEVEMENT_SLIDES;
-  }, []);
+  }, [slides]);
   const isMobile = useMediaQuery("(max-width: 767px)");
   const [canSlidePrev, setCanSlidePrev] = useState(true);
   const [canSlideNext, setCanSlideNext] = useState(true);
