@@ -1,0 +1,56 @@
+services:
+  db:
+    image: docker.io/mariadb:11
+    container_name: hub-mysql
+    network_mode: host
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: appiub95_it_hub
+      MYSQL_USER: Fxrar
+      MYSQL_PASSWORD: qwerty
+    volumes:
+      - hub_mysql_data:/var/lib/mysql
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "mariadb-admin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    build:
+      context: ./Backend
+      dockerfile: Dockerfile
+    container_name: hub-backend
+    network_mode: host
+    environment:
+      SECRET_KEY: your-secret-key-here
+      DEBUG: "True"
+      ALLOWED_HOSTS: localhost,127.0.0.1,0.0.0.0
+      DATABASE_ENGINE: django.db.backends.mysql
+      DATABASE_NAME: appiub95_it_hub
+      DATABASE_USER: Fxrar
+      DATABASE_PASSWORD: qwerty
+      DATABASE_HOST: localhost
+      DATABASE_PORT: "3306"
+      CORS_ALLOWED_ORIGINS: http://localhost:3000,http://127.0.0.1:3000,http://localhost:8000
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: unless-stopped
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: hub-frontend
+    network_mode: host
+    environment:
+      NODE_ENV: production
+      API_BASE_URL: http://localhost:8000/api
+    depends_on:
+      - backend
+    restart: unless-stopped
+
+volumes:
+  hub_mysql_data:

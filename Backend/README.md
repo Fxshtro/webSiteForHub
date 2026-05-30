@@ -58,7 +58,14 @@ Full list: `hub/models.py`
 - Python **3.14**, MariaDB **11** (podman container `hub-mysql:3306`)
 - Virtual environment in `venv/`
 
-### Start
+### Podman (compose)
+
+```bash
+# From project root
+podman compose up -d
+```
+
+### Local (dev)
 
 ```bash
 cd Backend
@@ -166,7 +173,14 @@ Private project — Southern University (IUBiP) © 2026
 - Python **3.14**, MariaDB **11** (podman контейнер `hub-mysql:3306`)
 - Виртуальное окружение в `venv/`
 
-### Старт
+### Podman (compose)
+
+```bash
+# Из корня проекта
+podman compose up -d
+```
+
+### Локально (dev)
 
 ```bash
 cd Backend

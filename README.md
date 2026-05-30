@@ -58,30 +58,28 @@ webSite/
 - Podman / Docker
 - MariaDB **11** container
 
-### 1. Database
+### 1. All services (compose)
 
 ```bash
-podman run -d --name hub-mysql -e MARIADB_ROOT_PASSWORD=... -p 3306:3306 mariadb:11
+podman compose up -d
 ```
 
-### 2. Backend
+### 2. Or start individually
 
 ```bash
-cd Backend
-source venv/bin/activate
-nohup venv/bin/python manage.py runserver 0.0.0.0:8000 --noreload > /tmp/django.log 2>&1 &
-```
+# Database
+podman run -d --name hub-mysql -e MARIADB_ROOT_PASSWORD=root -p 3306:3306 mariadb:11
 
-### 3. Frontend
+# Backend
+cd Backend && podman build --no-cache --network host -t hub-backend .
+podman run -d --name hub-backend --network host hub-backend
 
-```bash
-cd frontend
-podman build --no-cache --network host -t frontend .
-podman stop frontend && podman rm frontend
+# Frontend
+cd frontend && podman build --no-cache --network host -t frontend .
 podman run -d --name frontend --network host frontend:latest
 ```
 
-### 4. Open
+### 3. Open
 
 | Service | URL |
 |---|---|
@@ -209,30 +207,28 @@ webSite/
 - Podman / Docker
 - MariaDB **11** контейнер
 
-### 1. База данных
+### 1. Все сервисы (compose)
 
 ```bash
-podman run -d --name hub-mysql -e MARIADB_ROOT_PASSWORD=... -p 3306:3306 mariadb:11
+podman compose up -d
 ```
 
-### 2. Бэкенд
+### 2. Или по отдельности
 
 ```bash
-cd Backend
-source venv/bin/activate
-nohup venv/bin/python manage.py runserver 0.0.0.0:8000 --noreload > /tmp/django.log 2>&1 &
-```
+# База данных
+podman run -d --name hub-mysql -e MARIADB_ROOT_PASSWORD=root -p 3306:3306 mariadb:11
 
-### 3. Фронтенд
+# Бэкенд
+cd Backend && podman build --no-cache --network host -t hub-backend .
+podman run -d --name hub-backend --network host hub-backend
 
-```bash
-cd frontend
-podman build --no-cache --network host -t frontend .
-podman stop frontend && podman rm frontend
+# Фронтенд
+cd frontend && podman build --no-cache --network host -t frontend .
 podman run -d --name frontend --network host frontend:latest
 ```
 
-### 4. Открыть
+### 3. Открыть
 
 | Сервис | URL |
 |---|---|

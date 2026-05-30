@@ -1,0 +1,15 @@
+venv/
+.env
+.env.local
+db.sqlite3
+media/
+logs/
+staticfiles/
+__pycache__/
+*.pyc
+nohup.out
+server.log
+.kilo/
+.git
+.gitignore
+README.md
