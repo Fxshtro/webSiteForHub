@@ -19,8 +19,10 @@ router.register(r'achievements', viewsets.AchievementViewSet)
 router.register(r'reports', viewsets.ReportViewSet)
 router.register(r'students', viewsets.StudentViewSet)
 router.register(r'guides', viewsets.GuideViewSet)
+router.register(r'hub-managers', viewsets.HubManagerViewSet)
 router.register(r'users', viewsets.UserViewSet)
 router.register(r'hub-leaders', viewsets.HubLeaderViewSet)
+router.register(r'site-content', viewsets.SiteContentViewSet)
 router.register(r'events', viewsets.EventLogViewSet)
 
 urlpatterns = [

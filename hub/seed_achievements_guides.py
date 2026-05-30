@@ -82,7 +82,7 @@ with transaction.atomic():
                 title=title,
                 defaults={
                     'laboratory': lab,
-                    'text_limited': title,
+                    'description': title,
                 }
             )
             if was_created:

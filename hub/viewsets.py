@@ -10,11 +10,11 @@ import secrets
 import string
 
 from .models import (
-    SiteRole, User, Student, Guide,
+    SiteRole, User, Student, Guide, HubManager,
     Direction, Laboratory, LaboratoryDirection, LaboratoryLeader,
     StudentLaboratory, StudentDirection,
     Role, Project, ProjectLaboratory, ProjectRole, StudentProjectRole,
-    Achievement, Report, EventLog, HubLeader
+    Achievement, Report, EventLog, HubLeader, SiteContent,
 )
 from .serializers import (
     SiteRoleSerializer, UserSerializer, UserListSerializer, StudentSerializer, GuideSerializer,
@@ -22,7 +22,8 @@ from .serializers import (
     StudentLaboratorySerializer, StudentDirectionSerializer,
     RoleSerializer, ProjectSerializer, ProjectLaboratorySerializer, ProjectRoleSerializer,
     StudentProjectRoleSerializer, AchievementSerializer, ReportSerializer,
-    EventLogSerializer, HubLeaderSerializer
+    EventLogSerializer, HubLeaderSerializer, HubManagerSerializer,
+    SiteContentSerializer,
 )
 from .permissions import IsAdmin, IsLabLead, IsProjectManager
 
@@ -55,6 +56,19 @@ class RoleViewSet(viewsets.ModelViewSet):
     filter_backends = [filters.SearchFilter, filters.OrderingFilter]
     search_fields = ['title']
     ordering_fields = ['title']
+
+
+class SiteContentViewSet(viewsets.ReadOnlyModelViewSet):
+    queryset = SiteContent.objects.all()
+    serializer_class = SiteContentSerializer
+    permission_classes = [IsAuthenticatedOrReadOnly]
+
+    def list(self, request, *args, **kwargs):
+        obj = self.get_queryset().first()
+        if obj:
+            serializer = self.get_serializer(obj)
+            return Response(serializer.data)
+        return Response({'detail': 'Настройки не найдены'}, status=404)
 
 
 class SiteRoleViewSet(viewsets.ModelViewSet):
@@ -115,6 +129,12 @@ class GuideViewSet(viewsets.ReadOnlyModelViewSet):
     filter_backends = [DjangoFilterBackend, filters.SearchFilter]
     filterset_fields = ['laboratory']
     search_fields = ['surname', 'name']
+
+
+class HubManagerViewSet(viewsets.ReadOnlyModelViewSet):
+    queryset = HubManager.objects.all()
+    serializer_class = HubManagerSerializer
+    permission_classes = [IsAuthenticatedOrReadOnly]
 
 
 # =============================================================================
@@ -259,7 +279,7 @@ class AchievementViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticatedOrReadOnly]
     filter_backends = [DjangoFilterBackend, filters.SearchFilter]
     filterset_fields = ['laboratory', 'project']
-    search_fields = ['title', 'text', 'text_limited']
+    search_fields = ['title', 'description']
 
 
 # =============================================================================
@@ -283,10 +303,10 @@ class ReportViewSet(viewsets.ModelViewSet):
 class HubLeaderViewSet(viewsets.ModelViewSet):
     queryset = HubLeader.objects.all()
     serializer_class = HubLeaderSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticatedOrReadOnly]
     filter_backends = [DjangoFilterBackend, filters.SearchFilter]
     filterset_fields = ['is_active']
-    search_fields = ['user__login', 'position']
+    search_fields = ['user__login', 'position', 'full_name', 'phone', 'email']
 
 
 # =============================================================================
@@ -327,5 +347,6 @@ def api_root(request):
         'student-directions': '/api/student-directions/',
         'users': '/api/users/',
         'hub-leaders': '/api/hub-leaders/',
+        'site-content': '/api/site-content/',
         'events': '/api/events/',
     })

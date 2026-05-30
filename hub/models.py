@@ -31,6 +31,51 @@ def validate_image_4x3(file):
 
 
 # =============================================================================
+# НАСТРОЙКИ ГЛАВНОЙ СТРАНИЦЫ
+# =============================================================================
+
+class SiteContent(models.Model):
+    about_title = models.CharField(max_length=200, default='О ХАБЕ', verbose_name='Заголовок раздела "О хабе"')
+    about_intro = models.TextField(default='Хаб — это экосистема студенческих лабораторий', verbose_name='Текст "О хабе" (первая карточка)')
+    about_mission = models.TextField(default='Мы объединяем студентов...', verbose_name='Текст миссии (вторая карточка)')
+    labs_subtitle = models.TextField(default='Каждая лаборатория — это команда и своя экспертиза. Выбери направление по душе.', verbose_name='Подзаголовок раздела лабораторий')
+    hero_subtitle = models.TextField(default='Открытая площадка для студенческих лабораторий.', verbose_name='Подзаголовок героя')
+    hero_description = models.TextField(default='Исследуй, создавай, достигай вместе с нами!', verbose_name='Описание героя (жирная часть)')
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name='Создано')
+    updated_at = models.DateTimeField(auto_now=True, verbose_name='Обновлено')
+
+    class Meta:
+        db_table = 'hub_site_content'
+        managed = True
+        verbose_name = 'Настройка главной страницы'
+        verbose_name_plural = 'Настройки главной страницы'
+
+    def __str__(self):
+        return 'Настройки главной страницы'
+
+
+class SiteStat(models.Model):
+    site_content = models.ForeignKey(
+        SiteContent, on_delete=models.CASCADE,
+        related_name='stats'
+    )
+    label = models.CharField(max_length=200, verbose_name='Текст статистики', help_text='Например: "48 участников"')
+    icon = models.CharField(max_length=500, verbose_name='Путь к иконке', help_text='Например: /images/ui/icoHumans.svg')
+    icon_class = models.CharField(max_length=500, blank=True, default='', verbose_name='CSS-классы для иконки', help_text='Позиционирование иконки')
+    order = models.PositiveIntegerField(default=0, verbose_name='Порядок')
+
+    class Meta:
+        db_table = 'hub_site_stats'
+        managed = True
+        verbose_name = 'Элемент статистики'
+        verbose_name_plural = 'Элементы статистики'
+        ordering = ['order']
+
+    def __str__(self):
+        return self.label
+
+
+# =============================================================================
 # ЖУРНАЛ СОБЫТИЙ (своя таблица)
 # =============================================================================
 
@@ -180,6 +225,10 @@ class Guide(models.Model):
     surname = models.CharField(max_length=100, verbose_name='Фамилия')
     name = models.CharField(max_length=100, verbose_name='Имя')
     patronymic = models.CharField(max_length=100, verbose_name='Отчество')
+    position = models.CharField(max_length=200, blank=True, null=True, verbose_name='Должность')
+    description = models.TextField(blank=True, null=True, verbose_name='Описание')
+    image = models.ImageField(upload_to='guides/', blank=True, null=True, verbose_name='Фото',
+        help_text='Соотношение 4:3. Идеальное разрешение: 1200×900 px. Максимум 2 МБ.')
     laboratory = models.ForeignKey(
         'Laboratory', on_delete=models.CASCADE,
         db_column='laboratory_id',
@@ -197,12 +246,34 @@ class Guide(models.Model):
         return f"{self.surname} {self.name} {self.patronymic}"
 
 
+class HubManager(models.Model):
+    name = models.CharField(max_length=200, verbose_name='ФИО')
+    position = models.CharField(max_length=200, blank=True, null=True, verbose_name='Должность')
+    description = models.TextField(blank=True, null=True, verbose_name='Описание')
+    image = models.ImageField(upload_to='managers/', blank=True, null=True, verbose_name='Фото')
+
+    class Meta:
+        db_table = 'hub_managers'
+        managed = False
+        verbose_name = 'Руководитель хаба'
+        verbose_name_plural = 'Руководители хаба'
+        ordering = ['name']
+
+    def __str__(self):
+        return self.name
+
+
 class HubLeader(models.Model):
     user = models.OneToOneField(
         'User', on_delete=models.CASCADE,
         db_column='user_id', related_name='hub_leader_profile'
     )
+    full_name = models.CharField(max_length=200, blank=True, verbose_name='ФИО')
     position = models.CharField(max_length=200, blank=True, verbose_name='Должность')
+    degree = models.CharField(max_length=200, blank=True, verbose_name='Учёная степень / звание')
+    phone = models.CharField(max_length=20, blank=True, verbose_name='Телефон')
+    email = models.EmailField(max_length=100, blank=True, verbose_name='Email')
+    image = models.ImageField(upload_to='hub_leaders/', blank=True, null=True, verbose_name='Фото')
     is_active = models.BooleanField(default=True, verbose_name='Активен')
     created_at = models.DateTimeField(auto_now_add=True, verbose_name='Добавлен')
 
@@ -211,10 +282,10 @@ class HubLeader(models.Model):
         managed = True
         verbose_name = 'Руководитель хаба'
         verbose_name_plural = 'Руководители хаба'
-        ordering = ['user__login']
+        ordering = ['full_name']
 
     def __str__(self):
-        return f"{self.user.login} ({self.position})"
+        return self.full_name or (f"{self.user.login} ({self.position})" if self.position else self.user.login)
 
 
 # =============================================================================
@@ -241,9 +312,6 @@ class Laboratory(models.Model):
     link = models.URLField(max_length=50, blank=True, null=True, verbose_name='Ссылка на чат')
     active = models.BooleanField(default=True, verbose_name='Активна', db_column='active')
     images = models.JSONField(default=list, blank=True, verbose_name='Фотографии (JSON массив)')
-    short_description = models.CharField(max_length=350, blank=True, null=True, verbose_name='Краткое описание')
-    description = models.TextField(blank=True, null=True, verbose_name='Полное описание')
-
 
     class Meta:
         db_table = 'laboratories'
@@ -369,12 +437,40 @@ class Role(models.Model):
         return self.title
 
 
+class LabRole(models.Model):
+    laboratory = models.ForeignKey(
+        Laboratory, on_delete=models.CASCADE,
+        related_name='lab_roles',
+        verbose_name='Лаборатория'
+    )
+    title = models.CharField(max_length=50, verbose_name='Название роли',
+                             help_text='Например: Дизайнер, Разработчик, Проектный менеджер, Тестировщик')
+
+    class Meta:
+        managed = True
+        db_table = 'hub_lab_roles'
+        verbose_name = 'Роль лаборатории'
+        verbose_name_plural = 'Роли лаборатории'
+        unique_together = ['laboratory', 'title']
+
+    def __str__(self):
+        return self.title
+
+    def save(self, *args, **kwargs):
+        result = super().save(*args, **kwargs)
+        Role.objects.get_or_create(title=self.title)
+        return result
+
+
 class Project(models.Model):
     title = models.CharField(max_length=100, unique=True, verbose_name='Название')
-    description = models.TextField(max_length=2048, blank=True, null=True, verbose_name='Описание')
-    goal = models.CharField(
-        max_length=350, blank=True, null=True,
-        verbose_name='Цель проекта',
+    description = models.CharField(
+        max_length=2048, blank=True, null=True,
+        verbose_name='Короткое описание на карточке'
+    )
+    goal = models.TextField(
+        blank=True, null=True,
+        verbose_name='Описание',
         db_column='goal',
         validators=[MaxLengthValidator(350)]
     )
@@ -389,6 +485,25 @@ class Project(models.Model):
 
     def __str__(self):
         return self.title
+
+
+class ProjectLink(models.Model):
+    project = models.ForeignKey(
+        Project, on_delete=models.CASCADE,
+        db_column='project_id',
+        related_name='links'
+    )
+    title = models.CharField(max_length=200, verbose_name='Текст ссылки')
+    url = models.URLField(max_length=2048, verbose_name='Ссылка')
+
+    class Meta:
+        db_table = 'project_links'
+        managed = False
+        verbose_name = 'Ссылка проекта'
+        verbose_name_plural = 'Ссылки проекта'
+
+    def __str__(self):
+        return f"{self.title} — {self.project.title}"
 
 
 class ProjectLaboratory(models.Model):
@@ -496,25 +611,14 @@ class Achievement(models.Model):
         db_column='project_id',
         related_name='achievements'
     )
-    text = models.TextField(blank=True, null=True, verbose_name='Текст')
-    text_limited = models.CharField(
+    description = models.CharField(
         max_length=350, blank=True, null=True,
-        verbose_name='Описание (350 симв.)',
+        verbose_name='Текст',
         db_column='text_limited',
         validators=[MaxLengthValidator(350)]
     )
-    link = models.URLField(max_length=2048, blank=True, null=True, verbose_name='Ссылка')
-    image = models.ImageField(
-        upload_to='achievements/', blank=True, null=True,
-        verbose_name='Изображение',
-        validators=[validate_image_4x3]
-    )
-    file_achievements = models.ForeignKey(
-        File, on_delete=models.SET_NULL,
-        null=True, blank=True,
-        db_column='file_achievements_id',
-        related_name='achievement_direct'
-    )
+    image = models.ImageField(upload_to='achievements/', blank=True, null=True, verbose_name='Фото',
+        help_text='Соотношение 4:3. Идеальное разрешение: 1200×900 px. Максимум 2 МБ.')
 
     class Meta:
         db_table = 'achievements'

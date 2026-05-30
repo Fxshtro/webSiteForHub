@@ -1,10 +1,10 @@
 from rest_framework import serializers
 from .models import (
-    SiteRole, User, Student, Guide,
+    SiteRole, User, Student, Guide, HubManager,
     Direction, Laboratory, LaboratoryDirection, LaboratoryLeader,
     StudentLaboratory, StudentDirection,
-    Role, Project, ProjectLaboratory, ProjectRole, StudentProjectRole,
-    Achievement, Report, EventLog, HubLeader
+    Role, Project, ProjectLink, ProjectLaboratory, ProjectRole, StudentProjectRole,
+    Achievement, Report, EventLog, HubLeader, SiteContent, SiteStat,
 )
 
 
@@ -30,11 +30,12 @@ class LaboratorySerializer(serializers.ModelSerializer):
     leaders_list = serializers.SerializerMethodField()
     students_count = serializers.SerializerMethodField()
     projects_count = serializers.SerializerMethodField()
+    images = serializers.SerializerMethodField()
 
     class Meta:
         model = Laboratory
         fields = [
-            'id', 'title', 'slug', 'link', 'active', 'short_description', 'description',
+            'id', 'title', 'slug', 'link', 'active',
             'images', 'directions_list', 'leaders_list', 'students_count', 'projects_count'
         ]
 
@@ -46,8 +47,12 @@ class LaboratorySerializer(serializers.ModelSerializer):
 
     def get_leaders_list(self, obj):
         return [
-            {'id': ll.student.id, 'full_name': ll.student.full_name, 'email': ll.student.email}
-            for ll in obj.leaders.all()
+            {
+                'id': g.id,
+                'full_name': f'{g.surname} {g.name} {g.patronymic or ""}'.strip(),
+                'position': g.position or '',
+            }
+            for g in obj.guides.all()
         ]
 
     def get_students_count(self, obj):
@@ -55,6 +60,11 @@ class LaboratorySerializer(serializers.ModelSerializer):
 
     def get_projects_count(self, obj):
         return obj.project_links.count()
+
+    def get_images(self, obj):
+        if isinstance(obj.images, list):
+            return obj.images
+        return []
 
 
 class LaboratoryDirectionSerializer(serializers.ModelSerializer):
@@ -109,10 +119,47 @@ class StudentSerializer(serializers.ModelSerializer):
 
 class GuideSerializer(serializers.ModelSerializer):
     laboratory_title = serializers.CharField(source='laboratory.title', read_only=True)
+    image_url = serializers.SerializerMethodField()
 
     class Meta:
         model = Guide
-        fields = ['id', 'surname', 'name', 'patronymic', 'laboratory', 'laboratory_title']
+        fields = ['id', 'surname', 'name', 'patronymic', 'position', 'description', 'image', 'image_url', 'laboratory', 'laboratory_title']
+
+    def get_image_url(self, obj):
+        if obj.image:
+            return obj.image.url
+        return None
+
+
+class HubManagerSerializer(serializers.ModelSerializer):
+    image_url = serializers.SerializerMethodField()
+
+    class Meta:
+        model = HubManager
+        fields = ['id', 'name', 'position', 'description', 'image', 'image_url']
+
+    def get_image_url(self, obj):
+        if obj.image:
+            return obj.image.url
+        return None
+
+
+class SiteStatSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = SiteStat
+        fields = ['id', 'label', 'icon', 'icon_class', 'order']
+
+
+class SiteContentSerializer(serializers.ModelSerializer):
+    stats = SiteStatSerializer(many=True, read_only=True)
+
+    class Meta:
+        model = SiteContent
+        fields = [
+            'id', 'about_title', 'about_intro', 'about_mission',
+            'labs_subtitle', 'hero_subtitle', 'hero_description',
+            'stats', 'created_at', 'updated_at',
+        ]
 
 
 class RoleSerializer(serializers.ModelSerializer):
@@ -121,17 +168,25 @@ class RoleSerializer(serializers.ModelSerializer):
         fields = ['id', 'title']
 
 
+class ProjectLinkSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ProjectLink
+        fields = ['id', 'title', 'url']
+
+
 class ProjectSerializer(serializers.ModelSerializer):
     laboratories = serializers.SerializerMethodField()
     roles = serializers.SerializerMethodField()
     participants = serializers.SerializerMethodField()
     active_participants_count = serializers.SerializerMethodField()
+    links = ProjectLinkSerializer(many=True, read_only=True, source='links.all')
 
     class Meta:
         model = Project
         fields = [
             'id', 'title', 'description', 'goal', 'need_report',
-            'laboratories', 'roles', 'participants', 'active_participants_count'
+            'laboratories', 'roles', 'participants', 'active_participants_count',
+            'links'
         ]
 
     def get_laboratories(self, obj):
@@ -192,24 +247,16 @@ class AchievementSerializer(serializers.ModelSerializer):
         fields = [
             'id', 'title', 'laboratory', 'laboratory_title',
             'project', 'project_title',
-            'text', 'text_limited', 'link', 'image', 'image_url',
+            'description', 'image', 'image_url',
         ]
         read_only_fields = ['id']
 
     def get_image_url(self, obj):
         if obj.image:
-            request = self.context.get('request')
-            if request:
-                return request.build_absolute_uri(obj.image.url)
             return obj.image.url
         return None
 
-    def validate_text_limited(self, value):
-        if value and len(value) > 350:
-            raise serializers.ValidationError('Описание не может превышать 350 символов')
-        return value
-
-    def validate_text(self, value):
+    def validate_description(self, value):
         if value and len(value) > 350:
             raise serializers.ValidationError('Текст не может превышать 350 символов')
         return value
@@ -285,14 +332,22 @@ class HubLeaderSerializer(serializers.ModelSerializer):
     user_login = serializers.CharField(source='user.login', read_only=True)
     user_role = serializers.CharField(source='user.site_role.title', read_only=True, default=None)
     laboratory_title = serializers.CharField(source='user.laboratory.title', read_only=True, default=None)
+    image_url = serializers.SerializerMethodField()
 
     class Meta:
         model = HubLeader
         fields = [
             'id', 'user', 'user_login', 'user_role',
-            'position', 'is_active', 'created_at', 'laboratory_title'
+            'full_name', 'position', 'degree', 'phone', 'email',
+            'image', 'image_url', 'is_active', 'created_at',
+            'laboratory_title'
         ]
         read_only_fields = ['id', 'created_at']
+
+    def get_image_url(self, obj):
+        if obj.image:
+            return obj.image.url
+        return None
 
 
 class EventLogSerializer(serializers.ModelSerializer):
