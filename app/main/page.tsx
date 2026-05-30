@@ -5,9 +5,10 @@ import Card from "../components/labs/card";
 import Lenta from "../components/sections/slider";
 import ManagerCard from "../components/sections/manager";
 import ScrollToTop from "../components/ui/tapToTop";
-import type { HomeAchievementSlide, HomeLabCardItem, HomeManagerItem, HomeStatItem, HomeAboutContent } from "../../DataBase/types";
-import { fetchLabs } from "../lib/api";
-import { homeAboutContent, homeLabs, homeManagers, homeStats } from "../../DataBase/main/home";
+import type { HomeAchievementSlide, HomeLabCardItem, HomeStatItem, HomeAboutContent } from "../../DataBase/types";
+import { fetchLabs, fetchHubLeaders, fetchSiteContent } from "../lib/api";
+import type { AchievementApiResponse, HubLeaderApiResponse, SiteContentApiResponse } from "../lib/api";
+import { homeAboutContent, homeLabs, homeStats } from "../../DataBase/main/home";
 
 const fallbackHomeAboutContent = {
   title: "О ХАБЕ",
@@ -33,20 +34,15 @@ const fallbackHomeLabs = [
   },
 ] as const;
 
-const fallbackHomeManagers = [
-  {
-    name: "Данные обновляются",
-    title: "Руководитель",
-    degree: "Информация появится позже",
-    phone: "+7 (000) 000-00-00",
-    email: "placeholder@iubip.ru",
-    imageSrc: undefined,
-  },
-] as const;
+const fallbackSiteContent = {
+  hero_subtitle: "Открытая площадка для студенческих лабораторий.",
+  hero_description: "Исследуй, создавай, достигай вместе с нами!",
+  labs_subtitle: "Каждая лаборатория — это команда и своя экспертиза. Выбери направление по душе.",
+} as const;
 
 export const dynamic = "force-dynamic";
 
-const getSafeText = (value: string | undefined, fallback: string): string => {
+const getSafeText = (value: string | undefined | null, fallback: string): string => {
   const normalized = value?.trim();
   return normalized && normalized.length > 0 ? normalized : fallback;
 };
@@ -59,19 +55,48 @@ interface HomeLabViewModel {
   slug: string;
 }
 
-export default async function Home(): Promise<React.JSX.Element> {
-  const apiLabs = await fetchLabs();
-
-  const aboutContent = {
-    title: getSafeText(homeAboutContent?.title, fallbackHomeAboutContent.title),
-    introText: getSafeText(homeAboutContent?.introText, fallbackHomeAboutContent.introText),
-    missionText: getSafeText(homeAboutContent?.missionText, fallbackHomeAboutContent.missionText),
+function pickAboutContent(site: SiteContentApiResponse | null) {
+  if (!site) {
+    return {
+      title: getSafeText(homeAboutContent?.title, fallbackHomeAboutContent.title),
+      introText: getSafeText(homeAboutContent?.introText, fallbackHomeAboutContent.introText),
+      missionText: getSafeText(homeAboutContent?.missionText, fallbackHomeAboutContent.missionText),
+    };
+  }
+  return {
+    title: getSafeText(site.about_title, fallbackHomeAboutContent.title),
+    introText: getSafeText(site.about_intro, fallbackHomeAboutContent.introText),
+    missionText: getSafeText(site.about_mission, fallbackHomeAboutContent.missionText),
   };
-  const stats = (homeStats.length > 0 ? homeStats : fallbackHomeStats).map((item, index) => ({
+}
+
+function pickStats(site: SiteContentApiResponse | null) {
+  if (site?.stats && site.stats.length > 0) {
+    return site.stats.map((item, index) => ({
+      label: getSafeText(item.label, `Статистика ${index + 1}`),
+      icon: getSafeText(item.icon, fallbackHomeStats[0].icon),
+      iconClassName: getSafeText(item.icon_class, fallbackHomeStats[0].iconClassName),
+    }));
+  }
+  return (homeStats.length > 0 ? homeStats : fallbackHomeStats).map((item, index) => ({
     label: getSafeText(item.label, `Статистика ${index + 1}`),
     icon: getSafeText(item.icon, fallbackHomeStats[0].icon),
     iconClassName: getSafeText(item.iconClassName, fallbackHomeStats[0].iconClassName),
   }));
+}
+
+export default async function Home(): Promise<React.JSX.Element> {
+  const [siteContent, apiLabs, apiHubLeaders] = await Promise.all([
+    fetchSiteContent(),
+    fetchLabs(),
+    fetchHubLeaders(),
+  ]);
+
+  const aboutContent = pickAboutContent(siteContent);
+  const stats = pickStats(siteContent);
+  const heroSubtitle = getSafeText(siteContent?.hero_subtitle, fallbackSiteContent.hero_subtitle);
+  const heroDescription = getSafeText(siteContent?.hero_description, fallbackSiteContent.hero_description);
+  const labsSubtitle = getSafeText(siteContent?.labs_subtitle, fallbackSiteContent.labs_subtitle);
 
   const localLabBySlug = new Map(homeLabs.map(l => [l.slug, l]));
   const labs: HomeLabViewModel[] = apiLabs.length > 0
@@ -93,22 +118,24 @@ export default async function Home(): Promise<React.JSX.Element> {
         img: lab.img,
         slug: lab.slug,
       }));
-  const managers = (homeManagers.length > 0 ? homeManagers : fallbackHomeManagers).map((manager, index) => ({
-    name: getSafeText(manager.name, `Руководитель ${index + 1}`),
-    title: getSafeText(manager.title, fallbackHomeManagers[0].title),
-    degree: getSafeText(manager.degree, fallbackHomeManagers[0].degree),
-    phone: getSafeText(manager.phone, fallbackHomeManagers[0].phone),
-    email: getSafeText(manager.email, `manager${index + 1}@iubip.ru`),
-    imageSrc: manager.imageSrc,
-  }));
+  const managers = apiHubLeaders.length > 0
+    ? apiHubLeaders.map((m: HubLeaderApiResponse) => ({
+        name: m.full_name,
+        title: m.position || '',
+        degree: m.degree || '',
+        phone: m.phone || '',
+        email: m.email || '',
+        imageSrc: m.image_url ?? undefined,
+      }))
+    : [];
 
   const hubSlides: HomeAchievementSlide[] = await fetch(`${process.env.API_BASE_URL || "/api"}/achievements/`)
     .then(r => r.ok ? r.json() : { results: [] })
-    .then(d => (d.results ?? []) as { laboratory: number | null; project: number | null; text_limited: string | null; text: string | null; title: string; image_url: string | null }[])
+    .then(d => (d.results ?? []) as AchievementApiResponse[])
     .then(items => items
       .filter(a => !a.laboratory && !a.project)
       .map(a => ({
-        description: a.text_limited ?? a.text ?? a.title,
+        description: a.description ? `${a.title}\n\n${a.description}` : a.title,
         date: "",
         imageSrc: a.image_url ?? undefined,
         imageAlt: a.title,
@@ -137,9 +164,9 @@ export default async function Home(): Promise<React.JSX.Element> {
             </h1>
             <div className="mx-auto mt-1.5 h-[3px] w-[200px] md:w-1/2 bg-gradient-to-l from-[#00000000] via-[#ffffffa0] to-[#00000000]"></div>
             <p className="w-full mt-10 text-center text-[17px] md:text-[24px] font-light leading-7">
-              Открытая площадка для студенческих лабораторий.
+              {heroSubtitle}
               <br />
-              <span className="font-medium">Исследуй, создавай, достигай вместе с нами!</span>
+              <span className="font-medium">{heroDescription}</span>
             </p>
             <div className="mt-20 flex w-full flex-row justify-center sm:mt-14 md:mt-7">
               <button
@@ -259,7 +286,7 @@ export default async function Home(): Promise<React.JSX.Element> {
                 <div className="absolute -z-3 -top-3 -left-3 h-[40px] w-[44px] rounded-full bg-gradient-to-br from-[#ffffff] to-75%"></div>
                 <div className="absolute -z-3 -bottom-3 -right-3 h-[40px] w-[44px] rounded-full bg-gradient-to-tl from-[#ffffff] to-75%"></div>
                 <p className="relative z-1 text-[20px] md:text-[25px] xl:text-[32px] font-bold leading-8">
-                  Каждая лаборатория — это команда и своя экспертиза. Выбери направление по душе.
+                  {labsSubtitle}
                 </p>
               </div>
             </div>
@@ -337,7 +364,7 @@ export default async function Home(): Promise<React.JSX.Element> {
           </div>
           <h1 className="relative z-3 mt-5 text-center">Руководство</h1>
           <div className="lineClass"></div>
-          <div className="mt-[70px] flex flex-wrap justify-center gap-x-[128px] gap-y-[60px]">
+          <div className="mx-auto mt-[70px] grid w-full max-w-[1050px] grid-cols-1 items-stretch justify-items-center gap-y-[60px] md:grid-cols-2 md:gap-x-[128px]">
             {managers.map((manager, index) => (
               <ManagerCard
                 key={`${manager.email}-${index}`}

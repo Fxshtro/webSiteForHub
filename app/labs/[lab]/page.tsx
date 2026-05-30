@@ -36,7 +36,7 @@ function mapApiAchievements(
   apiAchievements: Awaited<ReturnType<typeof fetchLabAchievementsByLabId>>,
 ): LabAchievement[] {
   return apiAchievements.map(a => ({
-    description: a.text_limited ?? a.text ?? a.title,
+    description: a.description ? `${a.title}\n\n${a.description}` : a.title,
     date: "",
     imageSrc: a.image_url ?? undefined,
     imageAlt: a.title,
@@ -47,21 +47,24 @@ function mapApiStudentsToLabPeople(
   apiStudents: Awaited<ReturnType<typeof fetchLabMembersByLabId>>,
   slug: string,
 ): LabPerson[] {
-  return apiStudents.map((s) => ({
+  return apiStudents.map((s) => {
+    const uniqueRoles = [...new Set(s.projects.map(p => p.role).filter(Boolean))];
+    return {
     id: `${slug}-student-${s.id}`,
     name: s.full_name,
-    role: s.experience ?? "Участник лаборатории",
-    directions: s.directions.map(d => d.title).concat(s.laboratories.map(l => l.title)),
+    role: uniqueRoles.join(', ') || "Студент",
+    directions: s.directions.map(d => d.title),
     projects: s.projects.map(p => ({
       projectId: `${slug}-project-${p.id}`,
       projectIndex: p.id,
       title: p.title,
       roles: [p.role],
     })),
-    roles: [s.experience ?? "Участник"].filter(Boolean),
+    roles: uniqueRoles,
     metaverseUrl: s.metaverse_account_link ?? "",
     avatarIcon: "fa-user",
-  }));
+  };
+  });
 }
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
@@ -107,10 +110,16 @@ export default async function LabPage({ params }: PageProps): Promise<React.JSX.
 
   const heroImage = labData.images?.[0] ?? `/images/labs/labDefault.svg`;
   const achievements: LabAchievement[] = mapApiAchievements(apiAchievements);
-  const leadership: LabAchievement[] = apiGuides.map(g => ({
-    description: `${g.surname} ${g.name} ${g.patronymic}`,
-    date: g.laboratory_title,
-  }));
+  const leadership: LabAchievement[] = apiGuides.map(g => {
+    const parts = [g.surname, g.name, g.patronymic].filter(Boolean).join(' ');
+    const desc = [parts, g.position, g.description].filter(Boolean).join('\n\n');
+    return {
+      description: desc,
+      date: g.laboratory_title,
+      imageSrc: g.image_url ?? undefined,
+      imageAlt: parts,
+    };
+  });
 
   return (
     <main className="overflow-hidden">

@@ -124,21 +124,27 @@ export default async function ProjectPage({ params }: ProjectPageProps): Promise
         [] as Awaited<ReturnType<typeof fetchProjectAchievementsByProjectId>> ];
 
   const labPeople = apiMembers.length > 0
-    ? apiMembers.map((s) => ({
+    ? apiMembers.map((s) => {
+        const currentRoles = s.projects
+          .filter(p => p.id === projectData.id)
+          .map(p => p.role)
+          .filter(Boolean);
+        const roleStr = currentRoles.join(', ') || "Студент";
+        return {
         id: `${slug}-student-${s.id}`,
         name: s.full_name,
-        role: s.experience ?? "Участник лаборатории",
-        directions: s.directions.map(d => d.title).concat(s.laboratories.map(l => l.title)),
+        role: roleStr,
+        directions: s.directions.map(d => d.title),
         projects: s.projects.map(p => ({
           projectId: `${slug}-project-${p.id}`,
           projectIndex: p.id,
           title: p.title,
           roles: [p.role],
         })),
-        roles: [s.experience ?? "Участник"].filter(Boolean),
+        roles: currentRoles,
         metaverseUrl: s.metaverse_account_link ?? "",
         avatarIcon: "fa-user",
-      }))
+      }})
     : getLabPeopleBySlug(slug);
 
   const projectMemberIds = new Set(projectData.participants.map(p => p.student_id));
@@ -149,7 +155,7 @@ export default async function ProjectPage({ params }: ProjectPageProps): Promise
 
   const projectAchievements: LabAchievement[] = apiProjectAchievements.length > 0
     ? apiProjectAchievements.map(a => ({
-        description: a.text_limited ?? a.text ?? a.title,
+        description: a.description ? `${a.title}\n\n${a.description}` : a.title,
         date: "",
         imageSrc: a.image_url ?? undefined,
         imageAlt: a.title,
@@ -230,34 +236,49 @@ export default async function ProjectPage({ params }: ProjectPageProps): Promise
           </div>
         </div>
 
-        <section className="mt-12">
-          <h2 className="font-unbounded text-[30px] font-black uppercase text-white md:text-[38px]">
-            ссылки
-          </h2>
-          <div className="mt-5 grid gap-4 md:grid-cols-2">
-            <p className="text-white/60">Нет ссылок на ресурсы.</p>
-          </div>
-        </section>
+        {projectData.links.length > 0 && (
+          <section className="mt-12">
+            <h2 className="font-unbounded text-[30px] font-black uppercase text-white md:text-[38px]">
+              ссылки
+            </h2>
+            <div className="mt-5 grid gap-4 md:grid-cols-2">
+              {projectData.links.map((link) => (
+                <a
+                  key={link.id}
+                  href={link.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="glass custom-before !rounded-2xl !bg-[#afafaf30] px-5 py-4 text-white/85 duration-200 hover:![box-shadow:0px_0px_50px_#ffffff44,_inset_0px_0px_50px_#ffffff56]"
+                >
+                  <span className="font-bold">{link.title}</span>
+                  <span className="ml-2 text-[14px] text-white/50 break-all">{link.url}</span>
+                </a>
+              ))}
+            </div>
+          </section>
+        )}
 
-        <section className="mt-16">
-          <h2 className="font-unbounded text-center text-[34px] font-black uppercase text-white md:text-[48px]">
-            достижения
-          </h2>
-          <div className="lineClass" />
-          <div className="relative left-1/2 w-screen max-w-[1900px] -translate-x-1/2">
-            <LabAchievementsSlider achievements={projectAchievements} />
-            <Image
-              src="/images/decor/group-206.svg"
-              width={2200}
-              height={813}
-              alt=""
-              role="presentation"
-              loading="lazy"
-              sizes="100vw"
-              className="pointer-events-none absolute -z-3 left-1/2 top-[0px] min-w-[600px] -translate-x-1/2 md:max-w-[1000px] xl:max-w-[2000px]"
-            />
-          </div>
-        </section>
+        {projectAchievements.length > 0 && (
+          <section className="mt-16">
+            <h2 className="font-unbounded text-center text-[34px] font-black uppercase text-white md:text-[48px]">
+              достижения
+            </h2>
+            <div className="lineClass" />
+            <div className="relative left-1/2 w-screen max-w-[1900px] -translate-x-1/2">
+              <LabAchievementsSlider achievements={projectAchievements} />
+              <Image
+                src="/images/decor/group-206.svg"
+                width={2200}
+                height={813}
+                alt=""
+                role="presentation"
+                loading="lazy"
+                sizes="100vw"
+                className="pointer-events-none absolute -z-3 left-1/2 top-[0px] min-w-[600px] -translate-x-1/2 md:max-w-[1000px] xl:max-w-[2000px]"
+              />
+            </div>
+          </section>
+        )}
       </section>
     </main>
   );

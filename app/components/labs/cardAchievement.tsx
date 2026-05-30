@@ -42,9 +42,20 @@ export default function CardAchievement({
             )}
           </div>
           <div className="flex min-w-0 flex-1 flex-col">
-            <p className="text-[15px] font-semibold leading-5 break-words md:text-[16px] md:leading-6">{description}</p>
+            {description.includes('\n\n') ? (() => {
+              const parts = description.split('\n\n');
+              return (
+                <>
+                  <p className="text-[18px] font-bold leading-6 break-words text-white md:text-[20px] md:leading-7">{parts[0]}</p>
+                  {parts[1] && <p className="mt-1 text-[16px] leading-5 text-white/50 md:text-[17px]">{parts[1]}</p>}
+                  {parts[2] && <p className="mt-1 text-[15px] leading-5 text-white/80 md:text-[16px]">{parts[2]}</p>}
+                </>
+              );
+            })() : (
+              <p className="text-[16px] font-semibold leading-5 break-words md:text-[17px] md:leading-6">{description}</p>
+            )}
             <div className="mt-auto flex justify-end pt-3">
-              <p className="text-[14px] text-[#FFFFFF50] font-medium font-unbounded leading-5 md:text-[16px] md:leading-6">
+              <p className="text-[16px] text-[#FFFFFF50] font-medium font-unbounded leading-6 md:text-[18px] md:leading-7">
                 {date}
               </p>
             </div>
@@ -55,7 +66,19 @@ export default function CardAchievement({
           <div className="relative w-full overflow-hidden rounded-t-3xl rounded-b-md bg-[#BDBDBD] aspect-[4/3]">
             <Image src={coverSrc} alt={coverAlt} fill quality={92} className="object-cover" sizes={imageSizes} />
           </div>
-          <p className="pt-[30px] px-[40px] pb-[30px] text-[16px] font-semibold leading-6 break-words">{description}</p>
+          <div className="pt-[30px] px-[40px] pb-[30px] break-words">
+            {description.includes('\n\n') ? (() => {
+              const parts = description.split('\n\n');
+              return (
+                <>
+                  <p className="text-[16px] font-bold leading-6 text-white">{parts[0]}</p>
+                  {parts[1] && <p className="mt-1 text-[15px] leading-5 text-white/70">{parts[1]}</p>}
+                </>
+              );
+            })() : (
+              <p className="text-[16px] font-semibold leading-6">{description}</p>
+            )}
+          </div>
           <div className="mb-[6px] mt-auto flex justify-end">
             <p className="text-[16px] mr-[13px] text-[#FFFFFF50] font-medium font-unbounded leading-6">{date}</p>
           </div>

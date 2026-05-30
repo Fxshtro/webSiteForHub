@@ -80,4 +80,6 @@ export interface HomeAboutContent {
 export interface LeadershipSlideItem {
   description: string;
   date: string;
+  imageSrc?: string;
+  imageAlt?: string;
 }

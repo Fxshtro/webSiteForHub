@@ -50,6 +50,13 @@ export default function LabProjectsFilter({
 
   const hasPagination = totalPages > 1;
   const activePage = Math.min(currentPage, totalPages);
+  const currentVisibleProjectsCount = hasPagination
+    ? (pagedProjects[activePage - 1]?.length ?? 0)
+    : (pagedProjects[0]?.length ?? 0);
+  const needsExtraBottomSpacing = !isMobile && currentVisibleProjectsCount > 0 && currentVisibleProjectsCount < 3;
+  const projectsGridClassName = `flex flex-wrap items-stretch justify-center gap-10 px-4 pt-10 ${
+    needsExtraBottomSpacing ? "pb-45" : "pb-10"
+  }`;
 
   const changePage = useCallback((nextPage: number): void => {
     if (nextPage === activePage) return;
@@ -150,7 +157,7 @@ export default function LabProjectsFilter({
                   : Math.max(cardsPerPage - pageProjects.length, 0);
                 return (
                   <SwiperSlide key={`${labSlug}-projects-page-${pageIndex}`}>
-                    <div className="flex flex-wrap items-stretch justify-center gap-10 px-4 py-10">
+                    <div className={projectsGridClassName}>
                       {pageProjects.map((project, projectIndex) => (
                         <div
                           key={`${labSlug}-${project.id}-${pageIndex}-${projectIndex}`}
@@ -170,7 +177,7 @@ export default function LabProjectsFilter({
                           style={
                             maxProjectCardHeight ? { minHeight: `${maxProjectCardHeight}px` } : undefined
                           }
-                          className="glass !bg-gradient-to-b from-[#afafaf30] to-[#6f6f6f40] min-h-[274px] w-full max-w-[474px] rounded-[34px] px-5 py-6 opacity-60"
+                          className="glass !bg-gradient-to-b from-[#afafaf30] to-[#6f6f6f40] min-h-[274px] w-full max-w-[474px] rounded-[34px] px-5 py-6 opacity-60 flex"
                           aria-hidden
                         />
                       ))}
@@ -180,7 +187,7 @@ export default function LabProjectsFilter({
               })}
             </Swiper>
           ) : (
-            <div className="flex flex-wrap items-stretch justify-center gap-10 px-4 py-10">
+            <div className={projectsGridClassName}>
               {pagedProjects[0]?.map((project, index) => (
                 <div key={`${labSlug}-${project.id}-${index}`} className="flex w-full max-w-[474px]">
                   <CardProject

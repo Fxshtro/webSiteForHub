@@ -332,6 +332,8 @@ export default function LabProjectsSlider({ items }: LabProjectsSliderProps): Re
                       <CardAchievement
                         description={card.description}
                         date={card.date}
+                        imageSrc={card.imageSrc}
+                        imageAlt={card.imageAlt}
                         className="mx-0 h-full w-full max-w-none"
                         imageSizes={`(max-width: 767px) 50vw, ${CARD_MAX_WIDTH}px`}
                         compact
@@ -351,13 +353,15 @@ export default function LabProjectsSlider({ items }: LabProjectsSliderProps): Re
                 style={maxMobileCardHeight ? { minHeight: `${maxMobileCardHeight}px` } : undefined}
                 className="h-full w-full"
               >
-                <CardAchievement
-                  description={card.description}
-                  date={card.date}
-                  className="mx-0 h-full w-full max-w-none"
-                  imageSizes={`(max-width: 767px) 50vw, ${CARD_MAX_WIDTH}px`}
-                  compact
-                />
+                  <CardAchievement
+                    description={card.description}
+                    date={card.date}
+                    imageSrc={card.imageSrc}
+                    imageAlt={card.imageAlt}
+                    className="mx-0 h-full w-full max-w-none"
+                    imageSizes={`(max-width: 767px) 50vw, ${CARD_MAX_WIDTH}px`}
+                    compact
+                  />
               </div>
             ))}
           </div>
@@ -403,6 +407,8 @@ export default function LabProjectsSlider({ items }: LabProjectsSliderProps): Re
                 <CardAchievement
                   description={card.description}
                   date={card.date}
+                  imageSrc={card.imageSrc}
+                  imageAlt={card.imageAlt}
                   className="mx-0 h-full w-full max-w-none"
                   imageSizes={`${CARD_MAX_WIDTH}px`}
                   compact
@@ -421,6 +427,8 @@ export default function LabProjectsSlider({ items }: LabProjectsSliderProps): Re
                   <CardAchievement
                     description={card.description}
                     date={card.date}
+                    imageSrc={card.imageSrc}
+                    imageAlt={card.imageAlt}
                     className="mx-0 h-full w-full max-w-none"
                     imageSizes={`${CARD_MAX_WIDTH}px`}
                     compact
@@ -479,6 +487,8 @@ export default function LabProjectsSlider({ items }: LabProjectsSliderProps): Re
                   <CardAchievement
                     description={card.description}
                     date={card.date}
+                    imageSrc={card.imageSrc}
+                    imageAlt={card.imageAlt}
                     className="mx-0 h-full w-full max-w-none"
                     imageSizes={`${CARD_MAX_WIDTH}px`}
                     compact
@@ -502,6 +512,8 @@ export default function LabProjectsSlider({ items }: LabProjectsSliderProps): Re
                   <CardAchievement
                     description={card.description}
                     date={card.date}
+                    imageSrc={card.imageSrc}
+                    imageAlt={card.imageAlt}
                     className="mx-0 h-full w-full max-w-none"
                     imageSizes={`${CARD_MAX_WIDTH}px`}
                     compact

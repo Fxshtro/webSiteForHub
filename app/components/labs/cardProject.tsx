@@ -19,7 +19,7 @@ export default function CardProject({
     <div
       data-project-card
       style={minHeight ? { minHeight: `${minHeight}px` } : undefined}
-      className="glass flex h-full max-w-[474px] flex-col !bg-gradient-to-b from-[#afafaf20] to-[#6f6f6f30] px-5 py-6 duration-200 hover:![box-shadow:0px_0px_50px_#ffffff34,_inset_0px_0px_50px_#ffffff26]"
+      className="glass flex h-full w-full max-w-[474px] flex-col !bg-gradient-to-b from-[#afafaf20] to-[#6f6f6f30] px-5 py-6 duration-200 hover:![box-shadow:0px_0px_50px_#ffffff34,_inset_0px_0px_50px_#ffffff26]"
     >
       <p className="font-unbounded text-[24px] mb-4 font-black">{title}</p>
       <p className="text-[16px]">{description}</p>

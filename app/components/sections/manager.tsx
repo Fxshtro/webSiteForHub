@@ -23,8 +23,7 @@ export default function ManagerCard({
   const isFallbackPortrait = portraitSrc === FALLBACK_IMAGE_SRC;
 
   return (
-    <div>
-      <div className="glass md:w-[461px] w-[361px] !bg-[#9F9F9F20] px-[21px] pt-[16px] md:pb-9 pb-6 ![box-shadow:0px_0px_250px_#ffffff10]">
+    <div className="glass mx-auto flex h-full min-h-full w-full max-w-[361px] flex-col self-stretch md:max-w-[461px] !bg-[#9F9F9F20] px-[21px] pt-[16px] md:pb-9 pb-6 ![box-shadow:0px_0px_250px_#ffffff10]">
         <div className="flex justify-between">
           <div className="md:text-[24px] text-[18px] text-[#FFFFFF24] w-full text-center">
             Академия цифрового развития
@@ -73,16 +72,17 @@ export default function ManagerCard({
             </div>
           </div>
         </div>
-        <div className="font-unbounded md:text-[36px] text-[26px] text-center md:mt-8 mt-4 text-shadow-lg text-shadow-[#000000]">
-          {phone}
+        <div className="mt-auto pt-4 md:pt-8">
+          <div className="font-unbounded text-center text-[26px] text-shadow-lg text-shadow-[#000000] md:text-[36px]">
+            {phone}
+          </div>
+          <a
+            href={`mailto:${email}`}
+            className="inline-block w-full text-center text-[26px] leading-5 text-shadow-lg text-shadow-[#000000] hover:underline md:text-[36px] md:leading-9"
+          >
+            {email}
+          </a>
         </div>
-        <a
-          href={`mailto:${email}`}
-          className="md:text-[36px] text-[26px] text-center w-full inline-block md:leading-9 leading-5 text-shadow-lg text-shadow-[#000000] hover:underline"
-        >
-          {email}
-        </a>
-      </div>
     </div>
   );
 }

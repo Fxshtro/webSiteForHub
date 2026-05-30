@@ -137,64 +137,72 @@ function PersonProfile({ labSlug, person }: { labSlug: string; person: LabPerson
       </div>
 
       <div className="max-w-full space-y-7 overflow-x-hidden px-5 pb-2 pt-4 md:px-7">
-        <ProfileSection iconClassName="fa-puzzle-piece" title="Направления">
-          <div className="glass custom-before flex flex-wrap gap-3 !rounded-2xl !bg-gradient-to-b !from-[#afafaf30] !to-[#6f6f6f40] p-5">
-            {person.directions.map((direction) => (
-              <span
-                key={direction}
-                className="glass custom-before max-w-full !rounded-2xl !bg-[#afafaf30] px-[20px] py-[10px] text-[15px] font-semibold text-white/90 md:text-[16px]"
-              >
-                {direction}
-              </span>
-            ))}
-          </div>
-        </ProfileSection>
+        {person.directions.length > 0 && (
+          <ProfileSection iconClassName="fa-puzzle-piece" title="Направления">
+            <div className="glass custom-before flex flex-wrap gap-3 !rounded-2xl !bg-gradient-to-b !from-[#afafaf30] !to-[#6f6f6f40] p-5">
+              {person.directions.map((direction) => (
+                <span
+                  key={direction}
+                  className="glass custom-before max-w-full !rounded-2xl !bg-[#afafaf30] px-[20px] py-[10px] text-[15px] font-semibold text-white/90 md:text-[16px]"
+                >
+                  {direction}
+                </span>
+              ))}
+            </div>
+          </ProfileSection>
+        )}
 
-        <ProfileSection iconClassName="fa-briefcase" title="Проекты">
-          <div className="grid gap-3 md:grid-cols-2">
-            {person.projects.map((project) => (
-              <Link
-                key={`${person.id}-${project.projectId}`}
-                href={`/labs/${labSlug}/projects/${project.projectId}`}
-                className="glass custom-before flex h-full min-h-[115px] flex-col !rounded-2xl !bg-gradient-to-b !from-[#afafaf30] !to-[#6f6f6f40] px-5 pb-5 pt-4 duration-200 hover:![box-shadow:0px_0px_30px_#ffffff34,_inset_0px_0px_30px_#ffffff20]"
-              >
-                <p className="break-words text-[16px] font-bold text-white md:text-[17px]">{project.title}</p>
-                <div className="mt-auto flex flex-wrap gap-2 pt-4">
-                  {project.roles.map((role) => (
-                    <span key={`${project.projectId}-${role}`} className="glass custom-before !rounded-2xl !bg-[#afafaf30] px-3 py-1 text-[13px] font-semibold text-white/80 md:text-[14px]">
-                      {role}
-                    </span>
-                  ))}
-                </div>
-              </Link>
-            ))}
-          </div>
-        </ProfileSection>
+        {person.projects.length > 0 && (
+          <ProfileSection iconClassName="fa-briefcase" title="Проекты">
+            <div className="grid gap-3 md:grid-cols-2">
+              {person.projects.map((project) => (
+                <Link
+                  key={`${person.id}-${project.projectId}`}
+                  href={`/labs/${labSlug}/projects/${project.projectId}`}
+                  className="glass custom-before flex h-full min-h-[115px] flex-col !rounded-2xl !bg-gradient-to-b !from-[#afafaf30] !to-[#6f6f6f40] px-5 pb-5 pt-4 duration-200 hover:![box-shadow:0px_0px_30px_#ffffff34,_inset_0px_0px_30px_#ffffff20]"
+                >
+                  <p className="break-words text-[16px] font-bold text-white md:text-[17px]">{project.title}</p>
+                  <div className="mt-auto flex flex-wrap gap-2 pt-4">
+                    {project.roles.map((role) => (
+                      <span key={`${project.projectId}-${role}`} className="glass custom-before !rounded-2xl !bg-[#afafaf30] px-3 py-1 text-[13px] font-semibold text-white/80 md:text-[14px]">
+                        {role}
+                      </span>
+                    ))}
+                  </div>
+                </Link>
+              ))}
+            </div>
+          </ProfileSection>
+        )}
 
-        <ProfileSection iconClassName="fa-briefcase" title="Роли">
-          <div className="glass custom-before flex flex-wrap gap-3 !rounded-2xl !bg-gradient-to-b !from-[#afafaf30] !to-[#6f6f6f40] p-5">
-            {person.roles.map((role) => (
-              <span
-                key={role}
-                className="glass custom-before flex min-w-[180px] max-w-full flex-1 items-center justify-center !rounded-2xl !bg-[#afafaf30] px-[24px] py-[12px] text-center font-unbounded text-[14px] font-black uppercase text-white md:text-[15px]"
-              >
-                {role}
-              </span>
-            ))}
-          </div>
-        </ProfileSection>
+        {person.roles.length > 0 && (
+          <ProfileSection iconClassName="fa-briefcase" title="Роли">
+            <div className="glass custom-before flex flex-wrap gap-3 !rounded-2xl !bg-gradient-to-b !from-[#afafaf30] !to-[#6f6f6f40] p-5">
+              {person.roles.map((role) => (
+                <span
+                  key={role}
+                  className="glass custom-before flex min-w-[180px] max-w-full flex-1 items-center justify-center !rounded-2xl !bg-[#afafaf30] px-[24px] py-[12px] text-center font-unbounded text-[14px] font-black uppercase text-white md:text-[15px]"
+                >
+                  {role}
+                </span>
+              ))}
+            </div>
+          </ProfileSection>
+        )}
 
-        <ProfileSection iconClassName="fa-globe" title="Метавселенная">
-          <a
-            href={person.metaverseUrl}
-            target="_blank"
-            rel="noreferrer"
-            className="glass custom-before flex max-w-full items-center justify-between gap-4 !rounded-2xl !bg-gradient-to-b !from-[#afafaf30] !to-[#6f6f6f40] px-5 pb-5 pt-4 text-[16px] font-semibold text-white/90 underline underline-offset-4 md:text-[17px]"
-          >
-            <span className="truncate">{person.metaverseUrl.replace("https://", "")}</span>
-            <i className="fas fa-up-right-from-square shrink-0 text-[18px]" />
-          </a>
-        </ProfileSection>
+        {person.metaverseUrl.length > 0 && (
+          <ProfileSection iconClassName="fa-globe" title="Метавселенная">
+            <a
+              href={person.metaverseUrl}
+              target="_blank"
+              rel="noreferrer"
+              className="glass custom-before flex max-w-full items-center justify-between gap-4 !rounded-2xl !bg-gradient-to-b !from-[#afafaf30] !to-[#6f6f6f40] px-5 pb-5 pt-4 text-[16px] font-semibold text-white/90 underline underline-offset-4 md:text-[17px]"
+            >
+              <span className="truncate">{person.metaverseUrl.replace("https://", "")}</span>
+              <i className="fas fa-up-right-from-square shrink-0 text-[18px]" />
+            </a>
+          </ProfileSection>
+        )}
       </div>
     </div>
   );

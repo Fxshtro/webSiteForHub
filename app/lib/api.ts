@@ -31,6 +31,7 @@ export interface ProjectApiResponse {
     present: boolean;
   }[];
   active_participants_count: number;
+  links: { id: number; title: string; url: string }[];
 }
 
 export interface StudentLabApiResponse {
@@ -69,9 +70,7 @@ export interface AchievementApiResponse {
   laboratory_title: string | null;
   project: number | null;
   project_title: string | null;
-  text: string | null;
-  text_limited: string | null;
-  link: string | null;
+  description: string | null;
   image: string | null;
   image_url: string | null;
 }
@@ -123,12 +122,56 @@ export interface GuideApiResponse {
   surname: string;
   name: string;
   patronymic: string;
+  position: string | null;
+  description: string | null;
+  image: string | null;
+  image_url: string | null;
   laboratory: number;
   laboratory_title: string;
 }
 
+export interface HubManagerApiResponse {
+  id: number;
+  name: string;
+  position: string | null;
+  description: string | null;
+  image: string | null;
+  image_url: string | null;
+}
+
+export interface HubLeaderApiResponse {
+  id: number;
+  user: number;
+  user_login: string;
+  user_role: string | null;
+  full_name: string;
+  position: string;
+  degree: string;
+  phone: string;
+  email: string;
+  image: string | null;
+  image_url: string | null;
+  is_active: boolean;
+  created_at: string;
+  laboratory_title: string | null;
+}
+
 export async function fetchLabGuidesByLabId(labId: number): Promise<GuideApiResponse[]> {
   const res = await fetch(`${API_BASE}/guides/?laboratory=${labId}`);
+  if (!res.ok) return [];
+  const data = await res.json();
+  return data.results ?? data;
+}
+
+export async function fetchHubManagers(): Promise<HubManagerApiResponse[]> {
+  const res = await fetch(`${API_BASE}/hub-managers/`);
+  if (!res.ok) return [];
+  const data = await res.json();
+  return data.results ?? data;
+}
+
+export async function fetchHubLeaders(): Promise<HubLeaderApiResponse[]> {
+  const res = await fetch(`${API_BASE}/hub-leaders/?is_active=true`);
   if (!res.ok) return [];
   const data = await res.json();
   return data.results ?? data;
@@ -146,4 +189,30 @@ export async function fetchLabAchievementsByLabId(labId: number): Promise<Achiev
   if (!res.ok) return [];
   const data = await res.json();
   return data.results ?? data;
+}
+
+export interface SiteContentStatItem {
+  id: number;
+  label: string;
+  icon: string;
+  icon_class: string;
+  order: number;
+}
+
+export interface SiteContentApiResponse {
+  id: number;
+  about_title: string;
+  about_intro: string;
+  about_mission: string;
+  labs_subtitle: string;
+  hero_subtitle: string;
+  hero_description: string;
+  stats: SiteContentStatItem[];
+}
+
+export async function fetchSiteContent(): Promise<SiteContentApiResponse | null> {
+  const res = await fetch(`${API_BASE}/site-content/`);
+  if (!res.ok) return null;
+  const data = await res.json();
+  return data && typeof data === 'object' && 'about_title' in data ? data : null;
 }
