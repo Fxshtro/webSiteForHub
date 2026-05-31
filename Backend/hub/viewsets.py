@@ -11,14 +11,14 @@ import string
 
 from .models import (
     SiteRole, User, Student, Guide, HubManager,
-    Direction, Laboratory, LaboratoryDirection, LaboratoryLeader,
+    Direction, Laboratory, LaboratoryDirection,
     StudentLaboratory, StudentDirection,
     Role, Project, ProjectLaboratory, ProjectRole, StudentProjectRole,
     Achievement, Report, EventLog, HubLeader, SiteContent,
 )
 from .serializers import (
     SiteRoleSerializer, UserSerializer, UserListSerializer, StudentSerializer, GuideSerializer,
-    DirectionSerializer, LaboratorySerializer, LaboratoryDirectionSerializer, LaboratoryLeaderSerializer,
+    DirectionSerializer, LaboratorySerializer, LaboratoryDirectionSerializer,
     StudentLaboratorySerializer, StudentDirectionSerializer,
     RoleSerializer, ProjectSerializer, ProjectLaboratorySerializer, ProjectRoleSerializer,
     StudentProjectRoleSerializer, AchievementSerializer, ReportSerializer,
@@ -127,8 +127,14 @@ class GuideViewSet(viewsets.ReadOnlyModelViewSet):
     serializer_class = GuideSerializer
     permission_classes = [IsAuthenticatedOrReadOnly]
     filter_backends = [DjangoFilterBackend, filters.SearchFilter]
-    filterset_fields = ['laboratory']
     search_fields = ['surname', 'name']
+
+    def get_queryset(self):
+        qs = super().get_queryset()
+        lab_id = self.request.query_params.get('laboratory')
+        if lab_id:
+            qs = qs.filter(laboratoryguide__laboratory_id=lab_id)
+        return qs
 
 
 class HubManagerViewSet(viewsets.ReadOnlyModelViewSet):
@@ -171,15 +177,6 @@ class LaboratoryDirectionViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated]
     filter_backends = [DjangoFilterBackend]
     filterset_fields = ['laboratory', 'direction']
-
-
-class LaboratoryLeaderViewSet(viewsets.ModelViewSet):
-    queryset = LaboratoryLeader.objects.all()
-    serializer_class = LaboratoryLeaderSerializer
-    permission_classes = [IsAuthenticatedOrReadOnly]
-    filter_backends = [DjangoFilterBackend, filters.SearchFilter]
-    filterset_fields = ['laboratory']
-    search_fields = ['student__surname', 'student__name']
 
 
 class StudentLaboratoryViewSet(viewsets.ModelViewSet):

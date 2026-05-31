@@ -5,10 +5,8 @@ import Card from "../components/labs/card";
 import Lenta from "../components/sections/slider";
 import ManagerCard from "../components/sections/manager";
 import ScrollToTop from "../components/ui/tapToTop";
-import type { HomeAchievementSlide, HomeLabCardItem, HomeStatItem, HomeAboutContent } from "../../DataBase/types";
 import { fetchLabs, fetchHubLeaders, fetchSiteContent } from "../lib/api";
 import type { AchievementApiResponse, HubLeaderApiResponse, SiteContentApiResponse } from "../lib/api";
-import { homeAboutContent, homeLabs, homeStats } from "../../DataBase/main/home";
 
 const fallbackHomeAboutContent = {
   title: "О ХАБЕ",
@@ -58,9 +56,9 @@ interface HomeLabViewModel {
 function pickAboutContent(site: SiteContentApiResponse | null) {
   if (!site) {
     return {
-      title: getSafeText(homeAboutContent?.title, fallbackHomeAboutContent.title),
-      introText: getSafeText(homeAboutContent?.introText, fallbackHomeAboutContent.introText),
-      missionText: getSafeText(homeAboutContent?.missionText, fallbackHomeAboutContent.missionText),
+      title: fallbackHomeAboutContent.title,
+      introText: fallbackHomeAboutContent.introText,
+      missionText: fallbackHomeAboutContent.missionText,
     };
   }
   return {
@@ -78,11 +76,7 @@ function pickStats(site: SiteContentApiResponse | null) {
       iconClassName: getSafeText(item.icon_class, fallbackHomeStats[0].iconClassName),
     }));
   }
-  return (homeStats.length > 0 ? homeStats : fallbackHomeStats).map((item, index) => ({
-    label: getSafeText(item.label, `Статистика ${index + 1}`),
-    icon: getSafeText(item.icon, fallbackHomeStats[0].icon),
-    iconClassName: getSafeText(item.iconClassName, fallbackHomeStats[0].iconClassName),
-  }));
+  return [...fallbackHomeStats];
 }
 
 export default async function Home(): Promise<React.JSX.Element> {
@@ -98,26 +92,18 @@ export default async function Home(): Promise<React.JSX.Element> {
   const heroDescription = getSafeText(siteContent?.hero_description, fallbackSiteContent.hero_description);
   const labsSubtitle = getSafeText(siteContent?.labs_subtitle, fallbackSiteContent.labs_subtitle);
 
-  const localLabBySlug = new Map(homeLabs.map(l => [l.slug, l]));
   const labs: HomeLabViewModel[] = apiLabs.length > 0
     ? apiLabs.filter(l => l.slug).map((apiLab) => {
         const slug = apiLab.slug!;
-        const localLab = localLabBySlug.get(slug);
         return {
           name: apiLab.title,
           participants: apiLab.students_count,
           project: apiLab.projects_count,
-          img: localLab?.img || apiLab.images?.[0] || fallbackHomeLabs[0].img,
+          img: apiLab.images?.[0] || fallbackHomeLabs[0].img,
           slug,
         };
       })
-    : (homeLabs.length > 0 ? homeLabs : [...fallbackHomeLabs]).map((lab) => ({
-        name: lab.name,
-        participants: lab.participants,
-        project: lab.project,
-        img: lab.img,
-        slug: lab.slug,
-      }));
+    : [...fallbackHomeLabs];
   const managers = apiHubLeaders.length > 0
     ? apiHubLeaders.map((m: HubLeaderApiResponse) => ({
         name: m.full_name,
@@ -129,7 +115,7 @@ export default async function Home(): Promise<React.JSX.Element> {
       }))
     : [];
 
-  const hubSlides: HomeAchievementSlide[] = await fetch(`${process.env.API_BASE_URL || "/api"}/achievements/`)
+  const hubSlides = await fetch(`${process.env.API_BASE_URL || "/api"}/achievements/`)
     .then(r => r.ok ? r.json() : { results: [] })
     .then(d => (d.results ?? []) as AchievementApiResponse[])
     .then(items => items

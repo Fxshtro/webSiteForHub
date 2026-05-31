@@ -20,11 +20,7 @@
         <td style="padding:8px;border-bottom:1px solid var(--border-color);">{{ p.student.full_name }}</td>
         <td style="padding:8px;border-bottom:1px solid var(--border-color);">{{ p.project_role.role.title }}</td>
         <td style="padding:8px;border-bottom:1px solid var(--border-color);text-align:center;">
-          <form method="post" style="display:inline;">
-            {% csrf_token %}
-            <input type="hidden" name="participant_id" value="{{ p.id }}">
-            <button type="submit" name="delete_participant" class="deletelink" style="border:none;background:none;cursor:pointer;padding:0;font-size:16px;color:#ba2121;" title="Удалить">&times;</button>
-          </form>
+          <button type="submit" name="delete_participant" value="{{ p.id }}" class="deletelink" style="border:none;background:none;cursor:pointer;padding:0;font-size:16px;color:#ba2121;" title="Удалить">&times;</button>
         </td>
       </tr>
       {% empty %}
@@ -37,12 +33,11 @@
 
   <details style="margin-top:10px;">
     <summary style="cursor:pointer;font-weight:600;padding:8px;background:var(--button-bg);color:var(--button-fg);border-radius:4px;display:inline-block;">+ Добавить участника</summary>
-    <form method="post" style="margin-top:12px;padding:15px;background:var(--body-bg);border-radius:4px;">
-      {% csrf_token %}
+    <div style="margin-top:12px;padding:15px;background:var(--body-bg);border-radius:4px;">
       <div style="display:flex;gap:12px;flex-wrap:wrap;align-items:end;">
         <div>
           <label style="display:block;margin-bottom:4px;font-weight:600;font-size:12px;">Студент</label>
-          <select name="student" required style="min-width:250px;padding:8px;border:1px solid var(--border-color);border-radius:4px;">
+          <select name="new_participant_student" required style="min-width:250px;padding:8px;border:1px solid var(--border-color);border-radius:4px;">
             <option value="">-- выберите --</option>
             {% for s in available_students %}
             <option value="{{ s.id }}">{{ s.full_name }}</option>
@@ -51,7 +46,7 @@
         </div>
         <div>
           <label style="display:block;margin-bottom:4px;font-weight:600;font-size:12px;">Роль</label>
-          <select name="project_role" required style="min-width:200px;padding:8px;border:1px solid var(--border-color);border-radius:4px;">
+          <select name="new_participant_role" required style="min-width:200px;padding:8px;border:1px solid var(--border-color);border-radius:4px;">
             <option value="">-- выберите --</option>
             {% for r in project_roles_qs %}
             <option value="{{ r.id }}">{{ r.role.title }}</option>
@@ -59,10 +54,10 @@
           </select>
         </div>
         <div>
-          <button type="submit" name="add_participant" class="addlink" style="padding:8px 16px;background:var(--button-bg);color:var(--button-fg);border:none;border-radius:4px;cursor:pointer;">Добавить</button>
+          <button type="submit" name="add_participant" value="1" style="padding:8px 16px;background:var(--button-bg);color:var(--button-fg);border:none;border-radius:4px;cursor:pointer;">Добавить</button>
         </div>
       </div>
-    </form>
+    </div>
   </details>
 </div>
 {% endif %}

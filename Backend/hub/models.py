@@ -230,8 +230,9 @@ class Guide(models.Model):
     image = models.ImageField(upload_to='guides/', blank=True, null=True, verbose_name='Фото',
         help_text='Соотношение 4:3. Идеальное разрешение: 1200×900 px. Максимум 2 МБ.')
     laboratory = models.ForeignKey(
-        'Laboratory', on_delete=models.CASCADE,
+        'Laboratory', on_delete=models.SET_NULL,
         db_column='laboratory_id',
+        blank=True, null=True,
         related_name='guides'
     )
 
@@ -311,8 +312,6 @@ class Laboratory(models.Model):
     slug = models.CharField(max_length=50, unique=True, blank=True, null=True, verbose_name='ЧПУ (slug)')
     link = models.URLField(max_length=50, blank=True, null=True, verbose_name='Ссылка на чат')
     active = models.BooleanField(default=True, verbose_name='Активна', db_column='active')
-    images = models.JSONField(default=list, blank=True, verbose_name='Фотографии (JSON массив)')
-
     class Meta:
         db_table = 'laboratories'
         managed = False
@@ -322,6 +321,62 @@ class Laboratory(models.Model):
 
     def __str__(self):
         return self.title
+
+
+class LabPhoto(models.Model):
+    card_image = models.ImageField(upload_to='labs/', verbose_name='Фото карточки')
+    lab_image = models.ImageField(upload_to='labs/', verbose_name='Фото внутри лаборатории (колба)', blank=True, null=True)
+
+    class Meta:
+        managed = True
+        db_table = 'hub_lab_photos'
+        verbose_name = 'Фото лаборатории'
+        verbose_name_plural = 'Фото лабораторий'
+
+    def __str__(self):
+        return self.card_image.name
+
+
+class LaboratoryImage(models.Model):
+    laboratory = models.ForeignKey(
+        Laboratory, on_delete=models.CASCADE,
+        related_name='uploaded_images',
+        verbose_name='Лаборатория'
+    )
+    lab_photo = models.ForeignKey(
+        LabPhoto, on_delete=models.CASCADE,
+        verbose_name='Фото'
+    )
+
+    class Meta:
+        managed = True
+        db_table = 'hub_laboratory_images'
+        verbose_name = 'Изображение лаборатории'
+        verbose_name_plural = 'Изображения лабораторий'
+
+    def __str__(self):
+        return f'{self.laboratory.title} — {self.lab_photo.card_image.name}'
+
+
+class LaboratoryGuide(models.Model):
+    laboratory = models.ForeignKey(
+        Laboratory, on_delete=models.CASCADE,
+        related_name='guide_links',
+        verbose_name='Лаборатория'
+    )
+    guide = models.ForeignKey(
+        'Guide', on_delete=models.CASCADE,
+        verbose_name='Руководитель'
+    )
+
+    class Meta:
+        managed = True
+        db_table = 'hub_laboratory_guides'
+        verbose_name = 'Руководитель лаборатории'
+        verbose_name_plural = 'Руководители лаборатории'
+
+    def __str__(self):
+        return f'{self.laboratory.title} — {self.guide}'
 
 
 class LaboratoryDirection(models.Model):

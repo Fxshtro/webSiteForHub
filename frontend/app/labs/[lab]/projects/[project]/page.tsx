@@ -5,16 +5,13 @@ import { redirect } from "next/navigation";
 import LabAchievementsSlider from "../../../../components/labs/labAchievementsSlider";
 import LabPeopleDrawer from "../../../../components/labs/labPeopleDrawer";
 import ScrollToTop from "../../../../components/ui/tapToTop";
-import type { LabAchievement } from "../../../../../DataBase/types";
 import {
   fetchLabBySlug,
   fetchLabProjectById,
   fetchLabMembersByLabId,
   fetchProjectAchievementsByProjectId,
 } from "../../../../lib/api";
-import { getLabBySlug } from "../../../../../DataBase/labs";
-import { getLabPeopleBySlug } from "../../../../../DataBase/labs/people";
-import { getAllLabProjectParams } from "../../../../../DataBase/labs/projects";
+import type { LabPerson } from "../../../../lib/types";
 
 export const dynamic = "force-dynamic";
 
@@ -37,7 +34,7 @@ interface ProjectInfoCardProps {
 }
 
 export function generateStaticParams(): { lab: string; project: string }[] {
-  return getAllLabProjectParams();
+  return [];
 }
 
 function getLabTitleImageSrc(slug: string, fallbackSrc: string): string {
@@ -64,7 +61,7 @@ export async function generateMetadata({ params }: ProjectPageProps): Promise<Me
     fetchLabBySlug(lab),
     fetchProjectByCompositeId(lab, project),
   ]);
-  const labName = apiLabData?.title ?? getLabBySlug(lab)?.name ?? lab;
+  const labName = apiLabData?.title ?? lab;
   const title = projectData
     ? `${projectData.title} | ${labName}`
     : "Проект | Студенческий Цифровой Хаб";
@@ -104,69 +101,57 @@ export default async function ProjectPage({ params }: ProjectPageProps): Promise
     fetchLabBySlug(lab),
     fetchProjectByCompositeId(lab, project),
   ]);
-  const mockLabData = getLabBySlug(lab);
-  const labData = apiLabData ?? mockLabData;
 
-  if (!labData || !projectData) {
+  if (!apiLabData || !projectData) {
     redirect("/main");
   }
 
   const slug = lab;
-  const labName = apiLabData?.title ?? mockLabData?.name ?? slug;
-  const labHeroImage = apiLabData?.images?.[0] ?? mockLabData?.heroImageSrc ?? "";
+  const labName = apiLabData.title ?? slug;
+  const labHeroImage = apiLabData.images?.[0] ?? "";
 
-  const [apiMembers, apiProjectAchievements] = apiLabData
-    ? await Promise.all([
-        fetchLabMembersByLabId(apiLabData.id),
-        fetchProjectAchievementsByProjectId(projectData.id),
-      ])
-    : [ [] as Awaited<ReturnType<typeof fetchLabMembersByLabId>>,
-        [] as Awaited<ReturnType<typeof fetchProjectAchievementsByProjectId>> ];
-
-  const labPeople = apiMembers.length > 0
-    ? apiMembers.map((s) => {
-        const currentRoles = s.projects
-          .filter(p => p.id === projectData.id)
-          .map(p => p.role)
-          .filter(Boolean);
-        const roleStr = currentRoles.join(', ') || "Студент";
-        return {
-        id: `${slug}-student-${s.id}`,
-        name: s.full_name,
-        role: roleStr,
-        directions: s.directions.map(d => d.title),
-        projects: s.projects.map(p => ({
-          projectId: `${slug}-project-${p.id}`,
-          projectIndex: p.id,
-          title: p.title,
-          roles: [p.role],
-        })),
-        roles: currentRoles,
-        metaverseUrl: s.metaverse_account_link ?? "",
-        avatarIcon: "fa-user",
-      }})
-    : getLabPeopleBySlug(slug);
+  const [apiMembers, apiProjectAchievements] = await Promise.all([
+    fetchLabMembersByLabId(apiLabData.id),
+    fetchProjectAchievementsByProjectId(projectData.id),
+  ]);
 
   const projectMemberIds = new Set(projectData.participants.map(p => p.student_id));
-  const projectPeople = labPeople.filter((person) => {
-    const idNum = parseInt(person.id.replace(`${slug}-student-`, ""), 10);
-    return projectMemberIds.has(idNum);
-  });
+  const labPeople: LabPerson[] = apiMembers
+    .filter(s => projectMemberIds.has(s.id))
+    .map((s) => {
+      const currentRoles = s.projects
+        .filter(p => p.id === projectData.id)
+        .map(p => p.role)
+        .filter(Boolean);
+      const roleStr = currentRoles.join(', ') || "Студент";
+      return {
+      id: `${slug}-student-${s.id}`,
+      name: s.full_name,
+      role: roleStr,
+      directions: s.directions.map(d => d.title),
+      projects: s.projects.map(p => ({
+        projectId: `${slug}-project-${p.id}`,
+        projectIndex: p.id,
+        title: p.title,
+        roles: [p.role],
+      })),
+      roles: currentRoles,
+      metaverseUrl: s.metaverse_account_link ?? "",
+      avatarIcon: "fa-user",
+    }});
 
-  const projectAchievements: LabAchievement[] = apiProjectAchievements.length > 0
-    ? apiProjectAchievements.map(a => ({
-        description: a.description ? `${a.title}\n\n${a.description}` : a.title,
-        date: "",
-        imageSrc: a.image_url ?? undefined,
-        imageAlt: a.title,
-      }))
-    : [];
+  const projectAchievements = apiProjectAchievements.map(a => ({
+    description: a.description ? `${a.title}\n\n${a.description}` : a.title,
+    date: "",
+    imageSrc: a.image_url ?? undefined,
+    imageAlt: a.title,
+  }));
   const labTitleImageSrc = getLabTitleImageSrc(slug, labHeroImage);
 
   return (
     <main className="overflow-hidden pb-24">
       <ScrollToTop />
-      <LabPeopleDrawer labSlug={`${slug}:${projectData.id}`} people={projectPeople} />
+      <LabPeopleDrawer labSlug={`${slug}:${projectData.id}`} people={labPeople} />
 
       <div className="absolute top-0 left-0 -z-10 h-[1100px] w-full bg-gradient-to-b from-[#1C1261] to-black" />
       <div className="absolute top-0 -z-10 h-[700px] w-full overflow-hidden">
@@ -223,7 +208,7 @@ export default async function ProjectPage({ params }: ProjectPageProps): Promise
           <div className="grid gap-6">
             <ProjectInfoCard iconClassName="fa-users" title="Команда">
               <div id="team" className="grid gap-3">
-                {projectPeople.length > 0 ? projectPeople.map((person) => (
+                {labPeople.length > 0 ? labPeople.map((person) => (
                   <article key={person.id} className="glass custom-before !rounded-2xl !bg-[#afafaf30] px-4 py-3">
                     <p className="font-bold text-white">{person.name}</p>
                     <p className="mt-1 text-[14px] text-white/65">{person.role}</p>

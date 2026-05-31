@@ -34,9 +34,18 @@ services:
       DATABASE_HOST: localhost
       DATABASE_PORT: "3306"
       CORS_ALLOWED_ORIGINS: http://localhost:3000,http://127.0.0.1:3000,http://localhost:8000
+    volumes:
+      - hub_backend_media:/app/media
     depends_on:
       db:
         condition: service_healthy
+    command: >
+      sh -c "
+        python manage.py migrate --run-syncdb &&
+        python manage.py init_hub &&
+        python manage.py seed_lab_photos &&
+        python manage.py runserver 0.0.0.0:8000 --noreload
+      "
     restart: unless-stopped
 
   frontend:
@@ -54,3 +63,4 @@ services:
 
 volumes:
   hub_mysql_data:
+  hub_backend_media:

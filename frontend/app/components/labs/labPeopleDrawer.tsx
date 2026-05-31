@@ -4,7 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { ChangeEvent, MouseEvent, ReactNode, WheelEvent } from "react";
-import type { LabPerson } from "../../../DataBase/labs/people";
+import type { LabPerson } from "../../lib/types";
 
 interface LabPeopleDrawerProps {
   labSlug: string;

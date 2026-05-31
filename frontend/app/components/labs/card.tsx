@@ -19,7 +19,9 @@ export default function Card({
 }: CardProps): React.JSX.Element {
   const normalizedImage = img.trim();
   const imageSrc = normalizedImage
-    ? normalizedImage.startsWith("/") ? normalizedImage : `/images/labs/${normalizedImage.split("/").pop()}`
+    ? normalizedImage.startsWith("http") ? normalizedImage
+    : normalizedImage.startsWith("/") ? normalizedImage
+    : `/images/labs/${normalizedImage.split("/").pop()}`
     : FALLBACK_IMAGE_SRC;
 
   return (

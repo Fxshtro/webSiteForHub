@@ -1,7 +1,7 @@
 from rest_framework import serializers
 from .models import (
     SiteRole, User, Student, Guide, HubManager,
-    Direction, Laboratory, LaboratoryDirection, LaboratoryLeader,
+    Direction, Laboratory, LaboratoryDirection,
     StudentLaboratory, StudentDirection,
     Role, Project, ProjectLink, ProjectLaboratory, ProjectRole, StudentProjectRole,
     Achievement, Report, EventLog, HubLeader, SiteContent, SiteStat,
@@ -48,11 +48,13 @@ class LaboratorySerializer(serializers.ModelSerializer):
     def get_leaders_list(self, obj):
         return [
             {
-                'id': g.id,
-                'full_name': f'{g.surname} {g.name} {g.patronymic or ""}'.strip(),
-                'position': g.position or '',
+                'id': lg.guide.id,
+                'full_name': f'{lg.guide.surname} {lg.guide.name} {lg.guide.patronymic or ""}'.strip(),
+                'position': lg.guide.position or '',
+                'description': lg.guide.description or '',
+                'image_url': lg.guide.image.url if lg.guide.image else None,
             }
-            for g in obj.guides.all()
+            for lg in obj.guide_links.select_related('guide').all()
         ]
 
     def get_students_count(self, obj):
@@ -62,9 +64,13 @@ class LaboratorySerializer(serializers.ModelSerializer):
         return obj.project_links.count()
 
     def get_images(self, obj):
-        if isinstance(obj.images, list):
-            return obj.images
-        return []
+        images = list(obj.uploaded_images.select_related('lab_photo').all())
+        result = []
+        for img in images:
+            result.append(img.lab_photo.card_image.url)
+            if img.lab_photo.lab_image:
+                result.append(img.lab_photo.lab_image.url)
+        return result
 
 
 class LaboratoryDirectionSerializer(serializers.ModelSerializer):
@@ -118,12 +124,11 @@ class StudentSerializer(serializers.ModelSerializer):
 
 
 class GuideSerializer(serializers.ModelSerializer):
-    laboratory_title = serializers.CharField(source='laboratory.title', read_only=True)
     image_url = serializers.SerializerMethodField()
 
     class Meta:
         model = Guide
-        fields = ['id', 'surname', 'name', 'patronymic', 'position', 'description', 'image', 'image_url', 'laboratory', 'laboratory_title']
+        fields = ['id', 'surname', 'name', 'patronymic', 'position', 'description', 'image', 'image_url']
 
     def get_image_url(self, obj):
         if obj.image:
@@ -360,15 +365,6 @@ class EventLogSerializer(serializers.ModelSerializer):
             'entity_type', 'entity_id', 'timestamp', 'details'
         ]
         read_only_fields = ['id', 'timestamp']
-
-
-class LaboratoryLeaderSerializer(serializers.ModelSerializer):
-    student_name = serializers.CharField(source='student.full_name', read_only=True)
-    laboratory_title = serializers.CharField(source='laboratory.title', read_only=True)
-
-    class Meta:
-        model = LaboratoryLeader
-        fields = ['id', 'student', 'student_name', 'laboratory', 'laboratory_title']
 
 
 class StudentLaboratorySerializer(serializers.ModelSerializer):

@@ -4,7 +4,7 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
 django.setup()
 
 from django.db import transaction
-from hub.models import Laboratory, Guide, Achievement
+from hub.models import Laboratory, Guide, LaboratoryGuide, Achievement
 
 achievements_data = {
     'legal-tech': [
@@ -95,13 +95,14 @@ with transaction.atomic():
             continue
         created = 0
         for surname, name, patronymic in guides:
-            full_name = f'{surname} {name} {patronymic}'
-            _, was_created = Guide.objects.get_or_create(
+            guide, _ = Guide.objects.get_or_create(
                 surname=surname, name=name, patronymic=patronymic,
-                defaults={'laboratory': lab}
             )
-            if was_created:
+            _, link_created = LaboratoryGuide.objects.get_or_create(
+                laboratory=lab, guide=guide
+            )
+            if link_created:
                 created += 1
-        print(f'Guides for {slug}: {created} created')
+        print(f'Guides for {slug}: {created} linked')
 
 print('Done!')

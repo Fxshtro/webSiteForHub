@@ -10,7 +10,7 @@ export interface LabApiResponse {
   description: string | null;
   images: string[];
   directions_list: { id: number; title: string; link: string | null }[];
-  leaders_list: { id: number; full_name: string; email: string }[];
+  leaders_list: { id: number; full_name: string; position: string; description: string; image_url: string | null }[];
   students_count: number;
   projects_count: number;
 }

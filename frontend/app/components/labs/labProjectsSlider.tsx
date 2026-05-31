@@ -4,7 +4,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import "swiper/css";
 import { Swiper, SwiperSlide } from "swiper/react";
 import type { Swiper as SwiperType } from "swiper/types";
-import type { LeadershipSlideItem } from "../../../DataBase/types";
+import type { LeadershipSlideItem } from "../../lib/types";
 import { useMediaQuery } from "../../hooks/use-media-query";
 import CardAchievement from "./cardAchievement";
 

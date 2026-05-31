@@ -6,8 +6,7 @@ import "swiper/css/navigation";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Navigation } from "swiper/modules";
 import type { Swiper as SwiperType } from "swiper/types";
-import { homeAchievementSlides } from "../../../DataBase/main/home";
-import type { HomeAchievementSlide } from "../../../DataBase/types";
+import type { HomeAchievementSlide } from "../../lib/types";
 import { useMediaQuery } from "../../hooks/use-media-query";
 import CardAchievement from "../labs/cardAchievement";
 
@@ -28,7 +27,7 @@ interface LentaProps {
 export default function Lenta({ slides }: LentaProps): React.JSX.Element {
   const cardInfo = useMemo<HomeAchievementSlide[]>(() => {
     if (slides && slides.length > 0) return slides;
-    return homeAchievementSlides.length > 0 ? homeAchievementSlides : FALLBACK_ACHIEVEMENT_SLIDES;
+    return FALLBACK_ACHIEVEMENT_SLIDES;
   }, [slides]);
   const isMobile = useMediaQuery("(max-width: 767px)");
   const [canSlidePrev, setCanSlidePrev] = useState(true);

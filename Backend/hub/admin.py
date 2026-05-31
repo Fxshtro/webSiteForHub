@@ -16,7 +16,7 @@ import string
 from .models import (
     SiteContent, SiteStat, EventLog, SiteRole, User,
     Student, Guide, HubLeader, Direction,
-    Laboratory, LaboratoryDirection, LaboratoryLeader,
+    Laboratory, LaboratoryImage, LaboratoryGuide, LabPhoto, LaboratoryDirection,
     StudentLaboratory, StudentDirection,
     Role, LabRole, Project, ProjectLink, ProjectLaboratory,
     ProjectRole, StudentProjectRole,
@@ -92,10 +92,10 @@ class LaboratoryDirectionInline(admin.TabularInline):
     autocomplete_fields = ['direction']
 
 
-class LaboratoryLeaderInline(admin.TabularInline):
-    model = LaboratoryLeader
+class GuideInline(admin.TabularInline):
+    model = LaboratoryGuide
     extra = 1
-    autocomplete_fields = ['student']
+    autocomplete_fields = ['guide']
 
 
 # =============================================================================
@@ -280,8 +280,18 @@ class UserAdmin(admin.ModelAdmin):
         super().save_model(request, obj, form, change)
 
 
+class StudentLaboratoryInline(admin.TabularInline):
+    model = StudentLaboratory
+    fk_name = 'student'
+    extra = 1
+    autocomplete_fields = ['laboratory']
+    verbose_name = 'Лаборатория'
+    verbose_name_plural = 'Лаборатории'
+
+
 @admin.register(Student)
 class StudentAdmin(admin.ModelAdmin):
+    inlines = [StudentLaboratoryInline]
     list_display = ['id', 'surname', 'name', 'study_group', 'email', 'telegram_nickname', 'experience']
     list_filter = ['study_group', 'university_city', 'experience', StudentLabFilter, StudentDirectionFilter]
     search_fields = ['surname', 'name', 'email', 'telegram_nickname', 'study_group']
@@ -296,10 +306,8 @@ class StudentAdmin(admin.ModelAdmin):
 @admin.register(Guide)
 class GuideAdmin(admin.ModelAdmin):
     inlines = [FileGuideInline]
-    list_display = ['id', 'surname', 'name', 'patronymic', 'position', 'laboratory']
-    list_filter = ['laboratory']
+    list_display = ['id', 'surname', 'name', 'patronymic', 'position']
     search_fields = ['surname', 'name', 'patronymic', 'position']
-    raw_id_fields = ['laboratory']
     actions = [export_to_excel]
 
     def full_name(self, obj):
@@ -333,9 +341,34 @@ class DirectionAdmin(admin.ModelAdmin):
 # ЛАБОРАТОРИИ
 # =============================================================================
 
+class LaboratoryImageInline(admin.TabularInline):
+    model = LaboratoryImage
+    extra = 0
+    max_num = 1
+    autocomplete_fields = ['lab_photo']
+
+
+@admin.register(LabPhoto)
+class LabPhotoAdmin(admin.ModelAdmin):
+    list_display = ['id', 'card_image_tag', 'card_image', 'lab_image_tag', 'lab_image']
+    search_fields = ['card_image']
+
+    def card_image_tag(self, obj):
+        if obj.card_image:
+            return format_html('<img src="{}" style="max-height:80px;max-width:120px" />', obj.card_image.url)
+        return ''
+    card_image_tag.short_description = 'Превью (карточка)'
+
+    def lab_image_tag(self, obj):
+        if obj.lab_image:
+            return format_html('<img src="{}" style="max-height:80px;max-width:120px" />', obj.lab_image.url)
+        return ''
+    lab_image_tag.short_description = 'Превью (колба)'
+
+
 @admin.register(Laboratory)
 class LaboratoryAdmin(admin.ModelAdmin):
-    inlines = [LaboratoryDirectionInline, LaboratoryLeaderInline]
+    inlines = [LaboratoryDirectionInline, GuideInline, LaboratoryImageInline]
     list_display = ['id', 'title', 'slug', 'active', 'link']
     list_filter = ['active']
     search_fields = ['title', 'slug']
@@ -347,14 +380,6 @@ class LaboratoryDirectionAdmin(admin.ModelAdmin):
     list_display = ['id', 'laboratory', 'direction', 'link']
     list_filter = ['laboratory', 'direction']
     autocomplete_fields = ['laboratory', 'direction']
-
-
-@admin.register(LaboratoryLeader)
-class LaboratoryLeaderAdmin(admin.ModelAdmin):
-    list_display = ['id', 'student', 'laboratory']
-    list_filter = ['laboratory']
-    search_fields = ['student__surname', 'student__name']
-    autocomplete_fields = ['student', 'laboratory']
 
 
 @admin.register(StudentLaboratory)
@@ -404,28 +429,35 @@ class ProjectAdmin(admin.ModelAdmin):
             context['project_participants'] = StudentProjectRole.objects.filter(
                 project_role__project=instance
             ).select_related('student', 'project_role__role')
-            context['available_students'] = Student.objects.all().order_by('surname', 'name')
+            lab_ids = instance.laboratory_links.values_list('laboratory_id', flat=True)
+            context['available_students'] = Student.objects.filter(
+                laboratory_links__laboratory_id__in=lab_ids
+            ).distinct().order_by('surname', 'name')
             context['project_roles_qs'] = ProjectRole.objects.filter(
                 project=instance
             ).select_related('role')
         return super().render_change_form(request, context, *args, **kwargs)
 
     def response_change(self, request, obj):
-        if 'add_participant' in request.POST:
-            student_id = request.POST.get('student')
-            project_role_id = request.POST.get('project_role')
-            if student_id and project_role_id:
-                StudentProjectRole.objects.get_or_create(
-                    student_id=student_id,
-                    project_role_id=project_role_id,
-                    defaults={'present': True},
-                )
-            return redirect(request.path)
-
         if 'delete_participant' in request.POST:
-            participant_id = request.POST.get('participant_id')
+            participant_id = request.POST.get('delete_participant')
             if participant_id:
                 StudentProjectRole.objects.filter(id=participant_id).delete()
+            return redirect(request.path)
+
+        if 'add_participant' in request.POST:
+            student_id = request.POST.get('new_participant_student')
+            project_role_id = request.POST.get('new_participant_role')
+            if student_id and project_role_id:
+                lab_ids = obj.laboratory_links.values_list('laboratory_id', flat=True)
+                if StudentLaboratory.objects.filter(
+                    student_id=student_id, laboratory_id__in=lab_ids
+                ).exists():
+                    StudentProjectRole.objects.get_or_create(
+                        student_id=student_id,
+                        project_role_id=project_role_id,
+                        defaults={'present': True},
+                    )
             return redirect(request.path)
 
         return super().response_change(request, obj)

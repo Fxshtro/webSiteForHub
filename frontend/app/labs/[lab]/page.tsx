@@ -6,9 +6,8 @@ import LabProjectsFilter from "../../components/labs/labProjectsFilter";
 import LabAchievementsSlider from "../../components/labs/labAchievementsSlider";
 import LabProjectsSlider from "../../components/labs/labProjectsSlider";
 import LabPeopleDrawer from "../../components/labs/labPeopleDrawer";
-import { fetchLabBySlug, fetchLabProjectsBySlug, fetchLabMembersByLabId, fetchLabAchievementsByLabId, fetchLabGuidesByLabId } from "../../../app/lib/api";
-import type { LabPerson } from "../../../DataBase/labs/people";
-import type { LabProjectRegistryItem, LabAchievement } from "../../../DataBase/types";
+import { fetchLabBySlug, fetchLabProjectsBySlug, fetchLabMembersByLabId, fetchLabAchievementsByLabId } from "../../../app/lib/api";
+import type { LabPerson, LabProjectRegistryItem, LabAchievement } from "../../lib/types";
 
 interface PageProps {
   params: Promise<{ lab: string }>;
@@ -96,11 +95,10 @@ export default async function LabPage({ params }: PageProps): Promise<React.JSX.
   const slug = labData.slug ?? lab;
   const labId = labData.id;
 
-  const [apiProjects, apiStudents, apiAchievements, apiGuides] = await Promise.all([
+  const [apiProjects, apiStudents, apiAchievements] = await Promise.all([
     fetchLabProjectsBySlug(slug),
     fetchLabMembersByLabId(labId),
     fetchLabAchievementsByLabId(labId),
-    fetchLabGuidesByLabId(labId),
   ]);
 
   const labPeople: LabPerson[] = mapApiStudentsToLabPeople(apiStudents, slug);
@@ -108,16 +106,15 @@ export default async function LabPage({ params }: PageProps): Promise<React.JSX.
   const peopleCount = labPeople.length;
   const projectsCount = labProjects.length;
 
-  const heroImage = labData.images?.[0] ?? `/images/labs/labDefault.svg`;
+  const heroImage = labData.images?.[1] ?? `/images/labs/labDefault.svg`;
   const achievements: LabAchievement[] = mapApiAchievements(apiAchievements);
-  const leadership: LabAchievement[] = apiGuides.map(g => {
-    const parts = [g.surname, g.name, g.patronymic].filter(Boolean).join(' ');
-    const desc = [parts, g.position, g.description].filter(Boolean).join('\n\n');
+  const leadership: LabAchievement[] = labData.leaders_list.map(g => {
+    const desc = [g.full_name, g.position, g.description].filter(Boolean).join('\n\n');
     return {
       description: desc,
-      date: g.laboratory_title,
+      date: labData.title,
       imageSrc: g.image_url ?? undefined,
-      imageAlt: parts,
+      imageAlt: g.full_name,
     };
   });
 
@@ -235,6 +232,7 @@ export default async function LabPage({ params }: PageProps): Promise<React.JSX.
 
                 <div className="absolute -right-10 top-1/2 z-2 hidden h-[120%] w-10 -translate-y-1/2 bg-black md:block"></div>
                 <div className="absolute -right-10 -top-20 z-2 hidden h-30 w-100 rotate-20 bg-gradient-to-b from-[#000000] from-50% to-[#00000000] md:block"></div>
+                <div className="absolute right-0 top-0 z-1 h-full w-30 bg-gradient-to-l from-[#ffffff12] to-[#00000000] blur-lg md:w-80"></div>
                 <div className="absolute -right-10 -bottom-20 z-2 hidden h-30 w-100 -rotate-20 bg-gradient-to-t from-[#000000] from-50% to-[#00000000] md:block"></div>
               </div>
               <LabAchievementsSlider achievements={achievements} />
