@@ -1,3 +1,4 @@
+from django.db.utils import DatabaseError
 from rest_framework import viewsets, filters, status
 from rest_framework.decorators import action, api_view
 from rest_framework.response import Response

@@ -369,10 +369,15 @@ class LabPhotoAdmin(admin.ModelAdmin):
 @admin.register(Laboratory)
 class LaboratoryAdmin(admin.ModelAdmin):
     inlines = [LaboratoryDirectionInline, GuideInline, LaboratoryImageInline]
-    list_display = ['id', 'title', 'slug', 'active', 'link']
+    list_display = ['id', 'title', 'slug', 'active', 'link', 'short_description']
     list_filter = ['active']
     search_fields = ['title', 'slug']
     actions = [export_to_excel]
+    fieldsets = [
+        (None, {
+            'fields': ['title', 'slug', 'link', 'active', 'short_description', 'description']
+        }),
+    ]
 
 
 @admin.register(LaboratoryDirection)

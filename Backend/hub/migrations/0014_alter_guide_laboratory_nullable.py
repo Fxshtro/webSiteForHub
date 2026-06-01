@@ -10,8 +10,8 @@ class Migration(migrations.Migration):
 
     operations = [
         migrations.RunSQL(
-            sql=f"ALTER TABLE guide DROP FOREIGN KEY {FK_NAME};",
-            reverse_sql=f"ALTER TABLE guide ADD CONSTRAINT {FK_NAME} FOREIGN KEY (laboratory_id) REFERENCES laboratories(id);",
+            sql=f"ALTER TABLE guide DROP FOREIGN KEY IF EXISTS {FK_NAME};",
+            reverse_sql=migrations.RunSQL.noop,
         ),
         migrations.RunSQL(
             sql="ALTER TABLE guide MODIFY laboratory_id INT(11) NULL;",

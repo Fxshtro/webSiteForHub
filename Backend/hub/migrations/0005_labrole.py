@@ -4,6 +4,23 @@ import django.db.models.deletion
 from django.db import migrations, models
 
 
+LABORATORIES_SQL = """
+CREATE TABLE IF NOT EXISTS `laboratories` (
+    `id` bigint NOT NULL AUTO_INCREMENT,
+    `title` varchar(50) NOT NULL,
+    `slug` varchar(50) DEFAULT NULL,
+    `link` varchar(50) DEFAULT NULL,
+    `active` tinyint(1) NOT NULL DEFAULT 1,
+    `images` longtext NOT NULL,
+    `short_description` varchar(350) DEFAULT NULL,
+    `description` longtext DEFAULT NULL,
+    PRIMARY KEY (`id`),
+    UNIQUE KEY `title` (`title`),
+    UNIQUE KEY `slug` (`slug`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+"""
+
+
 class Migration(migrations.Migration):
 
     dependencies = [
@@ -11,19 +28,41 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
-        migrations.CreateModel(
-            name='LabRole',
-            fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('title', models.CharField(help_text='Например: Дизайнер, Разработчик, Проектный менеджер, Тестировщик', max_length=50, verbose_name='Название роли')),
-                ('laboratory', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='lab_roles', to='hub.laboratory', verbose_name='Лаборатория')),
+        migrations.RunSQL(
+            sql=LABORATORIES_SQL,
+            reverse_sql=migrations.RunSQL.noop,
+        ),
+        migrations.SeparateDatabaseAndState(
+            state_operations=[
+                migrations.CreateModel(
+                    name='LabRole',
+                    fields=[
+                        ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
+                        ('title', models.CharField(help_text='Например: Дизайнер, Разработчик, Проектный менеджер, Тестировщик', max_length=50, verbose_name='Название роли')),
+                        ('laboratory', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='lab_roles', to='hub.laboratory', verbose_name='Лаборатория')),
+                    ],
+                    options={
+                        'verbose_name': 'Роль лаборатории',
+                        'verbose_name_plural': 'Роли лаборатории',
+                        'db_table': 'hub_lab_roles',
+                        'managed': True,
+                        'unique_together': {('laboratory', 'title')},
+                    },
+                ),
             ],
-            options={
-                'verbose_name': 'Роль лаборатории',
-                'verbose_name_plural': 'Роли лаборатории',
-                'db_table': 'hub_lab_roles',
-                'managed': True,
-                'unique_together': {('laboratory', 'title')},
-            },
+            database_operations=[
+                migrations.RunSQL(
+                    sql="""
+                        CREATE TABLE IF NOT EXISTS `hub_lab_roles` (
+                            `id` bigint NOT NULL AUTO_INCREMENT,
+                            `title` varchar(50) NOT NULL,
+                            `laboratory_id` bigint NOT NULL,
+                            PRIMARY KEY (`id`),
+                            UNIQUE KEY `hub_lab_roles_lab_title` (`laboratory_id`, `title`)
+                        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+                    """,
+                    reverse_sql=migrations.RunSQL.noop,
+                ),
+            ],
         ),
     ]

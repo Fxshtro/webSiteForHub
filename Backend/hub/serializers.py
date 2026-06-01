@@ -1,3 +1,4 @@
+from django.db.utils import DatabaseError
 from rest_framework import serializers
 from .models import (
     SiteRole, User, Student, Guide, HubManager,
@@ -40,37 +41,52 @@ class LaboratorySerializer(serializers.ModelSerializer):
         ]
 
     def get_directions_list(self, obj):
-        return [
-            {'id': ld.direction.id, 'title': ld.direction.title, 'link': ld.link}
-            for ld in obj.direction_links.all()
-        ]
+        try:
+            return [
+                {'id': ld.direction.id, 'title': ld.direction.title, 'link': ld.link}
+                for ld in obj.direction_links.all()
+            ]
+        except DatabaseError:
+            return []
 
     def get_leaders_list(self, obj):
-        return [
-            {
-                'id': lg.guide.id,
-                'full_name': f'{lg.guide.surname} {lg.guide.name} {lg.guide.patronymic or ""}'.strip(),
-                'position': lg.guide.position or '',
-                'description': lg.guide.description or '',
-                'image_url': lg.guide.image.url if lg.guide.image else None,
-            }
-            for lg in obj.guide_links.select_related('guide').all()
-        ]
+        try:
+            return [
+                {
+                    'id': lg.guide.id,
+                    'full_name': f'{lg.guide.surname} {lg.guide.name} {lg.guide.patronymic or ""}'.strip(),
+                    'position': lg.guide.position or '',
+                    'description': lg.guide.description or '',
+                    'image_url': lg.guide.image.url if lg.guide.image else None,
+                }
+                for lg in obj.guide_links.select_related('guide').all()
+            ]
+        except DatabaseError:
+            return []
 
     def get_students_count(self, obj):
-        return obj.student_links.filter(laboratory__isnull=False).count()
+        try:
+            return obj.student_links.filter(laboratory__isnull=False).count()
+        except DatabaseError:
+            return 0
 
     def get_projects_count(self, obj):
-        return obj.project_links.count()
+        try:
+            return obj.project_links.count()
+        except DatabaseError:
+            return 0
 
     def get_images(self, obj):
-        images = list(obj.uploaded_images.select_related('lab_photo').all())
-        result = []
-        for img in images:
-            result.append(img.lab_photo.card_image.url)
-            if img.lab_photo.lab_image:
-                result.append(img.lab_photo.lab_image.url)
-        return result
+        try:
+            images = list(obj.uploaded_images.select_related('lab_photo').all())
+            result = []
+            for img in images:
+                result.append(img.lab_photo.card_image.url)
+                if img.lab_photo.lab_image:
+                    result.append(img.lab_photo.lab_image.url)
+            return result
+        except DatabaseError:
+            return []
 
 
 class LaboratoryDirectionSerializer(serializers.ModelSerializer):

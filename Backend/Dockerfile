@@ -1,9 +1,10 @@
-FROM python:3.14-slim
+FROM python:3.13-slim
 
 WORKDIR /app
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    default-libmysqlclient-dev \
+    libmariadb-dev \
+    libmariadb-dev-compat \
     build-essential \
     pkg-config \
     && rm -rf /var/lib/apt/lists/*

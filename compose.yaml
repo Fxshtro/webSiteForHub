@@ -41,7 +41,7 @@ services:
         condition: service_healthy
     command: >
       sh -c "
-        python manage.py migrate --run-syncdb &&
+        python manage.py migrate &&
         python manage.py init_hub &&
         python manage.py seed_lab_photos &&
         python manage.py runserver 0.0.0.0:8000 --noreload
