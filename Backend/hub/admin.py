@@ -18,7 +18,7 @@ from .models import (
     Student, Guide, HubLeader, Direction,
     Laboratory, LaboratoryImage, LaboratoryGuide, LabPhoto, LaboratoryDirection,
     StudentLaboratory, StudentDirection,
-    Role, LabRole, Project, ProjectLink, ProjectLaboratory,
+    Role, RoleManagerFlag, LabRole, Project, ProjectLink, ProjectLaboratory,
     ProjectRole, StudentProjectRole,
     File, Achievement, FileAchievement, FileGuide, FileProject,
     Report, FileReport,
@@ -109,6 +109,14 @@ class GuideInline(admin.TabularInline):
     model = LaboratoryGuide
     extra = 1
     autocomplete_fields = ['guide']
+
+
+class LabLinkInline(admin.TabularInline):
+    model = LaboratoryGuide
+    extra = 1
+    verbose_name = 'Лаборатория'
+    verbose_name_plural = 'Лаборатории'
+    autocomplete_fields = ['laboratory']
 
 
 # =============================================================================
@@ -280,10 +288,27 @@ class SiteRoleAdmin(admin.ModelAdmin):
     search_fields = ['title']
 
 
+class ManagerFlagInline(admin.TabularInline):
+    model = RoleManagerFlag
+    can_delete = False
+    max_num = 1
+    min_num = 0
+    extra = 1
+    verbose_name = 'Менеджер'
+    verbose_name_plural = 'Менеджеры'
+    fields = ['is_manager']
+
+
 @admin.register(Role)
 class RoleAdmin(admin.ModelAdmin):
-    list_display = ['id', 'title']
+    inlines = [ManagerFlagInline]
+    list_display = ['id', 'title', 'is_manager']
     search_fields = ['title']
+
+    def is_manager(self, obj):
+        return hasattr(obj, 'manager_flag') and obj.manager_flag.is_manager
+    is_manager.short_description = 'Менеджер'
+    is_manager.boolean = True
 
 
 # =============================================================================
@@ -331,14 +356,22 @@ class StudentAdmin(admin.ModelAdmin):
 
 @admin.register(Guide)
 class GuideAdmin(admin.ModelAdmin):
-    inlines = [FileGuideInline]
-    list_display = ['id', 'surname', 'name', 'patronymic', 'position']
+    inlines = [LabLinkInline, FileGuideInline]
+    list_display = ['id', 'surname', 'name', 'patronymic', 'position', 'display_laboratories']
     search_fields = ['surname', 'name', 'patronymic', 'position']
     actions = [export_to_excel]
+    exclude = ['laboratory']
+
+    def get_queryset(self, request):
+        return super().get_queryset(request).prefetch_related('guide_links__laboratory')
 
     def full_name(self, obj):
         return f'{obj.surname} {obj.name} {obj.patronymic or ""}'.strip()
     full_name.short_description = 'ФИО'
+
+    def display_laboratories(self, obj):
+        return ', '.join(str(gl.laboratory) for gl in obj.guide_links.all())
+    display_laboratories.short_description = 'Лаборатории'
 
 
 @admin.register(HubLeader)
@@ -346,7 +379,7 @@ class HubLeaderAdmin(admin.ModelAdmin):
     list_display = ['id', 'full_name', 'user', 'position', 'degree', 'phone', 'email', 'is_active']
     list_filter = ['is_active']
     search_fields = ['full_name', 'user__login', 'position', 'degree', 'phone', 'email']
-    raw_id_fields = ['user']
+
 
 
 # =============================================================================

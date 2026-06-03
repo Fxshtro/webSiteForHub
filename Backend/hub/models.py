@@ -280,12 +280,15 @@ class HubManager(models.Model):
 
 class HubLeader(models.Model):
     user = models.OneToOneField(
-        'User', on_delete=models.CASCADE,
+        'User', on_delete=models.SET_NULL,
+        null=True, blank=True,
         db_column='user_id', related_name='hub_leader_profile'
     )
+
+
     full_name = models.CharField(max_length=200, blank=True, verbose_name='ФИО')
-    position = models.CharField(max_length=200, blank=True, verbose_name='Должность')
-    degree = models.CharField(max_length=200, blank=True, verbose_name='Учёная степень / звание')
+    position = models.CharField(max_length=200, blank=True, verbose_name='Короткая информация')
+    degree = models.CharField(max_length=200, blank=True, verbose_name='Должность')
     phone = models.CharField(max_length=20, blank=True, verbose_name='Телефон')
     email = models.EmailField(max_length=100, blank=True, verbose_name='Email')
     image = models.ImageField(upload_to='hub_leaders/', blank=True, null=True, verbose_name='Фото')
@@ -300,7 +303,11 @@ class HubLeader(models.Model):
         ordering = ['full_name']
 
     def __str__(self):
-        return self.full_name or (f"{self.user.login} ({self.position})" if self.position else self.user.login)
+        if self.full_name:
+            return self.full_name
+        if self.user:
+            return f"{self.user.login} ({self.position})" if self.position else self.user.login
+        return f'Руководитель #{self.pk}'
 
 
 # =============================================================================
@@ -383,6 +390,7 @@ class LaboratoryGuide(models.Model):
     )
     guide = models.ForeignKey(
         'Guide', on_delete=models.CASCADE,
+        related_name='guide_links',
         verbose_name='Руководитель'
     )
 
@@ -507,6 +515,24 @@ class Role(models.Model):
 
     def __str__(self):
         return self.title
+
+
+class RoleManagerFlag(models.Model):
+    role = models.OneToOneField(
+        Role, on_delete=models.CASCADE,
+        primary_key=True, related_name='manager_flag',
+        verbose_name='Роль'
+    )
+    is_manager = models.BooleanField(default=False, verbose_name='Менеджер')
+
+    class Meta:
+        managed = True
+        db_table = 'hub_role_manager_flags'
+        verbose_name = 'Флаг менеджера'
+        verbose_name_plural = 'Флаги менеджеров'
+
+    def __str__(self):
+        return f'{self.role.title}: {"Менеджер" if self.is_manager else "Нет"}'
 
 
 class LabRole(models.Model):

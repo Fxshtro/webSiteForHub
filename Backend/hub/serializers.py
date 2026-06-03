@@ -4,7 +4,7 @@ from .models import (
     SiteRole, User, Student, Guide, HubManager,
     Direction, Laboratory, LaboratoryDirection,
     StudentLaboratory, StudentDirection,
-    Role, Project, ProjectLink, ProjectLaboratory, ProjectRole, StudentProjectRole,
+    Role, RoleManagerFlag, Project, ProjectLink, ProjectLaboratory, ProjectRole, StudentProjectRole,
     Achievement, Report, EventLog, HubLeader, SiteContent, SiteStat,
 )
 
@@ -51,7 +51,7 @@ class LaboratorySerializer(serializers.ModelSerializer):
 
     def get_leaders_list(self, obj):
         try:
-            return [
+            result = [
                 {
                     'id': lg.guide.id,
                     'full_name': f'{lg.guide.surname} {lg.guide.name} {lg.guide.patronymic or ""}'.strip(),
@@ -61,6 +61,26 @@ class LaboratorySerializer(serializers.ModelSerializer):
                 }
                 for lg in obj.guide_links.select_related('guide').all()
             ]
+
+            manager_participants = StudentProjectRole.objects.filter(
+                present=True,
+                project_role__project__laboratory_links__laboratory=obj,
+                project_role__role__manager_flag__is_manager=True,
+            ).select_related(
+                'student',
+                'project_role__role',
+                'project_role__project',
+            )
+            for spr in manager_participants:
+                result.append({
+                    'id': f'manager-{spr.student_id}',
+                    'full_name': spr.student.full_name,
+                    'position': spr.project_role.role.title,
+                    'description': f'Проект: {spr.project_role.project.title}',
+                    'image_url': None,
+                })
+
+            return result
         except DatabaseError:
             return []
 
@@ -350,9 +370,9 @@ class UserListSerializer(serializers.ModelSerializer):
 
 
 class HubLeaderSerializer(serializers.ModelSerializer):
-    user_login = serializers.CharField(source='user.login', read_only=True)
-    user_role = serializers.CharField(source='user.site_role.title', read_only=True, default=None)
-    laboratory_title = serializers.CharField(source='user.laboratory.title', read_only=True, default=None)
+    user_login = serializers.SerializerMethodField()
+    user_role = serializers.SerializerMethodField()
+    laboratory_title = serializers.SerializerMethodField()
     image_url = serializers.SerializerMethodField()
 
     class Meta:
@@ -364,6 +384,15 @@ class HubLeaderSerializer(serializers.ModelSerializer):
             'laboratory_title'
         ]
         read_only_fields = ['id', 'created_at']
+
+    def get_user_login(self, obj):
+        return obj.user.login if obj.user else None
+
+    def get_user_role(self, obj):
+        return obj.user.site_role.title if obj.user and obj.user.site_role else None
+
+    def get_laboratory_title(self, obj):
+        return obj.user.laboratory.title if obj.user and obj.user.laboratory else None
 
     def get_image_url(self, obj):
         if obj.image:
