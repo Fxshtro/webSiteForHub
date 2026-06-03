@@ -89,6 +89,40 @@ podman run -d --name frontend --network host frontend:latest
 
 ---
 
+### 🔧 Cross-platform launch
+
+#### 🐧 Linux (Podman / Docker native)
+
+`network_mode: host` works out of the box:
+
+```bash
+podman compose up -d --build    # or: docker compose up -d --build
+```
+
+#### 🪟 Windows / 🍏 macOS (Docker Desktop)
+
+`network_mode: host` is **not supported** on Docker Desktop. Use port mapping instead (see Russian section below for a full `docker-compose.yml` template).
+
+```bash
+docker compose -f docker-compose.yml up -d --build
+```
+
+#### 💻 No Docker (local dev)
+
+```bash
+# 1. MariaDB on port 3306
+# 2. Backend
+cd Backend
+python -m venv venv && source venv/bin/activate
+pip install -r requirements.txt
+python manage.py migrate && python manage.py runserver
+
+# 3. Frontend (separate terminal)
+cd frontend && npm ci && npm run dev
+```
+
+---
+
 ## 🔗 Stack
 
 | Layer | Technology |
@@ -235,6 +269,121 @@ podman run -d --name frontend --network host frontend:latest
 | **Сайт** | http://localhost:3000/main |
 | **Админка** | http://localhost:8000/admin/ |
 | **API** | http://localhost:8000/api/ |
+
+---
+
+### 🔧 Запуск на разных платформах
+
+#### 🐧 Linux (Podman / Docker native)
+
+```bash
+# Сохранить compose.yaml как есть (network_mode: host работает нативно)
+podman compose up -d --build
+# или
+docker compose up -d --build
+```
+
+`network_mode: host` работает из коробки — контейнеры видят `localhost` друг друга.
+
+#### 🪟 Windows / 🍏 macOS (Docker Desktop)
+
+В Docker Desktop `network_mode: host` **не поддерживается**. Вместо этого используйте порты:
+
+```yaml
+# docker-compose.yml (альтернативная версия для Windows/Mac)
+services:
+  db:
+    image: docker.io/mariadb:11
+    container_name: hub-mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: appiub95_it_hub
+      MYSQL_USER: Fxrar
+      MYSQL_PASSWORD: qwerty
+    ports:
+      - "3306:3306"
+    volumes:
+      - hub_mysql_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mariadb-admin", "ping", "-h", "localhost"]
+    restart: unless-stopped
+
+  backend:
+    build: ./Backend
+    container_name: hub-backend
+    ports:
+      - "8000:8000"
+    environment:
+      DATABASE_HOST: db                    # имя сервиса (внутренняя сеть compose)
+      DATABASE_PORT: "3306"
+      DATABASE_NAME: appiub95_it_hub
+      DATABASE_USER: Fxrar
+      DATABASE_PASSWORD: qwerty
+      CORS_ALLOWED_ORIGINS: http://localhost:3000,http://127.0.0.1:3000
+    volumes:
+      - hub_backend_media:/app/media
+    depends_on:
+      db:
+        condition: service_healthy
+    command: >
+      sh -c "
+        python manage.py migrate &&
+        python manage.py runserver 0.0.0.0:8000 --noreload
+      "
+    restart: unless-stopped
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: hub-frontend
+    ports:
+      - "3000:3000"
+    environment:
+      NODE_ENV: production
+      API_BASE_URL: http://localhost:8000/api
+    depends_on:
+      - backend
+    restart: unless-stopped
+
+volumes:
+  hub_mysql_data:
+  hub_backend_media:
+```
+
+Запуск:
+
+```bash
+docker compose -f docker-compose.yml up -d --build
+```
+
+#### 💻 Без Docker (локальная разработка)
+
+```bash
+# 1. MariaDB (любым способом — порт 3306)
+# podman, docker, или установленный локально
+
+# 2. Бэкенд
+cd Backend
+python -m venv venv
+source venv/bin/activate   # Windows: venv\Scripts\activate
+pip install -r requirements.txt
+python manage.py migrate
+python manage.py runserver
+
+# 3. Фронтенд (в отдельном терминале)
+cd frontend
+npm ci
+npm run dev
+```
+
+#### 🔍 Проверка после запуска
+
+```bash
+curl http://localhost:8000/api/labs/        # список лабораторий
+curl http://localhost:8000/admin/           # админка (должна открыться)
+curl http://localhost:3000/main             # главная страница
+```
 
 ---
 
