@@ -8,12 +8,17 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
-        migrations.RunSQL(
-            "ALTER TABLE hub_site_stats DROP COLUMN icon",
-            "ALTER TABLE hub_site_stats ADD COLUMN icon varchar(500) NOT NULL DEFAULT ''",
-        ),
-        migrations.RunSQL(
-            "ALTER TABLE hub_site_stats DROP COLUMN icon_class",
-            "ALTER TABLE hub_site_stats ADD COLUMN icon_class varchar(500) NOT NULL DEFAULT ''",
+        migrations.SeparateDatabaseAndState(
+            state_operations=[],
+            database_operations=[
+                migrations.RunSQL(
+                    "ALTER TABLE hub_site_stats DROP COLUMN IF EXISTS icon",
+                    "SELECT 1",
+                ),
+                migrations.RunSQL(
+                    "ALTER TABLE hub_site_stats DROP COLUMN IF EXISTS icon_class",
+                    "SELECT 1",
+                ),
+            ],
         ),
     ]
