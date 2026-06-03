@@ -87,6 +87,25 @@ podman run -d --name frontend --network host frontend:latest
 | **Admin** | http://localhost:8000/admin/ |
 | **API** | http://localhost:8000/api/ |
 
+#### ⚙️ Environment setup (local dev)
+
+```bash
+# 1. Copy .env.example → .env and edit if needed
+cp Backend/.env.example Backend/.env
+
+# 2. Apply migrations and init data
+python manage.py migrate
+python manage.py init_hub           # creates superuser (admin/admin), roles
+python manage.py seed_lab_photos    # lab photos
+
+# 3. Create your own superuser (if not using init_hub)
+python manage.py createsuperuser
+
+# NOTE: .env must be in Backend/ for local runs
+```
+
+When using `compose.yaml` all of the above (except `.env`) runs automatically on container start.
+
 ---
 
 ### 🔧 Cross-platform launch
@@ -384,6 +403,25 @@ curl http://localhost:8000/api/labs/        # список лаборатори�
 curl http://localhost:8000/admin/           # админка (должна открыться)
 curl http://localhost:3000/main             # главная страница
 ```
+
+#### ⚙️ Настройка окружения (локальная разработка)
+
+```bash
+# 1. Скопировать .env.example → .env и отредактировать при необходимости
+cp Backend/.env.example Backend/.env
+
+# 2. Применить миграции и инициализировать данные
+python manage.py migrate
+python manage.py init_hub           # создаёт superuser (admin/admin), роли
+python manage.py seed_lab_photos    # изображения для лабораторий
+
+# 3. Создать собственного суперпользователя (если не через init_hub)
+python manage.py createsuperuser
+
+# ВАЖНО: при локальном запуске .env должен лежать в Backend/
+```
+
+При запуске через `compose.yaml` всё (кроме `.env`) отрабатывает автоматически — `migrate`, `init_hub`, `seed_lab_photos` выполняются при старте контейнера.
 
 ---
 
