@@ -14,13 +14,19 @@ const fallbackHomeAboutContent = {
   missionText: "Информация о миссии хаба скоро появится.",
 } as const;
 
-const fallbackHomeStats = [
-  {
-    label: "Статистика скоро появится",
-    icon: "/images/ui/icoHumans.svg",
-    iconClassName: "absolute -z-3 -top-8.5 -left-12.5",
-  },
+const STAT_ICONS = [
+  { icon: "/images/ui/icoHumans.svg", iconClassName: "absolute -z-3 -top-9.5 -left-12.5" },
+  { icon: "/images/ui/pazzle.svg", iconClassName: "absolute -z-3 -top-16.5 left-1/2 -translate-x-1/2" },
+  { icon: "/images/ui/lab.svg", iconClassName: "absolute -z-3 -top-13.5 -right-12.5" },
+  { icon: "/images/ui/laptop.svg", iconClassName: "absolute -z-3 -top-13.5 -left-12.5" },
+  { icon: "/images/ui/lists.svg", iconClassName: "absolute -z-3 -top-13.5 -right-12.5" },
 ] as const;
+
+const fallbackHomeStats = STAT_ICONS.map((s) => ({
+  label: "Статистика скоро появится",
+  icon: s.icon,
+  iconClassName: s.iconClassName,
+})) as readonly { label: string; icon: string; iconClassName: string }[];
 
 const fallbackHomeLabs = [
   {
@@ -53,6 +59,34 @@ interface HomeLabViewModel {
   slug: string;
 }
 
+interface StatItem {
+  label: string;
+  icon: string;
+  iconClassName: string;
+}
+
+function StatCard({ item, index }: { item: StatItem; index: number }): React.JSX.Element {
+  return (
+    <div
+      className={`glass custom-before !rounded-2xl !bg-[#E9E3E620] px-[55px] py-[11.5px] text-center text-[16px] md:px-[75px] md:text-[26px] ${
+        index === 1 ? "xl:translate-y-13" : ""
+      }`}
+    >
+      <div className="z-1">{item.label}</div>
+      <Image
+        src={item.icon}
+        width={95}
+        height={1}
+        alt=""
+        role="presentation"
+        loading="lazy"
+        sizes="95px"
+        className={item.iconClassName}
+      />
+    </div>
+  );
+}
+
 function pickAboutContent(site: SiteContentApiResponse | null) {
   if (!site) {
     return {
@@ -72,8 +106,8 @@ function pickStats(site: SiteContentApiResponse | null) {
   if (site?.stats && site.stats.length > 0) {
     return site.stats.map((item, index) => ({
       label: getSafeText(item.label, `Статистика ${index + 1}`),
-      icon: getSafeText(item.icon, fallbackHomeStats[0].icon),
-      iconClassName: getSafeText(item.icon_class, fallbackHomeStats[0].iconClassName),
+      icon: STAT_ICONS[index % STAT_ICONS.length].icon,
+      iconClassName: STAT_ICONS[index % STAT_ICONS.length].iconClassName,
     }));
   }
   return [...fallbackHomeStats];
@@ -233,26 +267,9 @@ export default async function Home(): Promise<React.JSX.Element> {
           </div>
           <h1 className="mt-[30px] text-center">СТАТИСТИКА</h1>
           <div className="mb-20 lineClass"></div>
-          <div className="flex flex-wrap justify-center items-start gap-x-10 px-10 gap-y-12 md:gap-y-16 xl:gap-y-23">
+            <div className="stats-grid mx-auto w-full max-w-[1100px] px-10">
             {stats.map((item, index) => (
-              <div
-                key={`${item.label}-${index}`}
-                className={`glass custom-before !rounded-2xl !bg-[#E9E3E620] px-[55px] py-[11.5px] text-center text-[16px] md:px-[75px] md:text-[26px] ${
-                  index === 1 ? "xl:translate-y-13" : ""
-                }`}
-              >
-                <div className="z-1">{item.label}</div>
-                <Image
-                  src={item.icon}
-                  width={95}
-                  height={1}
-                  alt=""
-                  role="presentation"
-                  loading="lazy"
-                  sizes="95px"
-                  className={item.iconClassName}
-                />
-              </div>
+              <StatCard key={`${item.label}-${index}`} item={item} index={index} />
             ))}
           </div>
         </div>

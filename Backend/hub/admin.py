@@ -63,9 +63,22 @@ class FileReportInline(admin.TabularInline):
     autocomplete_fields = ['file']
 
 
+class SiteStatFormset(forms.models.BaseInlineFormSet):
+    def clean(self):
+        super().clean()
+        count = sum(1 for f in self.forms if f.cleaned_data and not f.cleaned_data.get('DELETE', False))
+        if count != 5:
+            raise forms.ValidationError('Должно быть ровно 5 элементов статистики.')
+
+
 class SiteStatInline(admin.TabularInline):
     model = SiteStat
-    extra = 1
+    formset = SiteStatFormset
+    min_num = 5
+    max_num = 5
+    extra = 0
+    can_delete = False
+    fields = ['label', 'order']
 
 
 class ProjectLinkInline(admin.TabularInline):
@@ -219,6 +232,19 @@ class SiteContentAdmin(admin.ModelAdmin):
 
     def has_delete_permission(self, request, obj=None):
         return False
+
+    def changeform_view(self, request, object_id=None, form_url='', extra_context=None):
+        if object_id is not None:
+            try:
+                obj = SiteContent.objects.get(pk=object_id)
+                obj._ensure_stats()
+            except SiteContent.DoesNotExist:
+                pass
+        return super().changeform_view(request, object_id, form_url, extra_context)
+
+    def save_related(self, request, form, formsets, change):
+        super().save_related(request, form, formsets, change)
+        form.instance._ensure_stats()
 
 
 # =============================================================================

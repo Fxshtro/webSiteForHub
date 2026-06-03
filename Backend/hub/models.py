@@ -2,6 +2,8 @@ from django.db import models
 from django.core.validators import MaxLengthValidator
 from django.core.exceptions import ValidationError
 
+STATS_COUNT = 5
+
 
 # =============================================================================
 # ВАЛИДАТОРЫ
@@ -50,6 +52,20 @@ class SiteContent(models.Model):
         verbose_name = 'Настройка главной страницы'
         verbose_name_plural = 'Настройки главной страницы'
 
+    def _ensure_stats(self):
+        current = list(self.stats.all().order_by('order'))
+        if len(current) > STATS_COUNT:
+            for stat in current[STATS_COUNT:]:
+                stat.delete()
+            current = list(self.stats.all().order_by('order'))
+        max_order = max((s.order for s in current), default=-1)
+        for i in range(len(current), STATS_COUNT):
+            SiteStat.objects.create(
+                site_content=self,
+                label=f'Статистика {i + 1}',
+                order=max_order + 1 + i - len(current),
+            )
+
     def __str__(self):
         return 'Настройки главной страницы'
 
@@ -60,8 +76,6 @@ class SiteStat(models.Model):
         related_name='stats'
     )
     label = models.CharField(max_length=200, verbose_name='Текст статистики', help_text='Например: "48 участников"')
-    icon = models.CharField(max_length=500, verbose_name='Путь к иконке', help_text='Например: /images/ui/icoHumans.svg')
-    icon_class = models.CharField(max_length=500, blank=True, default='', verbose_name='CSS-классы для иконки', help_text='Позиционирование иконки')
     order = models.PositiveIntegerField(default=0, verbose_name='Порядок')
 
     class Meta:

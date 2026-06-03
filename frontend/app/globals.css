@@ -253,3 +253,41 @@ image {
     padding: 0;
   }
 }
+
+.stats-grid {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+  row-gap: 8rem;
+  column-gap: 2.5rem;
+  width: 100%;
+}
+
+.stats-grid > * {
+  flex: 0 0 300px;
+  max-width: 340px;
+}
+
+@media (max-width: 700px) {
+  .stats-grid > * {
+    flex: 0 0 260px;
+  }
+}
+
+@media (max-width: 768px) {
+  .stats-grid {
+    row-gap: 5rem;
+    column-gap: 1.5rem;
+  }
+}
+
+@media (max-width: 600px) {
+  .stats-grid {
+    row-gap: 5rem;
+  }
+
+  .stats-grid > * {
+    flex: 0 0 100%;
+  }
+}

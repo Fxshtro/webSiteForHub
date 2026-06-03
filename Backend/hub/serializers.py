@@ -168,7 +168,7 @@ class HubManagerSerializer(serializers.ModelSerializer):
 class SiteStatSerializer(serializers.ModelSerializer):
     class Meta:
         model = SiteStat
-        fields = ['id', 'label', 'icon', 'icon_class', 'order']
+        fields = ['id', 'label', 'order']
 
 
 class SiteContentSerializer(serializers.ModelSerializer):

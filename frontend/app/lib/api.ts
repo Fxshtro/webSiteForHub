@@ -194,8 +194,6 @@ export async function fetchLabAchievementsByLabId(labId: number): Promise<Achiev
 export interface SiteContentStatItem {
   id: number;
   label: string;
-  icon: string;
-  icon_class: string;
   order: number;
 }
 
