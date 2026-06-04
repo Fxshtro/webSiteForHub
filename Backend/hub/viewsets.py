@@ -1,4 +1,8 @@
+import json
 from django.db.utils import DatabaseError
+from django.contrib.auth import authenticate, login
+from django.views.decorators.csrf import csrf_exempt
+from django.http import JsonResponse
 from rest_framework import viewsets, filters, status
 from rest_framework.decorators import action, api_view
 from rest_framework.response import Response
@@ -322,6 +326,32 @@ class EventLogViewSet(viewsets.ReadOnlyModelViewSet):
 
 
 # =============================================================================
+# AUTH
+# =============================================================================
+
+@csrf_exempt
+def auth_login(request):
+    if request.method != 'POST':
+        return JsonResponse({'error': 'Method not allowed'}, status=405)
+    try:
+        data = json.loads(request.body)
+    except json.JSONDecodeError:
+        return JsonResponse({'error': 'Invalid JSON'}, status=400)
+
+    username = data.get('username', '').strip()
+    password = data.get('password', '')
+
+    if not username or not password:
+        return JsonResponse({'error': 'Логин и пароль обязательны'}, status=400)
+
+    user = authenticate(request, username=username, password=password)
+    if user is None:
+        return JsonResponse({'error': 'Неверный логин или пароль'}, status=401)
+
+    login(request, user)
+    return JsonResponse({'success': True, 'redirect': '/admin/'})
+
+
 # API ROOT
 # =============================================================================
 

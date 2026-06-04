@@ -27,4 +27,6 @@ router.register(r'events', viewsets.EventLogViewSet)
 urlpatterns = [
     path('', viewsets.api_root, name='api_root'),
     path('', include(router.urls)),
+    path('auth/login/', viewsets.auth_login, name='auth_login'),
+    path('auth/login', viewsets.auth_login, name='auth_login_no_slash'),
 ]
