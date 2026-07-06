@@ -1,3 +1,9 @@
+Front-end:
+<img width="1194" height="3839" alt="Фотоаба" src="https://github.com/user-attachments/assets/1e2e2f6c-3df3-456c-8432-32c8b3702149" />
+
+Back-end:
+<img width="1914" height="981" alt="админкаХаба" src="https://github.com/user-attachments/assets/1e3ecb04-da82-44c8-b353-cef35daad111" />
+
 # 🏛️ IUBiP Hub — Student Digital Hub
 
 [![Django 6](https://img.shields.io/badge/Django-6.0-092E20.svg)](https://www.djangoproject.com/) [![DRF 3.17](https://img.shields.io/badge/DRF-3.17-red.svg)](https://www.django-rest-framework.org/) [![Next.js 16](https://img.shields.io/badge/Next.js-16-black.svg)](https://nextjs.org/) [![React 19](https://img.shields.io/badge/React-19-blue.svg)](https://react.dev/) [![TypeScript 5](https://img.shields.io/badge/TypeScript-5-3178C6.svg)](https://www.typescriptlang.org/) [![Python 3.14](https://img.shields.io/badge/python-3.14-blue.svg)](https://www.python.org/) [![MariaDB](https://img.shields.io/badge/MariaDB-11-brown.svg)](https://mariadb.org/)
